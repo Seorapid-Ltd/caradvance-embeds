@@ -15,6 +15,10 @@
 // Az Előnyök oldalak (/elonyok/, /berles-elonyei/, /vasarlas-elonyei/) dizájnjához nem nyúl. Idempotens.
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+let sharp = null; try { sharp = require('sharp'); } catch (e) {}
+const ogConvert = [];
 
 const DIST = process.argv[2] || 'dist';
 const SITE = 'https://www.caradvance.hu';
@@ -47,6 +51,27 @@ const HU_CSS = '<style id="ca-qa-hu">'
   + 'html body .cah .rev-av{width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;aspect-ratio:1/1;flex:0 0 42px!important}'
   // Görgess: mobilon egységesen rejtve (mint a legtöbb oldalon)
   + '@media(max-width:640px){html body :is(.scrolldown,.kaphero-scroll,.cd-scroll,.hero-scroll){display:none!important}}'
+  // CTA-kártyák: világos módban világos (piros keret), sötét módban marad a sötét
+  + (function () {
+    const C = ':is(.close-cta,.ca-bcta,.jot-cta,.tb-cta,.ic-cta,.pf-cta,.fl-cta,.ca-end,.ca-osav,.el-cta,section.block#kapcsolat>.wrap.center)';
+    return L + C + '{background:radial-gradient(70% 90% at 100% 0%,rgba(226,0,26,.08),transparent 60%),linear-gradient(125deg,rgba(255,255,255,.85),rgba(255,255,255,.55)),rgba(255,255,255,.62)!important;background-color:rgba(255,255,255,.62)!important;color:#121317!important;border:1.5px solid rgba(226,0,26,.32)!important;box-shadow:inset 2px 2px 1px rgba(255,255,255,.95),0 0 0 4px rgba(226,0,26,.05),0 30px 70px rgba(226,0,26,.08)!important}'
+      + L + C + '::before,' + L + C + '::after{opacity:0!important}'
+      + L + C + ' :is(h2,h3,h4,b,strong,.sec-title,.ca-num,.osav-n){color:#121317!important;-webkit-text-fill-color:#121317!important}'
+      + L + C + ' :is(p,li,small,.sec-sub,.ca-k){color:#4A4A50!important;-webkit-text-fill-color:#4A4A50!important}'
+      + L + C + ' .accent{color:#E2001A!important;-webkit-text-fill-color:#E2001A!important}'
+      + L + C + ' :is(p,li) a:not([class*=btn]){color:#C40018!important;-webkit-text-fill-color:#C40018!important}'
+      + L + ':is(.tb-cta,.fl-cta,.el-cta):not(#ca-y):not(#ca-z):not(#ca-w) a.btn-white:first-of-type:not(#ca-v){background:#E2001A!important;border-color:#E2001A!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 12px 26px rgba(226,0,26,.28)!important}'
+      + L + '.ca-bcta:not(#ca-y) a.a2{color:#121317!important;-webkit-text-fill-color:#121317!important;border-color:rgba(18,19,23,.16)!important;background:#fff!important}'
+      + L + '.ca-end:not(#ca-y) .lg-btn{color:#fff!important;-webkit-text-fill-color:#fff!important}'
+      + L + '.ca-osav:not(#ca-y) :is(.rw span,.sv span){color:#4A4A50!important;-webkit-text-fill-color:#4A4A50!important}'
+      + L + '.ca-osav:not(#ca-y) .sv b{color:#0E9F6E!important;-webkit-text-fill-color:#0E9F6E!important}'
+      + L + '.ca-osav:not(#ca-y) .r2{background:rgba(18,19,23,.025)!important;border-color:rgba(18,19,23,.08)!important}'
+      + L + '.ca-osav:not(#ca-y) .sv{border-top-color:rgba(18,19,23,.1)!important}'
+      + L + '.ca-osav:not(#ca-y) .bar{background:rgba(18,19,23,.08)!important}' + L + '.ca-osav:not(#ca-y) .bar:not(.de) i{background:rgba(18,19,23,.28)!important}'
+      + L + '.ca-osav:not(#ca-y) .bt a.w{background:#fff!important;color:#121317!important;-webkit-text-fill-color:#121317!important;border:1px solid rgba(18,19,23,.14)!important}'
+      + L + C + ' :is(.btn-primary,.btn-red,.btn.red,.cd-btn,.ca-btnr,a.btn:not(.btn-white):not(.btn-ghost):not(.btn-o)){background:#E2001A!important;border-color:#E2001A!important;color:#fff!important;-webkit-text-fill-color:#fff!important}'
+      + L + C + ' :is(.btn-white,.btn-ghost,.btn-o){background:#fff!important;color:#121317!important;-webkit-text-fill-color:#121317!important;border:1px solid rgba(18,19,23,.14)!important;box-shadow:0 6px 16px rgba(18,19,23,.08)!important}';
+  })()
   + '</style>';
 
 // ---- segédek -----------------------------------------------------------------
@@ -94,11 +119,30 @@ for (const f of files) {
     }
     continue;
   }
-  if (h.indexOf(MARK) > -1 || h.indexOf('<head') < 0) continue;
+  // 0) og:image AVIF → WebP/JPG
+  h = h.replace(/(<meta[^>]+(?:property|name)="(?:og:image|twitter:image)"[^>]*content=")([^"]+)\.avif"/g, (m, a, base) => {
+    const rel = base.replace(SITE, '');
+    for (const ext of ['webp', 'jpg', 'jpeg', 'png']) if (fs.existsSync(path.join(DIST, rel + '.' + ext))) { n.og++; return a + base + '.' + ext + '"'; }
+    if (sharp && fs.existsSync(path.join(DIST, rel + '.avif'))) { ogConvert.push(rel); n.og++; return a + base + '.og.jpg"'; }
+    return m;
+  });
+  // nem indexelendő belső oldal <head> nélkül (pl. /icons/)
+  if (/^\/(?:[a-z]{2}\/)?(szerzodes|icons)\//.test(p) && h.indexOf('<head') < 0 && !/<meta[^>]+name="robots"/i.test(h)) { h = h.replace(/<meta charset="[^"]*">/i, (m) => m + '<meta name="robots" content="noindex,follow">'); n.noindex++; }
+  // blog: a „Röviden” doboz címe a H1 után H2 szintű (helyes címsor-sorrend, változatlan kinézet)
+  h = h.replace(/(<div class="bp-tldr"[^>]*>\s*<h3)(?![^>]*aria-level)/g, '$1 role="heading" aria-level="2"');
+  if (h.indexOf(MARK) > -1 || h.indexOf('<head') < 0) { if (h !== fs.readFileSync(f, 'utf8')) fs.writeFileSync(f, h); continue; }
   const isHu = /<html[^>]*\slang="hu"/.test(h);
   // 1) charset legelőre
   const cm = h.match(/<meta charset="[^"]*"\s*\/?>/i);
   if (cm && h.indexOf(cm[0]) > 1024) { h = h.replace(cm[0], ''); h = h.replace(/<head([^>]*)>/i, (m) => m + '<meta charset="utf-8">'); n.charset++; }
+  // 1b) a fejléc (hero) „ca-hero” osztálya már a HTML-ben (a hu-site.mjs futásidőben adná hozzá → elcsúszás)
+  if (h.indexOf('id="ca-site-css"') > -1 && h.indexOf('data-ca-hb="1"') < 0) {
+    const bi = h.indexOf('<body'); let best = null;
+    for (const re of [/<section class="hero(?=[" ])/, /<(?:section|div|header) class="cd-hero(?=[" ])/, /<(?:section|div) class="egl-land-hero(?=[" ])/, /<(?:section|div) class="egl-mhero(?=[" ])/, /<(?:section|div) class="kaphero(?=[" ])/, /<header class="bp-hero(?=[" ])/, /<(?:section|header|div) class="lg-hero(?=[" ])/]) {
+      re.lastIndex = 0; const m = re.exec(h.slice(bi)); if (m && (!best || m.index < best.index)) best = { index: m.index, s: m[0] };
+    }
+    if (best) { const at = bi + best.index; const end = h.indexOf('"', at + best.s.length); if (end > at) { h = h.slice(0, end) + ' ca-hero" data-ca-hb="1' + h.slice(end); n.hero = (n.hero || 0) + 1; } }
+  }
   // 2) gyökérosztályok a <html> elemen
   const add = Object.keys(ROOTCLS).filter((id) => h.indexOf('id="' + id + '"') > -1).map((id) => ROOTCLS[id]);
   if (add.length) {
@@ -108,12 +152,6 @@ for (const f of files) {
     });
     n.root++;
   }
-  // 3) og:image AVIF → WebP/JPG
-  h = h.replace(/(<meta[^>]+(?:property|name)="(?:og:image|twitter:image)"[^>]*content=")([^"]+)\.avif"/g, (m, a, base) => {
-    const rel = base.replace(SITE, '');
-    for (const ext of ['webp', 'jpg', 'jpeg', 'png']) if (fs.existsSync(path.join(DIST, rel + '.' + ext))) { n.og++; return a + base + '.' + ext + '"'; }
-    return m;
-  });
   // 4) eladó autók: bélyegképek lusta betöltéssel (az első 6 kivételével)
   if (h.indexOf('<div class="thumbs" id="thumbs">') > -1) {
     h = h.replace(/(<div class="thumbs" id="thumbs">)([\s\S]*?)(<\/div>)/, (m, a, body, c) => { let i = 0; return a + body.replace(/<img (?![^>]*loading=)/g, (x) => (i++ < 6 ? x : '<img loading="lazy" decoding="async" ')) + c; });
@@ -138,6 +176,27 @@ for (const f of files) {
     noindexPaths.add(p);
     if (!/<meta[^>]+name="robots"/i.test(h)) { h = h.replace(/<head([^>]*)>/i, (m) => m + '<meta name="robots" content="noindex,follow">'); n.noindex++; }
   }
+  // 1e) a fejléc CSS-háttérképe előtöltve (LCP) — a böngésző különben csak a CSS feldolgozása után találja meg
+  if (h.indexOf('data-ca-pre') < 0) {
+    const hm = h.match(/<(?:section|header|div) class="(?:cd-hero|bp-hero|egl-land-hero|egl-mhero)[^"]*"[^>]*style="[^"]*background-image:url\(['"]?([^'")]+)['"]?\)/);
+    if (hm && !/\.(mp4|webm)$/i.test(hm[1]) && h.indexOf('rel="preload" as="image" href="' + hm[1] + '"') < 0) { h = h.replace('</head>', () => '<link rel="preload" as="image" href="' + hm[1] + '" fetchpriority="high" data-ca-pre>' + '</head>'); n.pre = (n.pre || 0) + 1; }
+  }
+  // 1c) a <body>-ban lévő <style> blokkok a <head> végére (első rajzoláskor már minden stílus megvan → nincs elcsúszás); a sorrend nem változik
+  if (isHu && h.indexOf('data-ca-hoist') < 0) {
+    const hb = h.indexOf('<body'); const hoisted = [];
+    if (hb > -1) {
+      const head = h.slice(0, hb); let body = h.slice(hb);
+      const parts = body.split(/(<script\b[\s\S]*?<\/script>|<template\b[\s\S]*?<\/template>|<noscript\b[\s\S]*?<\/noscript>|<svg\b[\s\S]*?<\/svg>)/i);
+      for (let i = 0; i < parts.length; i += 2) parts[i] = parts[i].replace(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi, (m, a, c) => { if (/\smedia=|\sscoped/i.test(a)) return m; hoisted.push('<style data-ca-hoist' + a + '>' + c + '</style>'); return ''; });
+      if (hoisted.length) { body = parts.join(''); const hi = head.lastIndexOf('</head>'); h = (hi > -1 ? head.slice(0, hi) + hoisted.join('') + head.slice(hi) : head + hoisted.join('')) + body; n.hoist = (n.hoist || 0) + 1; }
+    }
+  }
+  // 1d) futásidőben cserélt fejléc-szövegek már a buildben (nincs elcsúszás) — Autóink, Tartós bérlet
+  if (isHu && p === '/autoink/' && h.indexOf('class="ca-slst"') < 0) {
+    if (/<div class="autok-panel on" id="panel-eladas">/.test(h)) h = h.replace(/<html([^>]*)\sclass="([^"]*)"/, (m, a, c) => (/(^| )ca-sl( |$)/.test(c) ? m : '<html' + a + ' class="' + c + ' ca-sl"'));
+    h = h.replace(/(<[a-z]+[^>]*data-hero="eladas"[\s\S]*?<p class="sub"[^>]*>)[\s\S]*?(<\/p>)/, (m, a, b) => a + 'Ellenőrzött prémium autók Németországból — bevizsgálva, garanciával, teljes ügyintézéssel.' + b + '<div class="ca-slst"><span><b>&nbsp;</b>autó készleten</span><span><b>Garancia</b>minden autóra</span><span><b>Teljes</b>ügyintézés</span></div>');
+  }
+  if (isHu && p === '/tartos-berlet/') h = h.replace(/(<section class="hero[^"]*"[\s\S]*?<p class="sub[^"]*"[^>]*>)[^<]*(<\/p>)/, (m, a, b) => a + 'Egy fix havidíj — casco, szerviz, adó és gumi benne. Önerő nélkül, cégeknek és magánszemélyeknek.' + b);
   if (isHu && !LANGS.test(p)) {
     // 9) BreadcrumbList pótlása
     if (h.indexOf('"BreadcrumbList"') < 0 && !/<meta[^>]+robots[^>]+noindex/i.test(h) && !NO_DESIGN.has(p) && p !== '/') {
@@ -147,7 +206,7 @@ for (const f of files) {
     // 10) túl hosszú title
     h = h.replace(/<title>([^<]{61,})<\/title>/, (m, t) => { const s = t.replace(/\s*\|\s*CarAdvance\s*$/, ''); if (s !== t) { n.title++; return '<title>' + s + '</title>'; } return m; });
     // 11) magyar dizájn-QA (Előnyök oldalak kivételével)
-    if (!NO_DESIGN.has(p)) { h = h.replace('</head>', () => HU_CSS + '</head>'); n.hu++; }
+    if (!NO_DESIGN.has(p)) { h = h.replace(/<style id="ca-qa-hu">[\s\S]*?<\/style>/, ''); h = h.replace('</head>', () => HU_CSS + '</head>'); n.hu++; }
   }
   h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => MARK + '</body>');
   fs.writeFileSync(f, h);
@@ -160,10 +219,16 @@ for (const sm of fs.readdirSync(DIST).filter((x) => /^sitemap.*\.xml$/.test(x)))
   if (x.length !== before) fs.writeFileSync(fp, x);
 }
 // _redirects: valódi 301 az átirányító lapok helyett (a fájl elejére, hogy elsőbbséget kapjon)
+// og:image: AVIF-ből JPG (1200 px széles) a közösségi megosztáshoz
+for (const rel of [...new Set(ogConvert)]) {
+  const out = path.join(DIST, rel + '.og.jpg');
+  if (!fs.existsSync(out)) { try { await sharp(path.join(DIST, rel + '.avif')).resize({ width: 1200, withoutEnlargement: true }).jpeg({ quality: 82, mozjpeg: true }).toFile(out); } catch (e) { console.log('[site-qa] og konverzió hiba', rel, e.message); } }
+}
 if (redirects.length) {
   const rp = path.join(DIST, '_redirects');
   const cur = fs.existsSync(rp) ? fs.readFileSync(rp, 'utf8') : '';
-  if (cur.indexOf('# ca-qa') < 0) {
+  const uniq0 = [...new Set(redirects)].filter((l) => cur.indexOf('\n' + l.split(' ')[0] + ' ') < 0 && !cur.startsWith(l.split(' ')[0] + ' '));
+  if (cur.indexOf('# ca-qa') < 0 && uniq0.length) {
     const uniq = [...new Set(redirects)].filter((l) => cur.indexOf('\n' + l.split(' ')[0] + ' ') < 0 && !cur.startsWith(l.split(' ')[0] + ' '));
     fs.writeFileSync(rp, '# ca-qa: Astro átirányító lapok → 301\n' + uniq.join('\n') + '\n' + cur);
   }

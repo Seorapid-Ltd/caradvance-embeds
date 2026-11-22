@@ -108,7 +108,7 @@ const JS = '<script id="ca-sl-js">(function(){var H=document.documentElement;'
   + 'var LG={audi:1,bmw:1,mercedes:1,vw:1,cupra:1,hyundai:1,kia:1,man:1,mini:1,seat:1,volvo:1};'
   + 'var g=$("#grid"),f=$(".filters"),PG=12,lim=PG;'
   // 1) fejléc
-  + 'function hero(){var h=$(\'[data-hero="eladas"]\');if(!h||h.__s)return;h.__s=1;var sb=h.querySelector(".sub");if(sb)sb.textContent="Ellenőrzött prémium autók Németországból — bevizsgálva, garanciával, teljes ügyintézéssel.";var n=g?g.children.length:0;var st=document.createElement("div");st.className="ca-slst";st.innerHTML="<span><b>"+n+"</b>autó készleten</span><span><b>Garancia</b>minden autóra</span><span><b>Teljes</b>ügyintézés</span>";if(sb)sb.parentNode.insertBefore(st,sb.nextSibling)}'
+  + 'function hero(){var h=$(\'[data-hero="eladas"]\');if(!h||h.__s)return;h.__s=1;var sb=h.querySelector(".sub");if(sb)sb.textContent="Ellenőrzött prémium autók Németországból — bevizsgálva, garanciával, teljes ügyintézéssel.";var n=g?g.children.length:0;var st=h.querySelector(".ca-slst");if(st){var b0=st.querySelector("b");if(b0)b0.textContent=n}else{st=document.createElement("div");st.className="ca-slst";st.innerHTML="<span><b>"+n+"</b>autó készleten</span><span><b>Garancia</b>minden autóra</span><span><b>Teljes</b>ügyintézés</span>";if(sb)sb.parentNode.insertBefore(st,sb.nextSibling)}}'
   // 2) szűrősáv
   + 'var bar,chips,fb;function build(){if(!f||!g||f.__s)return;f.__s=1;f.classList.add("ca-slf");var q=$("#q"),mk=$("#marka"),kr=$("#kar"),uz=$("#uz");'
   + 'bar=document.createElement("div");bar.className="ca-sbar";bar.setAttribute("data-dm-skip","1");'
