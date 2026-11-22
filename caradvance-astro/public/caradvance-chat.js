@@ -69,7 +69,7 @@
   "use strict";
   if (window.__caChatLoaded) return; window.__caChatLoaded = true;
 
-  var API = "https://caradvance-chatbot.flat-fire-7e25.workers.dev/api/chat";
+  var API = "https://caradvance-chatbot.winter-dew-1eed.workers.dev/api/chat";
   var WA = "36302336060";                 // +36 30 233 6060
   /* caradvance.sk / .cz: a szlovák / cseh kapcsolattartó (Mr. Job SK s.r.o.) WhatsAppja és szövege */
   var CLG = String(document.documentElement.lang || "hu").slice(0, 2).toLowerCase();
@@ -410,7 +410,7 @@
 /* ── "Érdeklődöm" button + inquiry modal on catalog cards (autoink / berelheto / bizomanyos / home) ── */
 (function () {
   if (window.__caInqLoaded) return; window.__caInqLoaded = true;
-  var INQ_API = "https://caradvance-chatbot.flat-fire-7e25.workers.dev/api/inquiry";
+  var INQ_API = "https://caradvance-chatbot.winter-dew-1eed.workers.dev/api/inquiry";
   var SALES_EMAIL = "info@caradvance.hu";
   /* caradvance.sk / .cz: szlovák/cseh ÁFA-szabályok, finanszírozás és kapcsolat (a magyar 19%-os német áfa és a magyar bankok helyett) */
   var ILG = String(document.documentElement.lang || "hu").slice(0, 2).toLowerCase();
