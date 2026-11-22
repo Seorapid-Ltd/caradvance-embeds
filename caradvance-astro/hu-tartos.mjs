@@ -206,7 +206,7 @@ function js(cuts) {
   + 'if(h){h.parentNode.insertBefore(big,h.nextSibling);big.parentNode.insertBefore(kp,big.nextSibling)}var idx=[].indexOf.call(b.children,kp)+1;more(b,idx)}'
   // 7) Cég | Magán
   + 'function cm(){var c=document.getElementById("cegeknek"),m=document.getElementById("maganszemelyeknek");if(!c||!m||c.__c)return;c.__c=1;'
-  + 'var t=el("div","ca-cmtog","<div role=\'tablist\'><button type=\'button\' data-k=\'c\'>Cégeknek</button><button type=\'button\' data-k=\'m\'>Magánszemélyeknek</button></div>");c.parentNode.insertBefore(t,c);'
+  + 'var t=el("div","ca-cmtog","<div role=\'tablist\'><button type=\'button\' role=\'tab\' data-k=\'c\'>Cégeknek</button><button type=\'button\' role=\'tab\' data-k=\'m\'>Magánszemélyeknek</button></div>");c.parentNode.insertBefore(t,c);'
   + 'function set(k){c.classList.toggle("ca-off",k!=="c");m.classList.toggle("ca-off",k!=="m");$$("button",t).forEach(function(x){x.classList.toggle("on",x.dataset.k===k);x.setAttribute("aria-selected",x.dataset.k===k)})}'
   + 'window.__caCM=set;t.addEventListener("click",function(e){var x=e.target.closest("button");if(x)set(x.dataset.k)});set(/maganszemelyeknek/.test(location.hash)?"m":"c");'
   + 'var evx=$("#elektromos .tb-text");if(evx&&!evx.__m){var eps=$$(":scope>p",evx);if(eps.length>1){var evs=$(".tb-evs",evx);if(evs&&eps[0])evx.insertBefore(evs,eps[0].nextSibling);more(evx,[].indexOf.call(evx.children,evs)+1)}}'

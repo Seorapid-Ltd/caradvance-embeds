@@ -83,7 +83,7 @@ const CSS = '<style id="ca-au-css">'
   + '</style>';
 
 const JS = '<script id="ca-au-js">' + String.raw`(function(){
-var d=document.documentElement;if(d.classList.contains("ca-au")||!document.querySelector(".wrap .layout .gallery"))return;d.classList.add("ca-au");
+var d=document.documentElement;if(window.__caAu||!document.querySelector(".wrap .layout .gallery"))return;window.__caAu=1;d.classList.add("ca-au");
 })();</script>`;
 
 export function apply(h) {
