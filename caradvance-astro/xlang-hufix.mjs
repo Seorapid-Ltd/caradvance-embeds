@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { LANGS, ROWS, MONTHS, WORDS, TPL, NM } from './xlang-hufix-data.mjs';
 import { LANGS2, ROWS2, TPL2, DESC, SUB, ARTICLE_DROP } from './xlang-hufix-data2.mjs';
+import { ROWS3 } from './xlang-hufix-data3.mjs';
 
 const DIST = path.resolve('dist');
 // változat mappa → [nyelv, futásidejű fordító fájl, kihagyandó almappák]
@@ -73,6 +74,9 @@ const XL_SRC = String.raw`function(k,D){
     if((m=k.match(/^([\d.]+) € -tól$/))) return T2.fromEur.replace('{P}',m[1].replace(/\./g,T2.th));
     if((m=k.match(/^([\d  ]+) Ft\/hó-tól$/))) return T2.fromHuf.replace('{P}',m[1]);
     if((m=k.match(/^(\d+) hónap$/))) return T2.months.replace('{N}',m[1]);
+    if((m=k.match(/^(\d+) perc olvasás$/))) return T2.readMin.replace('{N}',m[1]);
+    if((m=k.match(/^(\d+) perc$/))) return T2.min.replace('{N}',m[1]);
+    if((m=k.match(/^(\d{4})\. ([a-zá-ű]+) (\d{1,2})\.$/))&&D.MN&&D.MN[m[2]]){var mm=D.MN[m[2]],p2=function(x){return (x<10?'0':'')+x};return T2.date.replace('{Y}',m[1]).replace('{M}',D.MO[m[2]]).replace('{D}',m[3]).replace('{DD}',p2(+m[3])).replace('{MM}',p2(mm));}
     if((m=k.match(/^Jelenleg (\d+) változat közül választhatsz:$/))) return T2.variants.replace('{N}',m[1]);
     if((m=k.match(/^Új (.+) ára: nettó ([\d,]+) M Ft-tól, Németországból$/))) return T2.newPrice.replace('{M}',m[1]).replace('{P}',m[2]);
     if((m=k.match(/^Nettó havi díj · (\d+) km\/hó$/))) return T2.netFee.replace('{K}',m[1]);
@@ -108,10 +112,11 @@ function dataFor(lang, ch, hu) {
   const W = {}; for (const [k, v] of Object.entries(WORDS)) W[k] = v[i];
   const T = {}; for (const [k, v] of Object.entries(TPL)) T[k] = pick(v);
   const j = LANGS2.indexOf(lang);
-  if (hu && j >= 0) for (const row of ROWS2) { const t = row[1 + j]; if (t != null && t !== row[0]) R[row[0]] = t; }
+  if (hu && j >= 0) for (const row of [...ROWS2, ...ROWS3]) { const t = row[1 + j]; if (t != null && t !== row[0]) R[row[0]] = t; }
+  const MN = {}; Object.keys(MONTHS).forEach((k, n) => { MN[k] = n + 1; });
   const T2 = {}; for (const [k, v] of Object.entries(TPL2)) T2[k] = v[i];
   const DS = {}; for (const [k, v] of Object.entries(DESC)) DS[k] = v[i];
-  return { L: lang, CH: !!ch, R, MO, W, T, T2, DS, SUB: SUB.map((r) => [r[0], r[1][i]]), NM: NM.map((r) => [r[0], r[1 + i]]) };
+  return { L: lang, CH: !!ch, R, MO, MN, W, T, T2, DS, SUB: SUB.map((r) => [r[0], r[1][i]]), NM: NM.map((r) => [r[0], r[1 + i]]) };
 }
 
 /* ── HTML ── */
