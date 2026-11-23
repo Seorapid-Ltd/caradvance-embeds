@@ -17,6 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { LANGS, ROWS, MONTHS, WORDS, TPL, NM } from './xlang-hufix-data.mjs';
+import { LANGS2, ROWS2, TPL2, DESC, SUB, ARTICLE_DROP } from './xlang-hufix-data2.mjs';
 
 const DIST = path.resolve('dist');
 // változat mappa → [nyelv, futásidejű fordító fájl, kihagyandó almappák]
@@ -65,6 +66,22 @@ const XL_SRC = String.raw`function(k,D){
   }
   // havidíj nettó-tól (+ kaució)
   if((m=k.match(/^([\d  ]+) Ft\/hó nettó-tól(?: · kaució ([\d  ]+ €))?$/))) return cs(T.monthly.replace('{P}',m[1])+(m[2]?' · '+T.deposit+' '+m[2]:''));
+  // meta-leírás + már lefordított „ajánlatkérés: telefon” utótag
+  if((m=k.match(/^(.+?[.!?]) ([^.:]{3,40} ?: ?\+36[\d ]+\.)$/))&&D.R[m[1]]!=null) return D.R[m[1]]+' '+m[2];
+  var T2=D.T2;
+  if(T2){
+    if((m=k.match(/^([\d.]+) € -tól$/))) return T2.fromEur.replace('{P}',m[1].replace(/\./g,T2.th));
+    if((m=k.match(/^([\d  ]+) Ft\/hó-tól$/))) return T2.fromHuf.replace('{P}',m[1]);
+    if((m=k.match(/^(\d+) hónap$/))) return T2.months.replace('{N}',m[1]);
+    if((m=k.match(/^Jelenleg (\d+) változat közül választhatsz:$/))) return T2.variants.replace('{N}',m[1]);
+    if((m=k.match(/^Új (.+) ára: nettó ([\d,]+) M Ft-tól, Németországból$/))) return T2.newPrice.replace('{M}',m[1]).replace('{P}',m[2]);
+    if((m=k.match(/^Nettó havi díj · (\d+) km\/hó$/))) return T2.netFee.replace('{K}',m[1]);
+    if((m=k.match(/^([\d  ]+) €\/hó · nettó$/))) return m[1]+' €'+T.perMonth+' · '+T2.net;
+    if((m=k.match(/^(.+) — ([\d  ]+) Ft\/hó$/))) return nm(m[1])+' — '+m[2]+' '+T2.huf+T.perMonth;
+    if((m=k.match(/^— (.+), ([\d  ]+) €\/hó-tól([;.])$/))&&D.DS[m[1]]!=null) return '— '+D.DS[m[1]]+(D.L==='zh'?'，':', ')+T2.fromEurPm.replace('{P}',m[2])+(D.L==='zh'?(m[3]===';'?'；':'。'):m[3]);
+    if((m=k.match(/^Elkelt: (\d{4})\. (\d\d)\. (\d\d)\.$/))) return T.car[3]+m[1]+'-'+m[2]+'-'+m[3];
+    if((/^(?:BMW|MINI|Mercedes(?:-Benz|-AMG)?) /.test(k)||/^[A-Z]{1,3}-osztály$/.test(k))&&/-(?:es|as|ös|os)\b|osztály|Limuzin|ajtós/.test(k)&&!/(?:^|\s)[a-záéíóöőúüű]{3,}/.test(k.replace(/\d-(?:es|as|ös|os)\b|osztály|Limuzin|\d ajtós/g,''))){var z=nm(k);if(z!==k)return cs(z);}
+  }
   // BMW X3 változatlista (magyar és szlovák–magyar keverék alak)
   var X=T.x3, pm=function(P){return P.replace(/\/(?:mes\.?|měs\.?|hó)/,T.perMonth).replace(/-tól$/,'')};
   if((m=k.match(/^(?:od )?(.+?) vezetheted, 2 000–4 000 km\/hó futáskerettel és 6 hónapos futamidővel\. Jelenleg (\d+) db BMW X3 közül választhatsz \((\d+) db azonnal elérhető\), (.+?) kivitelben\. Egyszeri, visszajáró ?$/))) return cs(T.x3s.replace('{P}',pm(m[1])).replace('{N}',m[2]).replace('{M}',m[3]).replace('{V}',m[4])).trim();
@@ -76,12 +93,13 @@ const XL_SRC = String.raw`function(k,D){
   o=o.replace(/A kaució \((.+?)-tól\) a bérlés végén hiánytalanul visszajár, amennyiben nincs sérülés, közlekedési bírság vagy egyéb, a bérlőnek felróható levonás\./g,function(_,x){ch2=1;return T.kaucio.replace('{X}',x)});
   o=o.replace(/^(.+?)-tól; a szervizt, az adót és a nyári-téli gumit mi álljuk\. Nem kell tulajdonolnod: a bérlet végén egyszerűen visszaadod, vagy új modellre váltasz\.$/,function(_,x){ch2=1;return T.szerviz.replace('{X}',x)});
   o=o.replace(/ ?Mindegyik xDrive összkerékhajtással és 8 fokozatú automatával érkezik\./g,function(){ch2=1;return ' '+X[3]});
+  if(D.SUB)for(var si=0;si<D.SUB.length;si++){if(o.indexOf(D.SUB[si][0])>=0){o=o.split(D.SUB[si][0]).join(D.SUB[si][1]);ch2=1;}}
   if(ch2) return cs(o.replace(/^ /,''));
   return null;
 }`;
 const XL = new Function('return ' + XL_SRC)();
 
-function dataFor(lang, ch) {
+function dataFor(lang, ch, hu) {
   const i = LANGS.indexOf(lang);
   const pick = (a) => (Array.isArray(a) ? a[i] : a);
   const R = {};
@@ -89,7 +107,11 @@ function dataFor(lang, ch) {
   const MO = {}; for (const [k, v] of Object.entries(MONTHS)) MO[k] = v[i];
   const W = {}; for (const [k, v] of Object.entries(WORDS)) W[k] = v[i];
   const T = {}; for (const [k, v] of Object.entries(TPL)) T[k] = pick(v);
-  return { L: lang, CH: !!ch, R, MO, W, T, NM: NM.map((r) => [r[0], r[1 + i]]) };
+  const j = LANGS2.indexOf(lang);
+  if (hu && j >= 0) for (const row of ROWS2) { const t = row[1 + j]; if (t != null && t !== row[0]) R[row[0]] = t; }
+  const T2 = {}; for (const [k, v] of Object.entries(TPL2)) T2[k] = v[i];
+  const DS = {}; for (const [k, v] of Object.entries(DESC)) DS[k] = v[i];
+  return { L: lang, CH: !!ch, R, MO, W, T, T2, DS, SUB: SUB.map((r) => [r[0], r[1][i]]), NM: NM.map((r) => [r[0], r[1 + i]]) };
 }
 
 /* ── HTML ── */
@@ -129,6 +151,14 @@ function fixHtml(h, D, st) {
   }
   return parts.join('');
 }
+// A magyar névelő („A ”, „Az ”) bekezdés/listaelem elején, közvetlenül egy kiemelés vagy link előtt: elhagyjuk,
+// és fordítás után a kiemelés első betűjét naggyá tesszük (így mondatkezdő lesz).
+function dropArticle(h) {
+  return h.replace(/(<(?:p|li)\b[^>]*>)\s*(?:A|Az) (<(?:strong|a)\b[^>]*>)/g, '$1<!--xa-->$2');
+}
+function capArticle(h) {
+  return h.replace(/<!--xa-->(<(?:strong|a)\b[^>]*>)([^<])/g, (all, b, c) => b + c.toLocaleUpperCase()).replace(/<!--xa-->/g, '');
+}
 function walkDir(d, root, skip, out = []) {
   if (!fs.existsSync(d)) return out;
   for (const e of fs.readdirSync(d, { withFileTypes: true })) {
@@ -158,13 +188,14 @@ try {
   for (const [v, lang, rt, skip] of VARIANTS) {
     const root = path.join(DIST, v);
     if (!fs.existsSync(root)) { console.log(`[xlang-hufix] ${v}: nincs mappa — kihagyva`); continue; }
-    const D = dataFor(lang, v === 'ch' || v.startsWith('ch/'));
+    const huv = ARTICLE_DROP.includes(v);
+    const D = dataFor(lang, v === 'ch' || v.startsWith('ch/'), huv);
     const st = { n: 0 };
     let files = 0, changed = 0;
     for (const f of walkDir(root, root, skip)) {
       files++;
       const h = fs.readFileSync(f, 'utf8');
-      const o = fixHtml(h, D, st);
+      const o = huv ? capArticle(fixHtml(dropArticle(h), D, st)) : fixHtml(h, D, st);
       if (o !== h) { fs.writeFileSync(f, o); changed++; }
     }
     console.log(`[xlang-hufix] ${v} (${lang}): ${files} oldal, ${changed} módosítva, ${st.n} szöveg fordítva · runtime ${rt}: ${patchRuntime(rt, D)}`);
