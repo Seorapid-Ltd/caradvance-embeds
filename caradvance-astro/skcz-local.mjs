@@ -261,10 +261,12 @@ function hreflang(dist) {
  * kivesszük a nem létező, duplikált és noindex oldalakat. */
 function launch(dist) {
   const M = {};
-  for (const l of ['sk', 'cs']) { try { M[l] = JSON.parse(fs.readFileSync(path.join(dist, l, '_slugs.json'), 'utf8')); } catch (e) { return 'launch: nincs _slugs'; } }
+  // egy-ország build (build.mjs, CA_MIRROR_LANGS): a másik ország hiányzik — azt kihagyjuk, a teljes buildben változatlan
+  for (const l of ['sk', 'cs']) { try { M[l] = JSON.parse(fs.readFileSync(path.join(dist, l, '_slugs.json'), 'utf8')); } catch (e) { if (process.env.CA_MIRROR_LANGS) { M[l] = null; continue; } return 'launch: nincs _slugs'; } }
+  if (!M.sk && !M.cs) return 'launch: nincs _slugs';
   const HOST = { 'www.caradvance.sk': 'sk', 'www.caradvance.cz': 'cs' };
   const exists = (l, p) => fs.existsSync(path.join(dist, l, p.replace(/^\//, ''), 'index.html'));
-  const fixUrl = (host, p) => { const l = HOST[host]; const loc = M[l][p] || M[l][p.endsWith('/') ? p : p + '/']; return 'https://' + host + (loc || p); };
+  const fixUrl = (host, p) => { const l = HOST[host]; if (!M[l]) return 'https://' + host + p; const loc = M[l][p] || M[l][p.endsWith('/') ? p : p + '/']; return 'https://' + host + (loc || p); };
   const fix = (h) => h.replace(/https:\/\/(www\.caradvance\.(?:sk|cz))(\/[^"'\s<>#?\\]*)/g, (m, host, p) => fixUrl(host, p));
   let files = 0, changed = 0, dropped = 0;
   (function walk(d) {
@@ -282,7 +284,7 @@ function launch(dist) {
   })(dist);
   const sm = {};
   for (const l of ['sk', 'cs']) {
-    const f = path.join(dist, l, 'sitemap.xml'); if (!fs.existsSync(f)) continue;
+    const f = path.join(dist, l, 'sitemap.xml'); if (!M[l] || !fs.existsSync(f)) continue;
     const seen = new Set(); let kept = 0;
     const body = fs.readFileSync(f, 'utf8').replace(/\s*<url><loc>https:\/\/(www\.caradvance\.(?:sk|cz))(\/[^<]*)<\/loc>(<lastmod>[^<]*<\/lastmod>)?<\/url>/g, (m, host, u, lm) => {
       const url = fixUrl(host, u); const loc = url.replace(/^https:\/\/[^/]+/, '');

@@ -48,6 +48,10 @@ try {
   // sk/cs: saját domain (intl-map.json → domains). Élesítésig (domainsLive=false) csak előnézet: /sk/ /cs/, noindex, hreflang nélkül.
   const DOMS = M.domains || {}; const DL = Object.keys(DOMS); const DLIVE = M.domainsLive === true;
   const BASE = M.mirror || M.live; const LANGS = [...BASE, ...DL];
+  // egy-ország build (build.mjs): csak ezekre a nyelvekre készülnek oldalak; a futásidejű szótár (i18n/rt-*.js) minden nyelvre megmarad
+  const ONLY = (process.env.CA_MIRROR_LANGS || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const PAGE_LANGS = ONLY.length ? LANGS.filter((l) => ONLY.includes(l)) : LANGS;
+  if (ONLY.length) console.log('[mirror] egy-ország build: oldalak csak ezekre a nyelvekre: ' + PAGE_LANGS.join(', '));
   const dicts = {};
   for (const l of LANGS) { try { dicts[l] = JSON.parse(fs.readFileSync(`src/i18n/dict/${l}.json`, 'utf8')); } catch { dicts[l] = {}; } }
 
@@ -99,7 +103,7 @@ try {
     let huh = linkFix(switcher(dropAlt(src), 'hu', p), 'hu'); // belső linkek perjellel (eddig minden menükattintás 308-as átirányítás volt) if (DLIVE && DL.length) huh = addSwitch(huh, DL, (c) => DU(c, p), 'hu');
     fs.writeFileSync(path.join(DIST, rel), huh.replace(/<\/head>/i, cluster + '\n</head>'));
 
-    for (const l of LANGS) {
+    for (const l of PAGE_LANGS) {
       const D = dicts[l]; let hit = 0, miss = 0;
       const doc = parse(src);
       const TP = TPL[l];
