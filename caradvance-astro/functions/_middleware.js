@@ -36,6 +36,15 @@ function goneRedirect(request) {
   return new Response(null, { status: 301, headers: { Location: new URL(to, url.origin).toString(), 'Cache-Control': 'public, max-age=3600' } });
 }
 
+// Fejlesztői oldal (dev.caradvance.hu = develop ág): soha ne indexelje a Google — az élő oldalt nem érinti
+function isDevHost(h) { return h.startsWith('dev.') || h.endsWith('.pages.dev'); }
+function devNoindex(res) {
+  if (!res) return res;
+  const r = new Response(res.body, res);
+  r.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return r;
+}
+
 // caradvance.hu idegen nyelvű változatai (/en/ /de/ /fr/ /uk/ /zh/): a nem létező címre a nyelvnek megfelelő 404-oldal
 // (market-404.mjs: dist/404-hu-<nyelv>.html), 404-es státusszal — a magyar 404.html helyett.
 async function huLangNotFound(context) {
@@ -53,6 +62,15 @@ async function huLangNotFound(context) {
 }
 
 export async function onRequest(context) {
+  const host = new URL(context.request.url).hostname;
+  if (isDevHost(host)) {
+    if (new URL(context.request.url).pathname === '/robots.txt') return new Response('User-agent: *\nDisallow: /\n', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' } });
+    return devNoindex(await serve(context));
+  }
+  return serve(context);
+}
+
+async function serve(context) {
   try {
     const res = await handle(context);
     if (res && res.status === 404) { const g = goneRedirect(context.request); if (g) return g; }
@@ -83,7 +101,9 @@ const DOMAINS = { 'caradvance.sk': 'sk', 'www.caradvance.sk': 'sk', 'caradvance.
 // A build (build.mjs) ezen az ágon csak azt az országot készíti el. A dev-hu ág a magyar oldalt mutatja.
 const PREVIEW_HOST = /^dev-(sk|cz|pl|ch|eu)\.caradvance-astro-5kc\.pages\.dev$/;
 const PREVIEW_DIR = { sk: 'sk', cz: 'cs', pl: 'pl', ch: 'ch', eu: 'eu' };
-function previewDomain(host) { const m = PREVIEW_HOST.exec(host); return m ? PREVIEW_DIR[m[1]] : undefined; }
+// dev.caradvance.sk / .cz / .pl / .ch / .eu → a dev-<ország> ág (DNS CNAME), az adott ország oldala (noindex: isDevHost)
+const DEV_DOMAIN = { 'dev.caradvance.sk': 'sk', 'dev.caradvance.cz': 'cs', 'dev.caradvance.pl': 'pl', 'dev.caradvance.ch': 'ch', 'dev.caradvance.eu': 'eu' };
+function previewDomain(host) { if (DEV_DOMAIN[host]) return DEV_DOMAIN[host]; const m = PREVIEW_HOST.exec(host); return m ? PREVIEW_DIR[m[1]] : undefined; }
 function domainOf(host) { return DOMAINS[host] || previewDomain(host); }
 const HU_SITE = 'https://www.caradvance.hu';
 const LANG_SITE = { sk: 'https://www.caradvance.sk', cs: 'https://www.caradvance.cz', pl: 'https://www.caradvance.pl', ch: 'https://www.caradvance.ch', eu: 'https://www.caradvance.eu' };
