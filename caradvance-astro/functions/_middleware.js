@@ -36,7 +36,25 @@ function goneRedirect(request) {
   return new Response(null, { status: 301, headers: { Location: new URL(to, url.origin).toString(), 'Cache-Control': 'public, max-age=3600' } });
 }
 
+// Fejlesztői oldal (dev.caradvance.hu = develop ág): soha ne indexelje a Google — az élő oldalt nem érinti
+function isDevHost(h) { return h.startsWith('dev.') || h.endsWith('.pages.dev'); }
+function devNoindex(res) {
+  if (!res) return res;
+  const r = new Response(res.body, res);
+  r.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return r;
+}
+
 export async function onRequest(context) {
+  const host = new URL(context.request.url).hostname;
+  if (isDevHost(host)) {
+    if (new URL(context.request.url).pathname === '/robots.txt') return new Response('User-agent: *\nDisallow: /\n', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' } });
+    return devNoindex(await serve(context));
+  }
+  return serve(context);
+}
+
+async function serve(context) {
   try {
     const res = await handle(context);
     if (res && res.status === 404) { const g = goneRedirect(context.request); if (g) return g; }
