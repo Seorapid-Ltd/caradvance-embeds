@@ -12,7 +12,7 @@ const DIST = process.argv[2] || 'dist';
 const FILE = path.join(DIST, 'beszerzesi-folyamat', 'index.html');
 const SITE = 'https://www.caradvance.hu';
 const TITLE = 'Az autóbehozatal menete Németországból — 12 lépésben | CarAdvance';
-const DESC = 'Az autóbehozatal menete Németországból 12 lépésben: keresés, leinformálás, bevizsgálás, szállítás, honosítás és kulcsrakész átadás, jellemzően 5–14 nap alatt.';
+const DESC = 'Az autóbehozatal menete Németországból 12 lépésben: keresés, leinformálás, helyszíni bevizsgálás, szállítás, honosítás és kulcsrakész átadás — jellemzően 5–14 nap alatt.';
 const DUP_FAQ = ['Milyen költségekkel kell számolnom?', 'Mennyi előleget kell fizetni?', 'Kapok garanciát a behozott autóra?'];
 
 function seo(h, log) {

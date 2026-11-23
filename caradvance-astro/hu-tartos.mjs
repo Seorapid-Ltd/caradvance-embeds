@@ -91,7 +91,7 @@ const CSS = '<style id="ca-tb-css">'
   + P + '.tb-col{padding:28px 28px 22px!important;border-radius:22px!important}'
   + P + '.tb-col h3{font-size:20px!important;letter-spacing:-.015em;margin-bottom:16px!important;display:flex;align-items:center;gap:10px}'
   + P + '.tb-col h3::before{content:"";width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:#0a8a4a url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M6 12.5l4 4 8-9%27/%3E%3C/svg%3E") center/16px no-repeat}'
-  + P + '.tb-no h3::before{background:#8E8E93 url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M7 7l10 10M17 7L7 17%27/%3E%3C/svg%3E") center/14px no-repeat}'
+  + P + '.tb-no h3::before{background:#8b8f98 url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M7 7l10 10M17 7L7 17%27/%3E%3C/svg%3E") center/14px no-repeat}'
   + P + '.tb-col ul{gap:0!important}'
   + P + '.tb-col li{display:grid!important;grid-template-columns:22px 1fr;column-gap:12px;padding:12px 0!important;border-top:1px solid ' + LN + '!important;margin:0!important;align-items:start}'
   + D + P + '.tb-col li{border-top-color:' + LND + '!important}'
@@ -206,7 +206,7 @@ function js(cuts) {
   + 'if(h){h.parentNode.insertBefore(big,h.nextSibling);big.parentNode.insertBefore(kp,big.nextSibling)}var idx=[].indexOf.call(b.children,kp)+1;more(b,idx)}'
   // 7) Cég | Magán
   + 'function cm(){var c=document.getElementById("cegeknek"),m=document.getElementById("maganszemelyeknek");if(!c||!m||c.__c)return;c.__c=1;'
-  + 'var t=el("div","ca-cmtog","<div role=\'tablist\'><button type=\'button\' role=\'tab\' data-k=\'c\'>Cégeknek</button><button type=\'button\' role=\'tab\' data-k=\'m\'>Magánszemélyeknek</button></div>");c.parentNode.insertBefore(t,c);'
+  + 'var t=el("div","ca-cmtog","<div role=\'tablist\'><button type=\'button\' data-k=\'c\'>Cégeknek</button><button type=\'button\' data-k=\'m\'>Magánszemélyeknek</button></div>");c.parentNode.insertBefore(t,c);'
   + 'function set(k){c.classList.toggle("ca-off",k!=="c");m.classList.toggle("ca-off",k!=="m");$$("button",t).forEach(function(x){x.classList.toggle("on",x.dataset.k===k);x.setAttribute("aria-selected",x.dataset.k===k)})}'
   + 'window.__caCM=set;t.addEventListener("click",function(e){var x=e.target.closest("button");if(x)set(x.dataset.k)});set(/maganszemelyeknek/.test(location.hash)?"m":"c");'
   + 'var evx=$("#elektromos .tb-text");if(evx&&!evx.__m){var eps=$$(":scope>p",evx);if(eps.length>1){var evs=$(".tb-evs",evx);if(evs&&eps[0])evx.insertBefore(evs,eps[0].nextSibling);more(evx,[].indexOf.call(evx.children,evs)+1)}}'
@@ -220,7 +220,7 @@ function js(cuts) {
   // 11) GYIK
   + 'function faq(){var f=$(".tb-faq");if(!f||f.__f)return;f.__f=1;var n=$$("details",f).length;if(n<=6)return;var b=el("button","ca-morebtn ca-faqbtn","Összes kérdés ("+n+") <i>⌄</i>");b.type="button";f.appendChild(b);b.addEventListener("click",function(){var o=f.classList.toggle("ca-all");b.classList.toggle("open",o);b.firstChild.nodeValue=o?"Kevesebb kérdés ":"Összes kérdés ("+n+") "})}'
   + 'function fsv(){var h=$("section.tb section.hero"),t=$(".tb-toc");if(!h||!t)return;h.classList.add("ca-tfs");'
-  + 'var b=h.querySelector(".ca-tsd");if(!b){b=el("button","ca-tsd","GÖRGESS<svg width=\\"22\\" height=\\"22\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"m6 9 6 6 6-6\\"/></svg>");b.type="button";b.setAttribute("aria-label","Görgess lefelé");h.appendChild(b)}if(!b.__caB){b.__caB=1;'
+  + 'if(!h.querySelector(".ca-tsd")){var b=el("button","ca-tsd","GÖRGESS<svg width=\\"22\\" height=\\"22\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"m6 9 6 6 6-6\\"/></svg>");b.type="button";b.setAttribute("aria-label","Görgess lefelé");h.appendChild(b);'
   + 'b.addEventListener("click",function(){var n=t.nextElementSibling;while(n&&n.offsetHeight===0)n=n.nextElementSibling;var y=(n||t).getBoundingClientRect().top+scrollY-170;scrollTo({top:y,behavior:"smooth"})})}'
   + 'function m(){if(scrollY>40)return;var ht=h.getBoundingClientRect().bottom,tb=t.getBoundingClientRect().bottom;var x=Math.round(tb-ht)+18;if(x>40&&x<260)h.style.setProperty("--tbx",x+"px")}m();setTimeout(m,400);setTimeout(m,1500);addEventListener("resize",m)}'
   + 'function go(){try{fsv()}catch(e){}try{hero()}catch(e){}try{toc()}catch(e){}try{rb()}catch(e){}try{miez()}catch(e){}try{cm()}catch(e){}try{ev()}catch(e){}try{brands()}catch(e){}try{cmp()}catch(e){}try{faq()}catch(e){}}'
@@ -228,13 +228,9 @@ function js(cuts) {
   + '})();</script>';
 }
 
-const TSD = '<button class="ca-tsd" type="button" aria-label="Görgess lefelé">GÖRGESS<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>';
 export function apply(h, cuts) {
   if (h.indexOf('id="ca-tb-css"') > -1) return h;
   h = h.replace('</head>', () => CSS + '</head>');
-  // teljes képernyős fejléc és „Görgess” gomb már a HTML-ben (futásidőben hozzáadva újratöltéskor ugrott a tartalom)
-  { const ti = h.indexOf('<section class="tb"'); const hi = ti > -1 ? h.indexOf('<section class="hero', ti) : -1;
-    if (hi > -1 && hi - ti < 400) { const ci = hi + '<section class="hero'.length; h = h.slice(0, ci) + ' ca-tfs' + h.slice(ci); const ei = h.indexOf('</section>', ci); if (ei > -1 && h.slice(ci, ei).indexOf('ca-tsd') < 0) h = h.slice(0, ei) + TSD + h.slice(ei); } }
   h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => js(cuts) + '</body>');
   return h;
 }

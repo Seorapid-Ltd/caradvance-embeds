@@ -132,7 +132,7 @@ const CSS = '<style id="ca-cd-css">'
 
 const JS = '<script id="ca-cd-js">' + String.raw`(function(){
 function $(s,r){return (r||document).querySelector(s)}function $$(s,r){return [].slice.call((r||document).querySelectorAll(s))}
-if(!$(".cd-hero")||window.__caCd)return;window.__caCd=1;document.documentElement.classList.add("ca-cd");
+if(!$(".cd-hero")||document.documentElement.classList.contains("ca-cd"))return;document.documentElement.classList.add("ca-cd");
 var DN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
 // Görgess: a fejléc utáni részhez
 var sd=$(".cd-hero .cd-scroll");if(sd){sd.removeAttribute("onclick");sd.addEventListener("click",function(e){e.preventDefault();var t=$(".cd-hero").nextElementSibling;while(t&&t.tagName==="SCRIPT")t=t.nextElementSibling;if(t)scrollTo({top:t.getBoundingClientRect().top+scrollY-90,behavior:"smooth"})})}

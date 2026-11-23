@@ -75,12 +75,12 @@ const STILUS = `#ca-kalk{
 #ca-kalk .lk-tip{position:relative;display:inline-flex;align-items:center;line-height:0}
 #ca-kalk .lk-i{width:16px;height:16px;border-radius:50%;border:0;background:#c9d3e2;color:#fff;font:italic 700 11px/16px Georgia,serif;text-align:center;cursor:pointer;padding:0;flex:0 0 auto}
 #ca-kalk .lk-i:hover{background:var(--navy)}
-#ca-kalk .lk-tiptext{position:absolute;top:calc(100% + 9px);left:-4px;z-index:50;width:240px;max-width:72vw;background:#16171B;color:#fff;font-size:12.5px;font-weight:600;line-height:1.5;padding:10px 12px;border-radius:10px;box-shadow:0 12px 32px rgba(8,12,20,.32);opacity:0;visibility:hidden;transform:translateY(-4px);transition:.14s;pointer-events:none}
+#ca-kalk .lk-tiptext{position:absolute;top:calc(100% + 9px);left:-4px;z-index:50;width:240px;max-width:72vw;background:#0f1622;color:#fff;font-size:12.5px;font-weight:600;line-height:1.5;padding:10px 12px;border-radius:10px;box-shadow:0 12px 32px rgba(8,12,20,.32);opacity:0;visibility:hidden;transform:translateY(-4px);transition:.14s;pointer-events:none}
 #ca-kalk .lk-tip:hover .lk-tiptext,#ca-kalk .lk-tip.open .lk-tiptext{opacity:1;visibility:visible;transform:none}
-#ca-kalk .lk-tiptext::before{content:"";position:absolute;bottom:100%;left:9px;border:6px solid transparent;border-bottom-color:#16171B}
+#ca-kalk .lk-tiptext::before{content:"";position:absolute;bottom:100%;left:9px;border:6px solid transparent;border-bottom-color:#0f1622}
 
 /* sötét eredménypanel */
-#ca-kalk .lk-result{background:linear-gradient(#16171B,#0b0b0d);color:#fff;border-radius:18px;padding:24px 22px;position:sticky;top:90px}
+#ca-kalk .lk-result{background:linear-gradient(#0f1622,#0b0b0d);color:#fff;border-radius:18px;padding:24px 22px;position:sticky;top:90px}
 #ca-kalk .lk-monthly{text-align:center;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.12)}
 #ca-kalk .lk-mlabel{color:#9aa7b8;font-size:13px;font-weight:600}
 #ca-kalk .lk-mval{margin:6px 0 2px}
@@ -114,7 +114,7 @@ const STILUS = `#ca-kalk{
 #ca-kalk .faq summary{font-weight:800;font-size:15px;cursor:pointer;color:var(--ink)}
 #ca-kalk .faq p{margin-top:9px;color:var(--muted);font-size:14.5px}
 #ca-kalk .faq b{color:var(--ink)}
-#ca-kalk .cta{background:linear-gradient(#16171B,#0b0b0d);color:#fff;border-radius:18px;padding:22px 24px;display:flex;flex-direction:column;gap:9px}
+#ca-kalk .cta{background:linear-gradient(#0f1622,#0b0b0d);color:#fff;border-radius:18px;padding:22px 24px;display:flex;flex-direction:column;gap:9px}
 #ca-kalk .cta .t{font-weight:800;font-size:18px}
 #ca-kalk .cta p{color:#c4cddb;font-size:14.5px}
 #ca-kalk .cta b{color:#fff}

@@ -44,7 +44,7 @@ const CSS = '<style id="ca-kap-css">'
   + P + '.ca-off h2,' + P + '.ca-bk h2{font-size:clamp(26px,2.4vw,32px);font-weight:800;letter-spacing:-.025em;line-height:1.1;margin:8px 0 16px}'
   + P + '.ca-open{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;background:rgba(22,163,74,.1);color:#15803D}'
   + P + '.ca-open i{width:8px;height:8px;border-radius:50%;background:#16A34A;box-shadow:0 0 0 0 rgba(22,163,74,.5);animation:caKPulse 2s infinite}'
-  + P + '.ca-open.off{background:rgba(18,19,23,.06);color:inherit}' + P + '.ca-open.off i{background:#9A9AA0;animation:none}'
+  + P + '.ca-open.off{background:rgba(18,19,23,.06);color:inherit}' + P + '.ca-open.off i{background:#9CA3AF;animation:none}'
   + D + '.ca-open{background:rgba(34,197,94,.14);color:#4ADE80}' + D + '.ca-open.off{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8)}'
   + '@keyframes caKPulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.45)}70%{box-shadow:0 0 0 8px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}'
   + P + '.ca-addr{display:flex;gap:14px;align-items:flex-start;margin:20px 0 6px}'
@@ -183,7 +183,10 @@ function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"
 function hu(d){return d.getFullYear()+". "+MON[d.getMonth()]+" "+d.getDate()+". ("+DAY[d.getDay()]+")"}
 // --- fejléc
 var h1=$(".kaphero-h1",root);
-// a fejléc gombjai és alcíme már a buildben a helyükre kerülnek (nincs utólagos elcsúszás)
+var cta=$(".kaphero-cta",root);if(cta){var ph=cta.querySelector("a.red"),wa=cta.querySelector("a.white");if(ph){ph.innerHTML=IC.phone+"Hívj minket"}if(wa){wa.className="kaphero-btn ghost";wa.innerHTML=IC.wa+"WhatsApp"}
+var ml=el("a","kaphero-btn ghost",IC.mail+"Írj nekünk");ml.href="mailto:info@caradvance.hu";cta.appendChild(ml);
+var bk=el("a","kaphero-btn ghost",IC.cal+"<span class=ca-lg>Időpontot foglalok</span><span class=ca-sm>Időpontfoglalás</span>");bk.href="#idopont";cta.appendChild(bk)}
+var sb=$(".kaphero-sub",root);if(sb)sb.textContent="Kérdésed van, autót keresel vagy eladnál? Hívj, írj, vagy foglalj időpontot, és gyere be hozzánk Solymárra egy kávéra.";
 var sc=$(".kaphero-scroll",root);if(sc){sc.removeAttribute("onclick");sc.addEventListener("click",function(e){e.preventDefault();var t=$(".ca-kgrid",root);if(t)scrollTo({top:t.getBoundingClientRect().top+scrollY-100,behavior:"smooth"})})}
 // --- rács: iroda + foglaló
 var off=$(".kap-office",root);var grid=el("div","ca-kgrid");off.parentNode.insertBefore(grid,off.nextSibling);
@@ -206,7 +209,7 @@ var b=el("div","ca-card ca-bk");b.id="idopont";
 var TOP=["Autóvásárlás, megtekintés","Tartós bérlet","Autóeladás (bizomány)","Autóimport","Egyéb"];
 b.innerHTML='<span class="ca-ey">Személyes időpont</span><h2>Foglalj időpontot az irodánkba</h2><p class="lead">Válassz egy napot és időpontot — kollégánk visszaigazolja, és egy kávé mellett mindent átbeszélünk.</p>'
 +'<div class="ca-steps"><span class="on" data-s="0"><i>1</i><b>Nap</b></span><span data-s="1"><i>2</i><b>Időpont</b></span><span data-s="2"><i>3</i><b>Adatok</b></span></div>'
-+'<div class="ca-pane on" data-p="0"><div class="ca-cal-h"><button type="button" class="pv" aria-label="Előző hónap">‹</button><b class="mt"></b><button type="button" class="nx" aria-label="Következő hónap">›</button></div><div class="ca-cal"></div></div>'
++'<div class="ca-pane on" data-p="0"><div class="ca-cal-h"><button type="button" class="pv" aria-label="Előző hónap">‹</button><b class="mt"></b><button type="button" class="nx" aria-label="Következő hónap">›</button></div><div class="ca-cal" role="grid"></div></div>'
 +'<div class="ca-pane" data-p="1"><div class="ca-sum s1"></div><div class="ca-slots-t">Válassz időpontot</div><div class="ca-slots"></div></div>'
 +'<div class="ca-pane" data-p="2"><div class="ca-sum s2"></div><div class="ca-slots-t">Miben segíthetünk?</div><div class="ca-topics">'+TOP.map(function(t,i){return '<button type="button"'+(i===0?' class="sel"':"")+'>'+t+'</button>'}).join("")+'</div>'
 +'<form class="ca-f" novalidate><label>Név<input name="n" autocomplete="name" required></label><label>Telefon<input name="p" type="tel" autocomplete="tel" required></label><label class="w">E-mail<input name="e" type="email" autocomplete="email" required></label><label class="w"><span>Megjegyzés <i style="opacity:.5;font-weight:500;font-style:normal">(nem kötelező)</i></span><textarea name="m" placeholder="Pl. melyik autó érdekel, hányan jöttök…"></textarea></label><input class="ca-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
@@ -251,10 +254,6 @@ export function apply(h) {
   h = h.replace('</head>', () => CSS + '</head>');
   // fejléc háttér: az iroda épülete (a ház és az autó mindig látszik — objektum-pozíció asztalon/mobilon külön)
   h = h.replace(/<img class="kaphero-bg" src="\/caradvance-iroda\.webp[^"]*" alt="[^"]*">/, '<img class="kaphero-bg" src="/kapcsolat-epulet.webp" srcset="/kapcsolat-epulet-m.webp 1200w, /kapcsolat-epulet.webp 2000w" sizes="100vw" alt="A CarAdvance irodája Solymáron" fetchpriority="high">');
-  // fejléc gombok + alcím a buildben (nem JS-sel → nincs layout shift)
-  h = h.replace(/<a class="kaphero-btn red" href="(tel:[^"]+)">[^<]*<\/a>/, (m, t) => '<a class="kaphero-btn red" href="' + t + '">' + ICON.phone + 'Hívj minket</a>');
-  h = h.replace(/<a class="kaphero-btn white" (href="[^"]*wa\.me[^"]*"[^>]*)>[^<]*<\/a>(\s*)<\/div>/, (m, a, sp) => '<a class="kaphero-btn ghost" ' + a + '>' + ICON.wa + 'WhatsApp</a> <a class="kaphero-btn ghost" href="mailto:info@caradvance.hu">' + ICON.mail + 'Írj nekünk</a> <a class="kaphero-btn ghost" href="#idopont">' + ICON.cal + '<span class=ca-lg>Időpontot foglalok</span><span class=ca-sm>Időpontfoglalás</span></a>' + sp + '</div>');
-  h = h.replace(/(<p class="kaphero-sub"[^>]*>)[^<]*/, (m, a) => a + 'Kérdésed van, autót keresel vagy eladnál? Hívj, írj, vagy foglalj időpontot, és gyere be hozzánk Solymárra egy kávéra.');
   h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => JS + '</body>');
   return h;
 }

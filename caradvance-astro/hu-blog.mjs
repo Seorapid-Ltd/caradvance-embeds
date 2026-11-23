@@ -145,11 +145,6 @@ export function apply(h) {
   else if (/<article class="bp"[ >]/.test(h)) css = CSS_POST;
   if (!css) return null;
   h = h.replace('</head>', () => css + '</head>');
-  if (css === CSS_POST) {
-    // borítókép a buildben (nem JS-sel → nincs elcsúszás betöltéskor)
-    const t = ((h.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().replace(/"/g, '&quot;');
-    h = h.replace(/<header class="bp-hero"( style="background-image:url\(([^)'"]+)\)")([^>]*)>/, (m, st, url, rest) => '<header class="bp-hero ca-ed"' + st + rest + '><figure class="ca-cover" data-dm-skip="1"><img src="' + url + '" alt="' + t + '" width="1600" height="900" decoding="async" fetchpriority="high"></figure>');
-  }
   h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => JS + '</body>');
   return h;
 }

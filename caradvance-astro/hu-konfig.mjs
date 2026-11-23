@@ -174,7 +174,7 @@ bar.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)
 var open=false,mb=null;if(rows.length>14){rows.forEach(function(r,k){if(k>=12)r.classList.add("ca-x")});mb=sk(document.createElement("button"));mb.type="button";mb.className="ca-more ca-lmore";var ml=function(){mb.innerHTML=(open?"Kevesebb modell":"Mind a "+rows.length+" modell")+DN};ml();mb.addEventListener("click",function(){open=!open;tb.classList.toggle("ca-all",open);ml();if(!open)tb.scrollIntoView({behavior:"smooth",block:"start"})});var tw2=tb.closest(".ol-tw");tw2.parentNode.insertBefore(mb,tw2.nextSibling)}}
 // --- bérelhető modellek
 $$(".ol-card",root).forEach(function(a){var im=a.querySelector("img"),dv=a.querySelector("div");if(!im||a.querySelector(".ca-stage"))return;var st=sk(document.createElement("div"));st.className="ca-stage";a.insertBefore(st,im);st.appendChild(im);
-var src=im.getAttribute("src")||"";if(src.indexOf("/berles-cut/")<0){var m=src.match(/\/berles\/([^\/?#]+)\.webp/);if(m&&CUT.indexOf(m[1])>-1)im.src="/berles-cut/"+m[1]+".webp";else im.classList.add("ca-full")}
+var m=(im.getAttribute("src")||"").match(/\/berles\/([^\/?#]+)\.webp/);if(m&&CUT.indexOf(m[1])>-1)im.src="/berles-cut/"+m[1]+".webp";else im.classList.add("ca-full");
 var sp=dv&&dv.querySelector("span");if(sp){var pm=sp.textContent.match(/([\d\s ]+)\s*Ft\/hó\s*(nettó-tól)?/);if(pm)sp.outerHTML='<div class="ca-pr"><strong>'+pm[1].trim()+' Ft</strong><small>/hó '+(pm[2]||"")+'</small></div>'}
 a.insertAdjacentHTML("beforeend",'<span class="ca-go">'+ARR+'</span>')});
 // --- GYIK: az első 4 látszik
@@ -191,8 +191,6 @@ export function apply(h, CUT) {
   if (h.indexOf('id="ca-kf-css"') > -1 || h.indexOf('id="arlista"') < 0 || !/<section class="ol"[ >]/.test(h) || h.indexOf('ol-calc') > -1) return null;
   CUT = CUT || cutList();
   h = h.replace(/(<section class="hero"[^>]*>[\s\S]*?<div class="cta-row"[^>]*>[\s\S]*?<\/div>\s*<\/div>)(\s*<\/section>)/, (m, a, b) => (a.indexOf('scrolldown') > -1 ? m : a + SCROLL + b));
-  // kivágott autókép már a buildben (nincs dupla letöltés)
-  h = h.replace(/(<a class="ol-card"[^>]*>\s*<img src=")\/berles\/([^"\/?#]+)\.webp/g, (m, a, n) => (CUT.indexOf(n) > -1 ? a + '/berles-cut/' + n + '.webp' : m));
   h = h.replace('</head>', () => CSS + '</head>');
   return h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => JS(CUT) + '</body>');
 }
