@@ -153,6 +153,9 @@
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
       if (el.closest('.cstage')) continue;
+      // menü (hamburger) vonalai: világosak maradjanak a sötét gombon — minden oldalon és piacon (különben a világos vonalakat
+      // a sötétítés sötétre festi, és mobilon eltűnik a menü ikon)
+      if (el.parentElement && el.parentElement.classList && el.parentElement.classList.contains('burger') && el.tagName === 'SPAN') { if (!el.hasAttribute('data-dmbg')) el.setAttribute('data-dmbg', el.style.getPropertyValue('background-color') || ''); el.style.setProperty('background-color', '#E8EBF0', 'important'); continue; }
       if (SKIP[el.tagName]) { if (el.tagName === 'IMG') fixImg(el); continue; }
       if (/dots/.test(typeof el.className === 'string' ? el.className : '')) { if (darkBehind(el)) el.classList.add('dm-dl'); else el.classList.remove('dm-dl'); }
       var inSvg = el instanceof SVGElement;
