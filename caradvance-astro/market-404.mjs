@@ -6,6 +6,7 @@
  *   dist/404-pl-pl.html  404-pl-en.html  404-pl-de.html
  *   dist/404-ch-de.html  404-ch-fr.html  404-ch-it.html  404-ch-en.html
  *   dist/404-eu-de.html  404-eu-fr.html  404-eu-it.html  404-eu-es.html
+ *   dist/404-hu-en.html  404-hu-de.html  404-hu-fr.html  404-hu-uk.html  404-hu-zh.html  (caradvance.hu /en/ … /zh/)
  * A middleware (functions/_middleware.js) ezeket adja ki 404-es státusszal a nem létező címekre;
  * a _routes.json-on kívüli címekhez (a Pages statikus 404.html-je) a dist/404.html-be tett kis szkript
  * cseréli le a tartalmat ugyanerre. Idempotens; hibára exit 0.
@@ -21,17 +22,21 @@ const T = {
   de: { title: 'Seite nicht gefunden — CarAdvance', code: '404 — Seite nicht gefunden', h1: 'Diese Seite haben wir nicht gefunden', p: 'Vielleicht enthält die Adresse einen Tippfehler, oder die Seite ist nicht mehr verfügbar.', hintB: 'Sie suchen ein Auto aus einem alten Link?', hint: 'Wenn es bereits verkauft ist, haben wir es aus dem Angebot genommen. Gerne finden wir Ihnen ein ähnliches auf dem gesamten deutschen Markt.', cars: 'Unsere Autos', home: 'Startseite', q: 'Fragen?' },
   fr: { title: 'Page introuvable — CarAdvance', code: '404 — page introuvable', h1: 'Nous n’avons pas trouvé cette page', p: 'L’adresse contient peut-être une faute de frappe, ou la page n’est plus disponible.', hintB: 'Vous cherchez une voiture depuis un ancien lien ?', hint: 'Si elle a déjà été vendue, nous l’avons retirée de l’offre. Nous vous en trouverons volontiers une similaire sur tout le marché allemand.', cars: 'Nos voitures', home: 'Accueil', q: 'Des questions ?' },
   it: { title: 'Pagina non trovata — CarAdvance', code: '404 — pagina non trovata', h1: 'Non abbiamo trovato questa pagina', p: 'Forse l’indirizzo contiene un errore di battitura, oppure la pagina non è più disponibile.', hintB: 'Cerca un’auto da un vecchio link?', hint: 'Se è già stata venduta, l’abbiamo tolta dall’offerta. Saremo lieti di trovarle un’auto simile su tutto il mercato tedesco.', cars: 'Le nostre auto', home: 'Home', q: 'Domande?' },
+  uk: { title: 'Сторінку не знайдено — CarAdvance', code: '404 — сторінку не знайдено', h1: 'Ми не знайшли цю сторінку', p: 'Можливо, в адресі помилка, або сторінка більше недоступна.', hintB: 'Шукаєте авто за старим посиланням?', hint: 'Якщо його вже продано, ми прибрали його з пропозиції. Охоче знайдемо вам схоже на всьому німецькому ринку.', cars: 'Наші авто', home: 'Головна', q: 'Є запитання?' },
+  zh: { title: '页面未找到 — CarAdvance', code: '404 — 页面未找到', h1: '我们找不到这个页面', p: '网址可能有误，或该页面已不再提供。', hintB: '在找旧链接里的车？', hint: '如果车已售出，我们已将其从车源中下架。我们很乐意在整个德国市场为您找到类似的车。', cars: '我们的车辆', home: '首页', q: '有疑问？' },
   es: { title: 'Página no encontrada — CarAdvance', code: '404 — página no encontrada', h1: 'No hemos encontrado esta página', p: 'Puede que la dirección tenga un error, o que la página ya no esté disponible.', hintB: '¿Busca un coche de un enlace antiguo?', hint: 'Si ya se ha vendido, lo hemos retirado de la oferta. Con gusto le encontraremos uno similar en todo el mercado alemán.', cars: 'Nuestros coches', home: 'Inicio', q: '¿Preguntas?' },
 };
 
 // piac → nyelvek: [nyelv, URL-előtag, autók oldal, a nyelv főoldala a dist-ben]
 const M = {
+  // a caradvance.hu idegen nyelvű változatai (/en/ /de/ /fr/ /uk/ /zh/) — 2026-11-23
+  hu: { mail: 'info@caradvance.hu', tel: '+36302336060', telTxt: '+36 30 233 6060', langs: [['en', '/en', '/en/autoink/', 'en'], ['de', '/de', '/de/autoink/', 'de'], ['fr', '/fr', '/fr/autoink/', 'fr'], ['uk', '/uk', '/uk/autoink/', 'uk'], ['zh', '/zh', '/zh/autoink/', 'zh']] },
   pl: { mail: 'info@caradvance.hu', tel: '+36302336060', telTxt: '+36 30 233 6060', langs: [['pl', '', '/samochody/', 'pl'], ['en', '/en', '/en/samochody/', 'pl/en'], ['de', '/de', '/de/samochody/', 'pl/de']] },
   ch: { mail: 'info@caradvance.ch', tel: '+41797158580', telTxt: '+41 79 715 85 80', langs: [['de', '', '/fahrzeuge/', 'ch'], ['fr', '/fr', '/fr/fahrzeuge/', 'ch/fr'], ['it', '/it', '/it/fahrzeuge/', 'ch/it'], ['en', '/en', '/en/fahrzeuge/', 'ch/en']] },
   eu: { mail: 'import@caradvance.de', tel: '+498999998100', telTxt: '+49 89 99998 100', langs: [['de', '/de', '/de/fahrzeuge/', 'eu/de'], ['fr', '/fr', '/fr/vehicules/', 'eu/fr'], ['it', '/it', '/it/veicoli/', 'eu/it'], ['es', '/es', '/es/vehiculos/', 'eu/es']] },
 };
 
-const SWAP = '<script id="ca-404m">(function(){var m=/(^|\\.)caradvance\\.(pl|ch|eu)$/.exec(location.hostname);if(!m)return;var k=m[2],g=/^\\/(en|de|fr|it|es)\\//.exec(location.pathname),d={pl:"pl",ch:"de",eu:"de"}[k],ok={pl:"pl en de",ch:"de fr it en",eu:"de fr it es"}[k].split(" "),l=g&&ok.indexOf(g[1])>=0?g[1]:d;document.documentElement.style.visibility="hidden";fetch("/404-"+k+"-"+l).then(function(r){if(!r.ok)throw 0;return r.text();}).then(function(t){document.open();document.write(t);document.close();}).catch(function(){document.documentElement.style.visibility="";});})();</script>';
+const SWAP = '<script id="ca-404m">(function(){var m=/(^|\\.)caradvance\\.(pl|ch|eu)$/.exec(location.hostname),hl=/^\\/(en|de|fr|uk|zh)\\//.exec(location.pathname);if(!m&&hl&&!/(^|\\.)caradvance\\.(sk|cz)$/.test(location.hostname))m=[0,0,"hu"];if(!m)return;var k=m[2],g=/^\\/(en|de|fr|it|es)\\//.exec(location.pathname),d={pl:"pl",ch:"de",eu:"de",hu:"en"}[k],ok={pl:"pl en de",ch:"de fr it en",eu:"de fr it es",hu:"en de fr uk zh"}[k].split(" "),l=g&&ok.indexOf(g[1])>=0?g[1]:d;document.documentElement.style.visibility="hidden";fetch("/404-"+k+"-"+l).then(function(r){if(!r.ok)throw 0;return r.text();}).then(function(t){document.open();document.write(t);document.close();}).catch(function(){document.documentElement.style.visibility="";});})();</script>';
 
 function run() {
   const rootF = path.join(DIST, '404.html'); if (!fs.existsSync(rootF)) return 'nincs dist/404.html';
@@ -58,6 +63,7 @@ function run() {
   }
   // a Pages statikus 404.html-je (a _routes.json-on kívüli címek): .pl/.ch/.eu-n a helyi változatra cserél
   if (!base.includes('id="ca-404m"')) { base = base.replace(/<head>/, '<head>' + SWAP); fs.writeFileSync(rootF, base); }
+  else if (!base.includes('hu:"en de fr uk zh"')) { base = base.replace(/<script id="ca-404m">[\s\S]*?<\/script>/, () => SWAP); fs.writeFileSync(rootF, base); }
   return `${made.length} oldal: ${made.join(', ')}`;
 }
 try { console.log('[market-404] ' + run()); } catch (e) { console.log('[market-404] hiba: ' + (e && e.stack || e)); }

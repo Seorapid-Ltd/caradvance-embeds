@@ -45,6 +45,22 @@ function devNoindex(res) {
   return r;
 }
 
+// caradvance.hu idegen nyelvű változatai (/en/ /de/ /fr/ /uk/ /zh/): a nem létező címre a nyelvnek megfelelő 404-oldal
+// (market-404.mjs: dist/404-hu-<nyelv>.html), 404-es státusszal — a magyar 404.html helyett.
+async function huLangNotFound(context) {
+  const request = context.request, url = new URL(request.url);
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
+  if (DOMAINS[url.hostname]) return null;
+  const m = /^\/(en|de|fr|uk|zh)(\/|$)/.exec(url.pathname); if (!m) return null;
+  for (const nfp of ['/404-hu-' + m[1], '/404-hu-' + m[1] + '.html']) {
+    try {
+      const nf = await context.env.ASSETS.fetch(new Request(new URL(nfp, url.origin).toString()));
+      if (nf.status === 200) { const h = new Headers(nf.headers); h.set('Cache-Control', 'public, max-age=0, must-revalidate'); h.set('X-Robots-Tag', 'noindex'); return new Response(request.method === 'HEAD' ? null : nf.body, { status: 404, headers: h }); }
+    } catch (e) {}
+  }
+  return null;
+}
+
 export async function onRequest(context) {
   const host = new URL(context.request.url).hostname;
   if (isDevHost(host)) {
@@ -58,6 +74,7 @@ async function serve(context) {
   try {
     const res = await handle(context);
     if (res && res.status === 404) { const g = goneRedirect(context.request); if (g) return g; }
+    if (res && res.status === 404) { const nf = await huLangNotFound(context); if (nf) return nf; }
     return res;
   } catch (e) {
     // Bármilyen hiba esetén az eredeti oldal megy ki — a magyar látogatót soha nem akaszthatja meg.

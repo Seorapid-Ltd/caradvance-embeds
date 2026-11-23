@@ -2,7 +2,7 @@
   "use strict";
   if (window.__caChatLoaded) return; window.__caChatLoaded = true;
 
-  var API = "https://caradvance-chatbot.flat-fire-7e25.workers.dev/api/chat";
+  var API = "https://caradvance-chatbot.winter-dew-1eed.workers.dev/api/chat";
   var WA = "36302336060";                 // +36 30 233 6060
   var SESSION = null;                      // Phase 2: bejelentkezett ügyfél tokenje
   var LOGO = "/caradvance-logo.webp";      // tedd a public mappába

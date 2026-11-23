@@ -18,7 +18,7 @@
 import {
   json, ensureFin, clean, isDate, addDays, normSplit, nowIso, importRows, applyRules, autoMatch, suggestDocs, saveFile, loadFile,
   pnl, getSetting, setSetting, navConfigured, navSync, fillFx, norm, subjectOf, loadBlock, purgeBlocked, deleteTxs, genRecurring,
-  normPlate, splitTx, unsplitTx, refxAll, listRentals, payRental, unpayRental
+  normPlate, splitTx, unsplitTx, refxAll, listRentals, payRental, unpayRental, finStart, purgeBefore
 } from '../../../lib/penzugy.js';
 
 async function staffUser(request, env) {
@@ -70,7 +70,7 @@ export async function onRequest(context) {
 
     /* ---------- meta ---------- */
     if (m === 'GET' && p0 === 'meta') {
-      const [lines, cats, rules, accounts, alloc, navLast, stats, vehicles] = await Promise.all([
+      const [lines, cats, rules, accounts, alloc, navLast, stats, vehicles, car_terms] = await Promise.all([
         DB.prepare(`SELECT * FROM fin_lines ORDER BY sort, id`).all().then((r) => r.results),
         DB.prepare(`SELECT * FROM fin_cats ORDER BY sort, id`).all().then((r) => r.results),
         DB.prepare(`SELECT * FROM fin_rules ORDER BY prio, id`).all().then((r) => r.results),
@@ -78,10 +78,11 @@ export async function onRequest(context) {
         getSetting(env, 'alloc', { mode: 'fixed', key: {} }),
         getSetting(env, 'nav_last', null),
         DB.prepare(`SELECT MIN(bdate) AS min, MAX(bdate) AS max, COUNT(*) AS n FROM fin_tx`).first(),
-        getSetting(env, 'vehicles', {})
+        getSetting(env, 'vehicles', {}),
+        getSetting(env, 'car_terms', {})
       ]);
       const block = (await loadBlock(env)).map((b) => ({ id: b.id, name: b.name, pattern: b.pattern, created_at: b.created_at }));
-      return json({ me: { name: me.name, email: me.email }, lines, cats, rules, accounts, alloc, block, nav: { configured: navConfigured(env), last: navLast, test: env.NAV_TEST === '1' }, stats, vehicles });
+      return json({ me: { name: me.name, email: me.email }, lines, cats, rules, accounts, alloc, block, nav: { configured: navConfigured(env), last: navLast, test: env.NAV_TEST === '1' }, stats, vehicles, car_terms, fin_start: await finStart(env) });
     }
 
     /* ---------- P&L ---------- */
@@ -300,6 +301,20 @@ export async function onRequest(context) {
       await setSetting(env, 'vehicles', out);
       return json({ ok: true, vehicles: out });
     }
+    if (m === 'POST' && p0 === 'car-terms') { // autónkénti tartási időszak a költség-előrejelzéshez: { plate, start: 'ÉÉÉÉ-HH-NN', months, monthly (Ft, nettó, opcionális) } — months = 0 → törlés
+      const pl = normPlate(body.plate); if (!pl) return json({ error: 'Rendszám kötelező.' }, 400);
+      const all = await getSetting(env, 'car_terms', {});
+      const months = Math.round(num(body.months) || 0);
+      if (!months) delete all[pl];
+      else {
+        const start = /^\d{4}-\d{2}-\d{2}$/.test(String(body.start || '')) ? String(body.start) : null;
+        if (!start) return json({ error: 'A kezdő dátum kötelező (ÉÉÉÉ-HH-NN).' }, 400);
+        const monthly = Math.abs(num(body.monthly) || 0);
+        all[pl] = { start, months: Math.min(120, Math.max(1, months)), monthly: monthly ? Math.round(monthly) : null, by: who, at: nowIso() };
+      }
+      await setSetting(env, 'car_terms', all);
+      return json({ ok: true, car_terms: all });
+    }
     if (m === 'POST' && p0 === 'alloc') {
       const mode = ['fixed', 'revenue', 'none'].includes(body.mode) ? body.mode : 'fixed';
       const ls = await lineSet(env); const key = {};
@@ -369,6 +384,10 @@ export async function onRequest(context) {
     }
     if (m === 'POST' && p0 === 'fx' && p1 === 'fill') return json({ missing: await fillFx(env) });
     if (m === 'POST' && p0 === 'fx' && p1 === 'mnb') return json({ missing: await refxAll(env) }); // minden devizás tétel újraszámolása MNB középárfolyammal
+    if (m === 'POST' && p0 === 'fin-start') { // pénzügyi kezdőnap beállítása; az előtte lévő tételek törlődnek
+      if (isDate(body.date)) await setSetting(env, 'fin_start', body.date);
+      return json({ ok: true, start: await finStart(env), removed: await purgeBefore(env) });
+    }
     if (m === 'GET' && p0 === 'fx' && p1 === 'status') return json({ err: await getSetting(env, 'fx_mnb_err', null), mnb: (await DB.prepare(`SELECT cur, COUNT(*) AS n, MIN(date) AS min, MAX(date) AS max FROM fin_fx WHERE cur LIKE '%@MNB' GROUP BY cur`).all()).results });
     if (m === 'POST' && p0 === 'fx' && p1 === 'rates') { // MNB-árfolyamok kézi betöltése (pl. ha az MNB szolgáltatás nem érhető el a szerverről): { cur, rates: { 'YYYY-MM-DD': rate } }
       const cur = /^[A-Z]{3}$/.test(body.cur || '') ? body.cur : null; if (!cur) return json({ error: 'cur' }, 400);
