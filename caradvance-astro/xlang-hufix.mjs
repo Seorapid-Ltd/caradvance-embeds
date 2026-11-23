@@ -1,0 +1,175 @@
+/**
+ * xlang-hufix.mjs — magyar szövegmaradványok fordítása a NEM magyar nyelvi változatokon (2026-11-23).
+ *
+ * Változatok: caradvance.hu /en /de /fr /uk /zh · .sk és .cz /en /de · .pl (+/en /de) · .ch (de, /fr /it /en)
+ *             · .eu /de /fr /it /es. (A .sk és .cz alapnyelvét a skcz-hufix.mjs kezeli.)
+ *
+ * Mit csinál:
+ *   1. dist/<változat>/**​/index.html — a szövegcsomópontokban, az alt/title/placeholder/aria-label/content/label
+ *      attribútumokban és a JSON-LD szövegekben a pontos (szóközre normalizált) magyar szöveget lefordítja
+ *      az xlang-hufix-data.mjs ROWS táblája és mintái (fotó-alt, havidíj-megjegyzés, készlet-mondat,
+ *      eladó/elkelt autó leírás, kaució-mondat stb.) alapján. Így a Google és a JS nélküli látogató is a
+ *      helyi nyelvet látja.
+ *   2. dist/i18n/rt-<változat>.js — ugyanaz a fordító (XL) a futásidejű tr() elejére kerül, így a JS-sel
+ *      később kirajzolt szövegek (chat, fülek, szűrők, galéria) is fordítva jelennek meg.
+ * Idempotens (/*ca-xlang*​/ jelölő), hiba esetén naplóz és 0-val lép ki — a buildet soha nem állítja meg.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { LANGS, ROWS, MONTHS, WORDS, TPL, NM } from './xlang-hufix-data.mjs';
+
+const DIST = path.resolve('dist');
+// változat mappa → [nyelv, futásidejű fordító fájl, kihagyandó almappák]
+const VARIANTS = [
+  ['en', 'en', 'rt-en.js', []], ['de', 'de', 'rt-de.js', []], ['fr', 'fr', 'rt-fr.js', []], ['uk', 'uk', 'rt-uk.js', []], ['zh', 'zh', 'rt-zh.js', []],
+  ['sk/en', 'en', 'rt-sk-en.js', []], ['sk/de', 'de', 'rt-sk-de.js', []], ['cs/en', 'en', 'rt-cs-en.js', []], ['cs/de', 'de', 'rt-cs-de.js', []],
+  ['pl', 'pl', 'rt-pl.js', ['en', 'de']], ['pl/en', 'en', 'rt-pl-en.js', []], ['pl/de', 'de', 'rt-pl-de.js', []],
+  ['ch', 'de', 'rt-ch-de.js', ['fr', 'it', 'en']], ['ch/fr', 'fr', 'rt-ch-fr.js', []], ['ch/it', 'it', 'rt-ch-it.js', []], ['ch/en', 'en', 'rt-ch-en.js', []],
+  ['eu/de', 'de', 'rt-eu-de.js', []], ['eu/fr', 'fr', 'rt-eu-fr.js', []], ['eu/it', 'it', 'rt-eu-it.js', []], ['eu/es', 'es', 'rt-eu-es.js', []],
+];
+const SKIP = /^(_np|admin|belso|ajanlat|api|icons|_astro|auto-foto|berles-press|i18n)$/;
+
+/* ── A fordító: önálló függvény-forrás, a node-ban és a böngészőben is ugyanez fut ── */
+const XL_SRC = String.raw`function(k,D){
+  var r=D.R[k]; if(r!=null) return r;
+  var m, T=D.T, ch=D.CH;
+  function nm(x){for(var i=0;i<D.NM.length;i++)x=x.replace(new RegExp(D.NM[i][0],'g'),D.NM[i][1]);return x}
+  function w(x){var t=D.W[x];return t!=null?t:x}
+  function cs(x){x=x.replace(/([^.])\.\.(?!\.)/g,'$1.');return ch?x.replace(/ß/g,'ss'):x}
+  // fotó-alt: "<modell> – fotó N"
+  if((m=k.match(/^(.+) – fotó (\d+)$/))){var a=D.R[m[1]]!=null?D.R[m[1]]:nm(m[1]);return a+' – '+T.photo+' '+m[2];}
+  // havidíj-megjegyzés
+  if((m=k.match(/^A havi díj 2000 km\/\S+ futáskerettel értendő\. 3000 km\/\S+ esetén ([\d  .,]+) € \/ \S+ \(([\d  .,]+) Ft\)\. Egyszeri, visszatérítendő kaució: ([\d  .,]+) € \(([\d  .,]+) Ft\)\. Az árak tájékoztató jellegűek, élő árfolyammal \(1 € = ([\d  .,]+) Ft\)\.$/)))
+    return cs(T.fee.replace('{A}',m[1]).replace('{B}',m[2]).replace('{C}',m[3]).replace('{D}',m[4]).replace('{E}',m[5]));
+  // készlet-mondat
+  if((m=k.match(/^(?:(\d+) db (?:(.+?) )?azonnal elérhető|(Jelenleg nincs azonnal elérhető darab)|(Hamarosan elérhető))(?:; további autók(?::| —) (.+?))?\. Vadonatúj, 0 km-es (?:autót adunk át|autók)\.$/))){
+    var S=T.stock, h;
+    if(m[3]) h=S[2]; else if(m[4]) h=S[3]; else if(m[2]) h=S[0].replace('{N}',m[1]).replace('{M}',D.R[m[2]]!=null?D.R[m[2]]:nm(m[2])); else h=S[1].replace('{N}',m[1]);
+    if(m[5]){var parts=m[5].split(/, /),out=[];for(var i=0;i<parts.length;i++){var q=parts[i].match(/^(\S+): (\d+) db$/);if(!q)return null;out.push(S[5].replace('{MO}',D.MO[q[1]]||q[1]).replace('{N}',q[2]));}h+=S[4].replace('{L}',out.join(D.L==='zh'?'，':', '));}
+    return cs(h+S[7]+S[6]);
+  }
+  // eladó / elkelt autó (meta leírás)
+  if((m=k.match(/^(Eladó|Elkelt:) (.+?), (?:(\d{4}), )?(?:([\d  ]+) km, )?(\d+) LE, ([^,.]+(?:\([^)]*\))?)(?:, (Automata|Manuális))?\.(?: Ára ([\d  ]+) Ft\.)?(?: (Ellenőrzött előéletű német import a CarAdvance-től\.|Hasonlót keresel\? Nézd meg az aktuális készletet\.))?$/))){
+    var C=T.car, sold=m[1]==='Elkelt:', p=[m[2]];
+    if(m[3])p.push(m[3]); if(m[4])p.push(m[4]+' km'); p.push(m[5]+' '+C[5]); p.push(w(m[6])); if(m[7])p.push(w(m[7]));
+    var z=D.L==='zh'?'，':', ', t=(sold?C[3]:C[0])+p.join(z)+(D.L==='zh'?'。':'.');
+    var sp=D.L==='zh'?'':' ';
+    if(m[8]) t+=sp+C[1].replace('{P}',m[8]);
+    if(m[9]) t+=sp+(/^Hasonl/.test(m[9])?C[4]:C[2]);
+    return cs(t);
+  }
+  // A(z) <autó> <km> futott, <üzemanyag> üzemű <karosszéria>. <LE> LE, <váltó>, <hajtás>. Nettó ár…
+  if((m=k.match(/^A\(z\) (.+?) ([\d  ]+) futott, (\S+) üzemű ([^.]+)\. (\d+) LE, (Automata|Manuális), ([^.]+)\. Nettó ár \(áfa nélkül\) garanciával, CarAdvance import\.$/))){
+    var zz=D.L==='zh'?'，':', ';
+    return cs(m[1]+zz+m[2]+' km'+zz+w(m[3])+zz+w(m[4])+(D.L==='zh'?'。':'. ')+m[5]+' '+T.car[5]+zz+w(m[6])+zz+w(m[7])+(D.L==='zh'?'。':'. ')+T.net);
+  }
+  // havidíj nettó-tól (+ kaució)
+  if((m=k.match(/^([\d  ]+) Ft\/hó nettó-tól(?: · kaució ([\d  ]+ €))?$/))) return cs(T.monthly.replace('{P}',m[1])+(m[2]?' · '+T.deposit+' '+m[2]:''));
+  // BMW X3 változatlista (magyar és szlovák–magyar keverék alak)
+  var X=T.x3, pm=function(P){return P.replace(/\/(?:mes\.?|měs\.?|hó)/,T.perMonth).replace(/-tól$/,'')};
+  if((m=k.match(/^(?:od )?(.+?) vezetheted, 2 000–4 000 km\/hó futáskerettel és 6 hónapos futamidővel\. Jelenleg (\d+) db BMW X3 közül választhatsz \((\d+) db azonnal elérhető\), (.+?) kivitelben\. Egyszeri, visszajáró ?$/))) return cs(T.x3s.replace('{P}',pm(m[1])).replace('{N}',m[2]).replace('{M}',m[3]).replace('{V}',m[4])).trim();
+  if((m=k.match(/^— kulturált, (?:erős benzines|výkonný benzínový) belépő, (?:od )?(.+?)(?:-tól)?;$/))) return cs(X[0].replace('{P}',pm(m[1])));
+  if((m=k.match(/^— a sokat autózók kedvence, (?:od )?(.+?)(?:-tól)?;$/))) return cs(X[1].replace('{P}',pm(m[1])));
+  if((m=k.match(/^— (?:hathengeres dízel|šesťvalcový diesel|šestiválcový naftový), a (?:legerősebb|legvýkonnýebb) bérelhető X3, (?:od )?(.+?)(?:-tól)?\.\.? (?:Mindegyik xDrive összkerékhajtással és 8 fokozatú automatával érkezik\.|(.+))$/))) return cs((X[2].replace('{P}',pm(m[1]))+(D.L==='zh'?'':' ')+(m[2]||X[3])).replace(/ ?Mindegyik xDrive összkerékhajtással és 8 fokozatú automatával érkezik\./,(D.L==='zh'?'':' ')+X[3]));
+  // mondatrészek (szövegen belül)
+  var o=k, ch2=0;
+  o=o.replace(/A kaució \((.+?)-tól\) a bérlés végén hiánytalanul visszajár, amennyiben nincs sérülés, közlekedési bírság vagy egyéb, a bérlőnek felróható levonás\./g,function(_,x){ch2=1;return T.kaucio.replace('{X}',x)});
+  o=o.replace(/^(.+?)-tól; a szervizt, az adót és a nyári-téli gumit mi álljuk\. Nem kell tulajdonolnod: a bérlet végén egyszerűen visszaadod, vagy új modellre váltasz\.$/,function(_,x){ch2=1;return T.szerviz.replace('{X}',x)});
+  o=o.replace(/ ?Mindegyik xDrive összkerékhajtással és 8 fokozatú automatával érkezik\./g,function(){ch2=1;return ' '+X[3]});
+  if(ch2) return cs(o.replace(/^ /,''));
+  return null;
+}`;
+const XL = new Function('return ' + XL_SRC)();
+
+function dataFor(lang, ch) {
+  const i = LANGS.indexOf(lang);
+  const pick = (a) => (Array.isArray(a) ? a[i] : a);
+  const R = {};
+  for (const row of ROWS) { const t = row[1 + i]; if (t != null && t !== row[0]) R[row[0]] = ch ? t.replace(/ß/g, 'ss') : t; }
+  const MO = {}; for (const [k, v] of Object.entries(MONTHS)) MO[k] = v[i];
+  const W = {}; for (const [k, v] of Object.entries(WORDS)) W[k] = v[i];
+  const T = {}; for (const [k, v] of Object.entries(TPL)) T[k] = pick(v);
+  return { L: lang, CH: !!ch, R, MO, W, T, NM: NM.map((r) => [r[0], r[1 + i]]) };
+}
+
+/* ── HTML ── */
+const DEC = (s) => s.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+const ENC_T = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const ENC_A = (s) => ENC_T(s).replace(/"/g, '&quot;');
+function trText(raw, D, st) {
+  const dec = DEC(raw);
+  const k = dec.replace(/\s+/g, ' ').trim();
+  if (!k || !/[A-Za-zÀ-ž]/.test(k)) return null;
+  let t;
+  try { t = XL(k, D); } catch { t = null; }
+  if (t == null || t === k) return null;
+  st.n++;
+  return dec.match(/^\s*/)[0] + t + dec.match(/\s*$/)[0];
+}
+function fixHtml(h, D, st) {
+  const parts = h.split(/(<script\b[^>]*>[\s\S]*?<\/script>|<style\b[^>]*>[\s\S]*?<\/style>)/i);
+  for (let p = 0; p < parts.length; p++) {
+    const seg = parts[p];
+    if (!seg) continue;
+    if (/^<script\b[^>]*application\/ld\+json/i.test(seg)) {
+      const m = seg.match(/^(<script\b[^>]*>)([\s\S]*?)(<\/script>)$/i);
+      try {
+        const j = JSON.parse(m[2]);
+        let ch = 0;
+        const walk = (o) => { if (Array.isArray(o)) return o.map(walk); if (o && typeof o === 'object') { for (const k of Object.keys(o)) o[k] = walk(o[k]); return o; } if (typeof o === 'string' && !/^https?:|^\//.test(o)) { const t = trText(o, D, st); if (t != null) { ch = 1; return t.trim(); } } return o; };
+        walk(j);
+        if (ch) parts[p] = m[1] + JSON.stringify(j).replace(/</g, '\\u003c') + m[3];
+      } catch { /* hibás JSON-LD: érintetlen */ }
+      continue;
+    }
+    if (/^<(script|style)\b/i.test(seg)) continue;
+    let s = seg.replace(/(\s(?:alt|title|placeholder|aria-label|content|label)=")([^"]*)(")/g, (all, a, v, b) => { const t = trText(v, D, st); return t == null ? all : a + ENC_A(t) + b; });
+    s = s.replace(/>([^<>]+)</g, (all, v) => { const t = trText(v, D, st); return t == null ? all : '>' + ENC_T(t) + '<'; });
+    parts[p] = s;
+  }
+  return parts.join('');
+}
+function walkDir(d, root, skip, out = []) {
+  if (!fs.existsSync(d)) return out;
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) { if (d === root && (skip.includes(e.name) || SKIP.test(e.name))) continue; walkDir(p, root, skip, out); }
+    else if (e.name === 'index.html' || (d === root && /\.html$/.test(e.name))) out.push(p);
+  }
+  return out;
+}
+
+/* ── futásidejű fordító ── */
+function patchRuntime(file, D) {
+  const f = path.join(DIST, 'i18n', file);
+  if (!fs.existsSync(f)) return 'nincs fájl';
+  let s = fs.readFileSync(f, 'utf8');
+  if (s.includes('/*ca-xlang*/')) return 'már javítva';
+  const anchor = "function tr(s){var k=s.replace(/\\s+/g,' ').trim();";
+  if (!s.includes(anchor)) return 'tr() horgony hiányzik';
+  const inject = '/*ca-xlang*/var XLD=' + JSON.stringify(D) + ',XLF=' + XL_SRC + ';';
+  const patched = "function tr(s){var k=s.replace(/\\s+/g,' ').trim();var _x=null;try{_x=k&&M[k]==null?XLF(k,XLD):null}catch(e){}if(_x!=null&&_x!==k){return s.match(/^\\s*/)[0]+_x+s.match(/\\s*$/)[0];}";
+  s = s.replace(anchor, inject + patched);
+  fs.writeFileSync(f, s);
+  return 'ok (+' + Object.keys(D.R).length + ' szöveg)';
+}
+
+try {
+  for (const [v, lang, rt, skip] of VARIANTS) {
+    const root = path.join(DIST, v);
+    if (!fs.existsSync(root)) { console.log(`[xlang-hufix] ${v}: nincs mappa — kihagyva`); continue; }
+    const D = dataFor(lang, v === 'ch' || v.startsWith('ch/'));
+    const st = { n: 0 };
+    let files = 0, changed = 0;
+    for (const f of walkDir(root, root, skip)) {
+      files++;
+      const h = fs.readFileSync(f, 'utf8');
+      const o = fixHtml(h, D, st);
+      if (o !== h) { fs.writeFileSync(f, o); changed++; }
+    }
+    console.log(`[xlang-hufix] ${v} (${lang}): ${files} oldal, ${changed} módosítva, ${st.n} szöveg fordítva · runtime ${rt}: ${patchRuntime(rt, D)}`);
+  }
+} catch (e) {
+  console.log('[xlang-hufix] hiba:', (e && e.stack) || e);
+}
+process.exit(0);
