@@ -145,7 +145,14 @@ function fixHtml(h, D, st) {
       continue;
     }
     if (/^<(script|style)\b/i.test(seg)) continue;
-    let s = seg.replace(/(\s(?:alt|title|placeholder|aria-label|content|label)=")([^"]*)(")/g, (all, a, v, b) => { const t = trText(v, D, st); return t == null ? all : a + ENC_A(t) + b; });
+    // <option> value nélkül: a böngésző a feliratot küldené el — megtartjuk az eredeti (magyar) értéket,
+    // hogy az űrlap ugyanazt az adatot küldje és a JS-logika se sérüljön (ahogy a futásidejű fordító is teszi).
+    let s0 = seg.replace(/<option\b([^>]*)>([^<]*)<\/option>/g, (all, at, v) => {
+      if (/\svalue=/.test(at)) return all;
+      const t = trText(v, D, st);
+      return t == null ? all : '<option' + at + ' value="' + ENC_A(DEC(v).trim()) + '">' + ENC_T(t) + '</option>';
+    });
+    let s = s0.replace(/(\s(?:alt|title|placeholder|aria-label|content|label)=")([^"]*)(")/g, (all, a, v, b) => { const t = trText(v, D, st); return t == null ? all : a + ENC_A(t) + b; });
     s = s.replace(/>([^<>]+)</g, (all, v) => { const t = trText(v, D, st); return t == null ? all : '>' + ENC_T(t) + '<'; });
     parts[p] = s;
   }
