@@ -168,6 +168,15 @@ function fixHtml(h, D, st) {
 function dropArticle(h) {
   return h.replace(/(<(?:p|li)\b[^>]*>)\s*(?:A|Az) (<(?:strong|a)\b[^>]*>)/g, '$1<!--xa-->$2');
 }
+// a névelő után álló kiemelés a sor nagybetűs alakjával is kereshető (pl. „A <strong>hibrid autó</strong>” → „Hibrid autó”)
+function preArticle(h, D, st) {
+  return h.replace(/<!--xa-->(<(?:strong|a)\b[^>]*>)([^<]+)/g, (all, tag, v) => {
+    const c = v.replace(/^(\s*)(\S)/, (m, sp, ch) => sp + ch.toLocaleUpperCase());
+    if (c === v) return all;
+    const t = trText(c, D, st);
+    return t == null ? all : '<!--xa-->' + tag + ENC_T(t);
+  });
+}
 function capArticle(h) {
   return h.replace(/<!--xa-->(<(?:strong|a)\b[^>]*>)([^<])/g, (all, b, c) => b + c.toLocaleUpperCase()).replace(/<!--xa-->/g, '');
 }
@@ -207,7 +216,7 @@ try {
     for (const f of walkDir(root, root, skip)) {
       files++;
       const h = fs.readFileSync(f, 'utf8');
-      const o = huv ? capArticle(fixHtml(dropArticle(h), D, st)) : fixHtml(h, D, st);
+      const o = huv ? capArticle(fixHtml(preArticle(dropArticle(h), D, st), D, st)) : fixHtml(h, D, st);
       if (o !== h) { fs.writeFileSync(f, o); changed++; }
     }
     console.log(`[xlang-hufix] ${v} (${lang}): ${files} oldal, ${changed} módosítva, ${st.n} szöveg fordítva · runtime ${rt}: ${patchRuntime(rt, D)}`);
