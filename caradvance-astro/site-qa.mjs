@@ -42,7 +42,16 @@ const FOOT_CSS = '<style id="ca-qa-foot">.cafoot h2.cafoot-h{color:#fff;font-siz
 
 const MUTED = '#6E6E73';
 const L = 'html:not(.ca-dark):not(#ca-x) body ';
+// újratöltéskor (görgetett helyzetben) az oldal csak akkor jelenik meg, amikor már a végleges helyén van
+const RST = '<style id="ca-rst-css">html.ca-rst body{opacity:0!important}html.ca-rsd body{animation:caRsd .28s ease-out both}@keyframes caRsd{from{opacity:0}to{opacity:1}}</style>'
+  + '<script id="ca-rst">(function(){try{var K="ca-sy:"+location.pathname;addEventListener("pagehide",function(){try{sessionStorage.setItem(K,String(Math.round(scrollY)))}catch(e){}});'
+  + 'var n=performance.getEntriesByType&&performance.getEntriesByType("navigation")[0];if(!n||n.type!=="reload"||location.hash)return;var y=+(sessionStorage.getItem(K)||0);if(!(y>150))return;'
+  + 'if("scrollRestoration" in history)history.scrollRestoration="manual";var d=document.documentElement;d.classList.add("ca-rst");'
+  + 'function done(){if(done.x)return;done.x=1;scrollTo(0,y);requestAnimationFrame(function(){d.classList.add("ca-rsd");d.classList.remove("ca-rst");setTimeout(function(){d.classList.remove("ca-rsd")},400)})}'
+  + 'addEventListener("load",function(){setTimeout(function(){requestAnimationFrame(done)},450)});setTimeout(done,3000)}catch(e){}})();</script>';
 const HU_CSS = '<style id="ca-qa-hu">'
+  // újratöltéskor ne ugorjon a fejléc: a végső (menüsáv alá húzott) helyzet már CSS-ből, nem futásidőben
+  + 'html.ca-site body :is(section,div,header)[data-ca-hb].ca-hero:not(.ca-ed):not(.kaphero):not(#ca-x){margin-top:calc(-1 * var(--navh,80px))!important}'
   // kontraszt: apró, halvány szövegek világos módban
   + L + ':is(.stg-cnt,.ca-pm,.ca-pe,.sub-dep,.sec-intro,.crumb,.crumb a,.cd-note,.cd-dep-live,.cd-specnote,.bp-crumb a,.bp-crumb span,.bp-cur,.bp-meta,.kap-sec-sub,.tb-crumb a,.tb-crumb span,.ol-note){color:' + MUTED + '!important;opacity:1!important}'
   + L + ':is(.eyebrow,.cav-eb){color:#C40018!important;-webkit-text-fill-color:#C40018!important;opacity:1!important}'
@@ -138,7 +147,7 @@ for (const f of files) {
   // 1b) a fejléc (hero) „ca-hero” osztálya már a HTML-ben (a hu-site.mjs futásidőben adná hozzá → elcsúszás)
   if (h.indexOf('id="ca-site-css"') > -1 && h.indexOf('data-ca-hb="1"') < 0) {
     const bi = h.indexOf('<body'); let best = null;
-    for (const re of [/<section class="hero(?=[" ])/, /<(?:section|div|header) class="cd-hero(?=[" ])/, /<(?:section|div) class="egl-land-hero(?=[" ])/, /<(?:section|div) class="egl-mhero(?=[" ])/, /<(?:section|div) class="kaphero(?=[" ])/, /<header class="bp-hero(?=[" ])/, /<(?:section|header|div) class="lg-hero(?=[" ])/]) {
+    for (const re of [/<section class="hero(?=[" ])/, /<(?:section|div|header) class="cd-hero(?=[" ])/, /<(?:section|div) class="egl-land-hero(?=[" ])/, /<(?:section|div) class="egl-mhero(?=[" ])/, /<(?:section|div) class="kaphero(?=[" ])/, /<section class="bizhero(?=[" ])/, /<header class="bp-hero(?=[" ])/, /<(?:section|header|div) class="lg-hero(?=[" ])/]) {
       re.lastIndex = 0; const m = re.exec(h.slice(bi)); if (m && (!best || m.index < best.index)) best = { index: m.index, s: m[0] };
     }
     if (best) { const at = bi + best.index; const end = h.indexOf('"', at + best.s.length); if (end > at) { h = h.slice(0, end) + ' ca-hero" data-ca-hb="1' + h.slice(end); n.hero = (n.hero || 0) + 1; } }
@@ -207,6 +216,8 @@ for (const f of files) {
     h = h.replace(/<title>([^<]{61,})<\/title>/, (m, t) => { const s = t.replace(/\s*\|\s*CarAdvance\s*$/, ''); if (s !== t) { n.title++; return '<title>' + s + '</title>'; } return m; });
     // 11) magyar dizájn-QA (Előnyök oldalak kivételével)
     if (!NO_DESIGN.has(p)) { h = h.replace(/<style id="ca-qa-hu">[\s\S]*?<\/style>/, ''); h = h.replace('</head>', () => HU_CSS + '</head>'); n.hu++; }
+    // 12) újratöltés görgetett állapotban: a tartalom átrendeződése alatt nem látszik ugrálás
+    if (h.indexOf('id="ca-rst"') < 0) { h = h.replace(/(<meta charset="[^"]*"\s*\/?>)/i, (m) => m + RST); n.rst = (n.rst || 0) + 1; }
   }
   h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => MARK + '</body>');
   fs.writeFileSync(f, h);

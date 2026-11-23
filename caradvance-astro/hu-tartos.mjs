@@ -220,7 +220,7 @@ function js(cuts) {
   // 11) GYIK
   + 'function faq(){var f=$(".tb-faq");if(!f||f.__f)return;f.__f=1;var n=$$("details",f).length;if(n<=6)return;var b=el("button","ca-morebtn ca-faqbtn","Összes kérdés ("+n+") <i>⌄</i>");b.type="button";f.appendChild(b);b.addEventListener("click",function(){var o=f.classList.toggle("ca-all");b.classList.toggle("open",o);b.firstChild.nodeValue=o?"Kevesebb kérdés ":"Összes kérdés ("+n+") "})}'
   + 'function fsv(){var h=$("section.tb section.hero"),t=$(".tb-toc");if(!h||!t)return;h.classList.add("ca-tfs");'
-  + 'if(!h.querySelector(".ca-tsd")){var b=el("button","ca-tsd","GÖRGESS<svg width=\\"22\\" height=\\"22\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"m6 9 6 6 6-6\\"/></svg>");b.type="button";b.setAttribute("aria-label","Görgess lefelé");h.appendChild(b);'
+  + 'var b=h.querySelector(".ca-tsd");if(!b){b=el("button","ca-tsd","GÖRGESS<svg width=\\"22\\" height=\\"22\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"m6 9 6 6 6-6\\"/></svg>");b.type="button";b.setAttribute("aria-label","Görgess lefelé");h.appendChild(b)}if(!b.__caB){b.__caB=1;'
   + 'b.addEventListener("click",function(){var n=t.nextElementSibling;while(n&&n.offsetHeight===0)n=n.nextElementSibling;var y=(n||t).getBoundingClientRect().top+scrollY-170;scrollTo({top:y,behavior:"smooth"})})}'
   + 'function m(){if(scrollY>40)return;var ht=h.getBoundingClientRect().bottom,tb=t.getBoundingClientRect().bottom;var x=Math.round(tb-ht)+18;if(x>40&&x<260)h.style.setProperty("--tbx",x+"px")}m();setTimeout(m,400);setTimeout(m,1500);addEventListener("resize",m)}'
   + 'function go(){try{fsv()}catch(e){}try{hero()}catch(e){}try{toc()}catch(e){}try{rb()}catch(e){}try{miez()}catch(e){}try{cm()}catch(e){}try{ev()}catch(e){}try{brands()}catch(e){}try{cmp()}catch(e){}try{faq()}catch(e){}}'
@@ -228,9 +228,13 @@ function js(cuts) {
   + '})();</script>';
 }
 
+const TSD = '<button class="ca-tsd" type="button" aria-label="Görgess lefelé">GÖRGESS<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>';
 export function apply(h, cuts) {
   if (h.indexOf('id="ca-tb-css"') > -1) return h;
   h = h.replace('</head>', () => CSS + '</head>');
+  // teljes képernyős fejléc és „Görgess” gomb már a HTML-ben (futásidőben hozzáadva újratöltéskor ugrott a tartalom)
+  { const ti = h.indexOf('<section class="tb"'); const hi = ti > -1 ? h.indexOf('<section class="hero', ti) : -1;
+    if (hi > -1 && hi - ti < 400) { const ci = hi + '<section class="hero'.length; h = h.slice(0, ci) + ' ca-tfs' + h.slice(ci); const ei = h.indexOf('</section>', ci); if (ei > -1 && h.slice(ci, ei).indexOf('ca-tsd') < 0) h = h.slice(0, ei) + TSD + h.slice(ei); } }
   h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => js(cuts) + '</body>');
   return h;
 }
