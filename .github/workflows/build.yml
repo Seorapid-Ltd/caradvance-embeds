@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # a GitHub az időzített futást az alapértelmezett ágról (develop) indítja — a készlet mindig a main-re (élő oldal) kerül
 
       - uses: actions/setup-node@v4
         with:
@@ -48,5 +50,5 @@ jobs:
             echo "No changes to publish."
           else
             git commit -m "Rebuild site from sheet"
-            git push
+            git push origin HEAD:main
           fi
