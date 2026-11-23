@@ -27,7 +27,7 @@ function goneRedirect(request) {
   const url = new URL(request.url);
   const m = /^(?:\/(en|de|fr|uk|zh|hu|it|es))?\/(berelheto-auto|prenajom|pronajem|wynajem|mieten|langzeitmiete|location-longue-duree|noleggio-lungo-termine|renting|auto)\/([a-z0-9-]+)\/?$/.exec(url.pathname);
   if (!m) return null;
-  const dl = DOMAINS[url.hostname] || 'hu', lang = m[1] || '';
+  const dl = domainOf(url.hostname) || 'hu', lang = m[1] || '';
   let hub = GONE_HUB[dl]; if (hub && typeof hub === 'object') hub = hub[lang || 'de'];
   if (!hub) return null;
   const rent = m[2] !== 'auto';
@@ -41,7 +41,7 @@ function goneRedirect(request) {
 async function huLangNotFound(context) {
   const request = context.request, url = new URL(request.url);
   if (request.method !== 'GET' && request.method !== 'HEAD') return null;
-  if (DOMAINS[url.hostname]) return null;
+  if (domainOf(url.hostname)) return null;
   const m = /^\/(en|de|fr|uk|zh)(\/|$)/.exec(url.pathname); if (!m) return null;
   for (const nfp of ['/404-hu-' + m[1], '/404-hu-' + m[1] + '.html']) {
     try {
@@ -79,6 +79,12 @@ function ujRedirect(url) {
 
 // Saját domainek: caradvance.sk → dist/sk/… , caradvance.cz → dist/cs/… (a build i18n-mirror.mjs lépése készíti)
 const DOMAINS = { 'caradvance.sk': 'sk', 'www.caradvance.sk': 'sk', 'caradvance.cz': 'cs', 'www.caradvance.cz': 'cs', 'caradvance.pl': 'pl', 'www.caradvance.pl': 'pl', 'caradvance.ch': 'ch', 'www.caradvance.ch': 'ch', 'caradvance.eu': 'eu', 'www.caradvance.eu': 'eu' };
+// Fejlesztői előnézet: a dev-<ország> ág saját címe (pl. dev-sk.caradvance-astro-5kc.pages.dev) azt az országot mutatja.
+// A build (build.mjs) ezen az ágon csak azt az országot készíti el. A dev-hu ág a magyar oldalt mutatja.
+const PREVIEW_HOST = /^dev-(sk|cz|pl|ch|eu)\.caradvance-astro-5kc\.pages\.dev$/;
+const PREVIEW_DIR = { sk: 'sk', cz: 'cs', pl: 'pl', ch: 'ch', eu: 'eu' };
+function previewDomain(host) { const m = PREVIEW_HOST.exec(host); return m ? PREVIEW_DIR[m[1]] : undefined; }
+function domainOf(host) { return DOMAINS[host] || previewDomain(host); }
 const HU_SITE = 'https://www.caradvance.hu';
 const LANG_SITE = { sk: 'https://www.caradvance.sk', cs: 'https://www.caradvance.cz', pl: 'https://www.caradvance.pl', ch: 'https://www.caradvance.ch', eu: 'https://www.caradvance.eu' };
 // true = a caradvance.hu/sk/… és /cs/… címek 301-gyel a saját domainre mennek (csak ha a domainek már élnek!)
@@ -122,7 +128,7 @@ function euLang(request) {
 async function serveDomain(context, url, l) {
   const { request, env, next } = context;
   const p = url.pathname;
-  if (!url.hostname.startsWith('www.')) { url.hostname = 'www.' + url.hostname; return Response.redirect(url.toString(), 301); }
+  if (!url.hostname.startsWith('www.') && !previewDomain(url.hostname)) { url.hostname = 'www.' + url.hostname; return Response.redirect(url.toString(), 301); }
   if (p.startsWith('/api/') || p.startsWith('/admin/ajanlatmotor')) return next();
   if ((l === 'ch' || l === 'eu') && !(await chReady(env, url.origin, l))) {
     if (p === '/robots.txt') return new Response('User-agent: *\nDisallow: /\n', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
@@ -200,7 +206,7 @@ async function handle(context) {
   if ((request.method === 'GET' || request.method === 'HEAD') && /\/[a-z0-9-]+\/?$/.test(p)) {
     try {
       if (!GONE_P) GONE_P = env.ASSETS.fetch(new Request(new URL('/gone-paths.json', url.origin).toString())).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
-      const gl = (await GONE_P)[DOMAINS[url.hostname] || 'hu'];
+      const gl = (await GONE_P)[domainOf(url.hostname) || 'hu'];
       const pp = p.endsWith('/') ? p : p + '/';
       if (gl && gl.includes(pp)) { const g = goneRedirect(new Request(new URL(pp, url.origin).toString(), { method: request.method })); if (g) return g; }
     } catch (e) {}
@@ -212,7 +218,7 @@ async function handle(context) {
     return new Response(null, { status: request.method === 'GET' || request.method === 'HEAD' ? 301 : 308, headers: { Location: to.toString(), 'Cache-Control': 'no-store' } });
   }
 
-  const dl = DOMAINS[url.hostname];
+  const dl = domainOf(url.hostname);
   if (dl) return serveDomain(context, url, dl);
   if (SKCZ_REDIRECT && /(^|\.)caradvance\.hu$/.test(url.hostname)) {
     const lm = (PL_REDIRECT ? /^\/(sk|cs|pl)(\/.*)?$/ : /^\/(sk|cs)(\/.*)?$/).exec(p);
