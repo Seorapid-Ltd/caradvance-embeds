@@ -58,19 +58,36 @@ jobs:
             tcache-${{ github.ref_name }}-
             tcache-develop-
 
-      - name: Prepare translation cache
-        run: rm -rf .tcache-old && if [ -d .tcache ]; then mv .tcache .tcache-old; fi
+      # fájl-gyorsítótár (filecache.mjs): a letöltött autófotók és a PDF-hez konvertált JPEG-ek az előző buildből
+      - name: Restore photo cache
+        uses: actions/cache/restore@v4
+        with:
+          path: caradvance-astro/.fcache
+          key: fcache-${{ github.ref_name }}-none
+          restore-keys: |
+            fcache-${{ github.ref_name }}-
+            fcache-develop-
+
+      - name: Prepare caches
+        run: |
+          rm -rf .tcache-old && if [ -d .tcache ]; then mv .tcache .tcache-old; fi
+          rm -rf .fcache-old && if [ -d .fcache ]; then mv .fcache .fcache-old; fi
 
       - name: Build
         env:
           CF_PAGES_BRANCH: ${{ github.ref_name }}
           CA_TCACHE_DIR: .tcache
           CA_TCACHE_OLD: .tcache-old
+          CA_FCACHE_DIR: .fcache
+          CA_FCACHE_OLD: .fcache-old
         run: |
           nproc; free -g | head -2
           npm run build
           node inject-tracking.mjs dist
           echo "files: $(find dist -type f | wc -l)"
+          # a fotó-gyorsítótár csak akkor mentődik újra, ha változott a tartalma (a kulcs a fájllista lenyomata)
+          echo "FCACHE_KEY=$( (ls -R .fcache 2>/dev/null || true) | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+          du -sh .fcache 2>/dev/null || true
 
       - name: Deploy to Cloudflare Pages
         if: ${{ env.CF_TOKEN != '' }}
@@ -93,3 +110,11 @@ jobs:
         with:
           path: caradvance-astro/.tcache
           key: tcache-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: Save photo cache
+        if: ${{ success() }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: caradvance-astro/.fcache
+          key: fcache-${{ github.ref_name }}-${{ env.FCACHE_KEY }}
