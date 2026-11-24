@@ -168,23 +168,23 @@ function fixLegal(h, l, rel) {
 }
 
 /* ---------------- 17 — CZ sitemap ---------------- */
+// Minden működő, indexelhető, önmagára kanonikus /auto/<slug>/ oldal a CZ sitemapbe (mint az SK-n).
+// Nem az SK sitemapből dolgozik, mert az egy-ország (dev-cz) buildben a dist/sk már nincs meg.
 function fix17() {
-  const smSk = path.join(DIST, 'sk', 'sitemap.xml'), smCs = path.join(DIST, 'cs', 'sitemap.xml');
-  if (!fs.existsSync(smSk) || !fs.existsSync(smCs)) return 'nincs sk/cs sitemap';
-  const sk = fs.readFileSync(smSk, 'utf8'); let cs = fs.readFileSync(smCs, 'utf8');
+  const smCs = path.join(DIST, 'cs', 'sitemap.xml'), dir = path.join(DIST, 'cs', 'auto');
+  if (!fs.existsSync(smCs) || !fs.existsSync(dir)) return 'nincs cs sitemap vagy /auto/';
+  let cs = fs.readFileSync(smCs, 'utf8');
   const have = new Set([...cs.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
-  const slugs = [...new Set([...sk.matchAll(/<loc>https:\/\/www\.caradvance\.sk\/auto\/([^<]+?)\/?<\/loc>/g)].map((m) => m[1]))];
   const lm = (cs.match(/<lastmod>([^<]+)<\/lastmod>/) || [])[1] || new Date().toISOString().slice(0, 10);
   const add = [];
-  for (const s of slugs) {
+  for (const s of fs.readdirSync(dir).sort()) {
     const u = SITE.cs + '/auto/' + s + '/';
-    if (have.has(u)) continue;
-    const f = path.join(DIST, 'cs', 'auto', s, 'index.html');
-    if (!fs.existsSync(f)) continue;
+    const f = path.join(dir, s, 'index.html');
+    if (have.has(u) || !fs.existsSync(f)) continue;
     const h = fs.readFileSync(f, 'utf8');
-    if (/<meta[^>]+name="robots"[^>]+noindex/i.test(h) || /http-equiv=["']?refresh/i.test(h.slice(0, 3000))) continue;
+    if (h.length < 5000 || /<meta[^>]+name="robots"[^>]+noindex/i.test(h) || /http-equiv=["']?refresh/i.test(h.slice(0, 3000))) continue;
     const can = (h.match(/<link rel="canonical" href="([^"]+)"/) || [])[1];
-    if (can && can !== u) continue;
+    if (can !== u) continue;
     add.push(`  <url><loc>${u}</loc><lastmod>${lm}</lastmod></url>`);
   }
   if (add.length) { cs = cs.replace('</urlset>', add.join('\n') + '\n</urlset>'); fs.writeFileSync(smCs, cs); }
