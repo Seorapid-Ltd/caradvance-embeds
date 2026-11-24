@@ -6,6 +6,8 @@
 // A sharp az Astro része; ha mégsem érhető el, a lépés kihagyja a konverziót (logol), a build nem áll le. Idempotens.
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
+import { fcGet, fcPut, fcReport } from './filecache.mjs';
 
 const DIST = 'dist';
 const OUT = path.join(DIST, 'pdf-img');
@@ -21,12 +23,19 @@ function rank(p) {
 }
 const local = (u) => { try { const p = new URL(u, 'https://www.caradvance.hu').pathname; return path.join(DIST, decodeURIComponent(p)); } catch (e) { return ''; } };
 
+const PARAMS = 'v1|1400x1050|inside|noenlarge|flatten#fff|q82|4:2:0|sharp' + (sharp && sharp.versions ? JSON.stringify(sharp.versions) : '');
 async function toJpeg(src, dst) {
   if (fs.existsSync(dst)) return true;
   if (!src || !fs.existsSync(src)) return false;
+  // gyorsítótár: forrásfájl tartalma + konverziós beállítások → kész JPEG (előző buildből)
+  let key = '';
+  try { key = crypto.createHash('sha1').update(PARAMS).update(fs.readFileSync(src)).digest('hex').slice(0, 24); } catch (e) { key = ''; }
+  const c = key && fcGet('pdf-img', key);
+  if (c) { try { fs.copyFileSync(c.file, dst, fs.constants.COPYFILE_FICLONE); return true; } catch (e) { /* konvertáljuk */ } }
   try {
     await sharp(src).rotate().resize({ width: 1400, height: 1050, fit: 'inside', withoutEnlargement: true })
       .flatten({ background: '#ffffff' }).jpeg({ quality: 82, progressive: false, chromaSubsampling: '4:2:0' }).toFile(dst);
+    if (key) fcPut('pdf-img', key, '.jpg', dst);
     return true;
   } catch (e) { console.log('[pdf-photos] hiba:', src, e && e.message); return false; }
 }
@@ -69,6 +78,6 @@ if (sharp) {
       }
       fs.writeFileSync(ff, JSON.stringify(j));
     }
-    console.log('[pdf-photos] ' + nCar + ' autó · ' + nImg + ' JPEG (dist/pdf-img)');
+    console.log('[pdf-photos] ' + nCar + ' autó · ' + nImg + ' JPEG (dist/pdf-img)'); fcReport('pdf-photos');
   } catch (e) { console.log('[pdf-photos] hiba:', e && e.stack || e); }
 }

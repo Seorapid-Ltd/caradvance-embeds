@@ -156,18 +156,22 @@ async function main() {
       if (!/img\.(?:classistatic|hasznaltautocdn)/.test(s)) continue;
       for (const m of s.replace(/\\\//g, '/').matchAll(RE)) found.add(m[0]);
     }
-    const list = [...found];
+    // a mirror-car-photos ugyanebben a buildben már lekérdezte ezeket: amit ott 404/410-nek látott, nem kérdezzük újra
+    let known = new Set();
+    try { const j = JSON.parse(fs.readFileSync('.gen/photo-dead.json', 'utf8')); if (Date.now() - j.t < 3600e3) known = new Set(j.urls); } catch (e) { /* nincs */ }
+    const list = [];
+    for (const u of found) { if (known.has(u)) dead.add(u); else list.push(u); }
     const check = async (u) => {
       const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 20000);
       try {
         const r = await fetch(u, { signal: ac.signal, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CaradvanceBuild/1.0)' } });
         if (r.status === 404 || r.status === 410) dead.add(u);
-        try { await r.arrayBuffer(); } catch (e) { /* mindegy */ }
+        try { if (r.body) await r.body.cancel(); } catch (e) { /* mindegy — csak az állapotkód kell, a képet nem töltjük le */ }
       } catch (e) { /* ideiglenes hiba: nem nyúlunk hozzá */ } finally { clearTimeout(t); }
     };
     for (let i = 0; i < list.length && Date.now() < DEADLINE; i += 12) await Promise.all(list.slice(i, i + 12).map(check));
     stat.dead = dead.size;
-    console.log('seo-audit-fix: külső hirdetésfotó ' + list.length + ', végleg megszűnt ' + dead.size);
+    console.log('seo-audit-fix: külső hirdetésfotó ' + found.size + ' (' + (found.size - list.length) + ' már ellenőrizve), végleg megszűnt ' + dead.size);
   } catch (e) { stat.errors++; console.log('seo-audit-fix: fotóellenőrzés hiba: ' + e.message); }
 
   /* ---- B) oldaltérkép (URL → oldal adatai) a hreflang- és sitemap-döntésekhez ---- */
