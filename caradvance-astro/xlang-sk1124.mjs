@@ -213,7 +213,7 @@ function fitTitle(t, li, mk, rel) {
 }
 function fitMeta(d, li) {
   if (d.length > 160) { const c = d.slice(0, 161); const i = Math.max(c.lastIndexOf('. '), c.lastIndexOf('! '), c.lastIndexOf('? ')); d = i >= 100 ? d.slice(0, i + 1) : cutWords(d, 158) + '…'; }
-  else if (d.length < 110 && (d.trim() + ' ' + CTA[li]).length <= 160) d = d.trim().replace(/([^.!?…])$/, '$1.') + ' ' + CTA[li];
+  else if (d.length < 110 && !d.includes(CTA[li]) && (d.trim() + ' ' + CTA[li]).length <= 160) d = d.trim().replace(/([^.!?…])$/, '$1.') + ' ' + CTA[li];
   return d;
 }
 function onpage(h, li, mk, rel, st) {
