@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # a kész készletfrissítés után elindítja az oldal buildjét (pages-build.yml)
 
 concurrency:
   group: build-site
@@ -51,4 +52,8 @@ jobs:
           else
             git commit -m "Rebuild site from sheet"
             git push origin HEAD:main
+            # a GITHUB_TOKEN-nel küldött push nem indít másik workflow-t — az élő oldal buildjét külön kell indítani
+            gh workflow run pages-build.yml --ref main
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
