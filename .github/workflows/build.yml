@@ -38,6 +38,7 @@ jobs:
         run: node generate.mjs
         env:
           OUT: "."
+          GOOGLE_SHEETS_SA: ${{ secrets.GOOGLE_SHEETS_SA }}  # hitelesített táblaolvasás (üresen: nyilvános cím)
 
       - name: Remove obsolete pages
         run: rm -f auto.html autoink.html

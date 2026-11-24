@@ -64,6 +64,8 @@ jobs:
       - name: Build
         env:
           CF_PAGES_BRANCH: ${{ github.ref_name }}
+          # a készlet-tábla hitelesített olvasása (lib/sheet-src.js); üresen a nyilvános címet használja
+          GOOGLE_SHEETS_SA: ${{ secrets.GOOGLE_SHEETS_SA }}
           CA_TCACHE_DIR: .tcache
           CA_TCACHE_OLD: .tcache-old
         run: |
