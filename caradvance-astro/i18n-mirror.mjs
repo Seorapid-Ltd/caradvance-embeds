@@ -12,6 +12,8 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { spawn } from 'node:child_process';
 import { parse, serialize, visit, finishLd } from './i18n-core.mjs';
 import { loadIntl, applyExpat } from './i18n-expat.mjs';
 import { writeRuntime } from './i18n-runtime.mjs';
@@ -51,7 +53,10 @@ try {
   // egy-ország build (build.mjs): csak ezekre a nyelvekre készülnek oldalak; a futásidejű szótár (i18n/rt-*.js) minden nyelvre megmarad
   const ONLY = (process.env.CA_MIRROR_LANGS || '').split(',').map((x) => x.trim()).filter(Boolean);
   const PAGE_LANGS = ONLY.length ? LANGS.filter((l) => ONLY.includes(l)) : LANGS;
-  if (ONLY.length) console.log('[mirror] egy-ország build: oldalak csak ezekre a nyelvekre: ' + PAGE_LANGS.join(', '));
+  if (ONLY.length && !process.env.CA_MIRROR_CHILD) console.log('[mirror] egy-ország build: oldalak csak ezekre a nyelvekre: ' + PAGE_LANGS.join(', '));
+  // párhuzamos futás: a szülő folyamat a nyelveket szétosztja (CA_MIRROR_WORKERS, alapból a CPU-k száma) gyerekfolyamatok közt;
+  // a gyerek (CA_MIRROR_CHILD=1) csak a saját nyelveinek oldalait írja, és az összesítést a szülőnek adja vissza.
+  const CHILD = process.env.CA_MIRROR_CHILD === '1';
   const dicts = {};
   for (const l of LANGS) { try { dicts[l] = JSON.parse(fs.readFileSync(`src/i18n/dict/${l}.json`, 'utf8')); } catch { dicts[l] = {}; } }
 
@@ -61,7 +66,7 @@ try {
   const pages = [];
   const REDIR = {}; // régi slug → új oldal (meta refresh oldalak)
   for (const rel of files) { const h = fs.readFileSync(path.join(DIST, rel), 'utf8'); if (/http-equiv=["']?refresh/i.test(h)) { const m = h.match(/http-equiv=["']?refresh["']?[^>]*url=([^"'>]+)/i); if (m) { let t = m[1].replace(/^https?:\/\/(?:www\.)?caradvance\.hu/, '').split(/[?#]/)[0]; if (t.startsWith('/')) REDIR['/' + rel.replace(/index\.html$/, '')] = t.endsWith('/') ? t : t + '/'; } continue; } pages.push(rel); }
-  console.log('[mirror] egységes menü: ' + navSync(DIST, pages) + ' oldal frissítve');
+  if (!CHILD) console.log('[mirror] egységes menü: ' + navSync(DIST, pages) + ' oldal frissítve');
   const huPath = (rel) => '/' + rel.replace(/index\.html$/, '');
   // kulcsoldalak SEO-URL-je (intl-map.json pages): /uj-auto-berlese/ -> /en/car-rental-budapest/ …
   const SLUG = {}; const KEY = {};
@@ -80,8 +85,24 @@ try {
   const sitemapAdd = []; const stats = {};
   const TPL = {}; for (const l of LANGS) { const t1 = makeTemplater(l, dicts[l]); let rt = {}; try { rt = JSON.parse(fs.readFileSync(`src/i18n/dict/rt-${l}.json`, 'utf8')); } catch {} const t2 = makeRental(l, dicts[l], rt); TPL[l] = (k) => t1(k) || t2(k); }
   const XJS = {}; for (const l of DL) XJS[l] = runtimeJs(fxOf(M, l));
-  const rtn = writeRuntime(DIST, LANGS, [...PAGESET], SLUG, REDIR, XJS); const RTV = Date.now().toString(36);
-  console.log('[mirror] runtime szótár: ' + Object.entries(rtn).map(([l, n]) => l + ' ' + n).join(', '));
+  const RTV = process.env.CA_MIRROR_RTV || Date.now().toString(36);
+  if (!CHILD) { const rtn = writeRuntime(DIST, LANGS, [...PAGESET], SLUG, REDIR, XJS); console.log('[mirror] runtime szótár: ' + Object.entries(rtn).map(([l, n]) => l + ' ' + n).join(', ')); }
+
+  // ---- párhuzamos fordítás: nyelvenként szétosztva ----
+  let doLangs = PAGE_LANGS; let parts = [];
+  const NW = CHILD ? 1 : Math.max(1, Math.min(Number(process.env.CA_MIRROR_WORKERS || os.cpus().length), PAGE_LANGS.length));
+  if (NW > 1) {
+    const groups = Array.from({ length: NW }, () => []); PAGE_LANGS.forEach((l, i) => groups[i % NW].push(l));
+    const run = (g, i) => new Promise((res) => {
+      const out = path.join(DIST, `.mirror-part-${i}.json`);
+      const ch = spawn(process.execPath, [process.argv[1]], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, CA_MIRROR_CHILD: '1', CA_MIRROR_LANGS: g.join(','), CA_MIRROR_RTV: RTV, CA_MIRROR_OUT: out } });
+      let log = ''; ch.stdout.on('data', (d) => { log += d; }); ch.stderr.on('data', (d) => { log += d; });
+      ch.on('close', () => { let r = null; try { r = JSON.parse(fs.readFileSync(out, 'utf8')); } catch {} fs.rmSync(out, { force: true }); if (!r && log.trim()) console.log(log.trim()); res(r); });
+    });
+    parts = await Promise.all(groups.map(run));
+    if (parts.every(Boolean)) { doLangs = []; console.log(`[mirror] párhuzamosan, ${NW} folyamat: ` + groups.map((g) => g.join('+')).join(' | ')); }
+    else { parts = []; console.log('[mirror] a párhuzamos futás nem sikerült — egymás után folytatom'); }
+  }
 
   const linkFix = (html, l) => html.replace(/(\shref=")((?:https?:\/\/(?:www\.)?caradvance\.hu)?)(\/[^"]*)"/g, (m, pre, host, p) => {
     if (/^\/(en|de|fr|uk|zh|sk|cs|_np|api)\//.test(p)) return m;
@@ -94,16 +115,16 @@ try {
     return `${pre}${host ? SITE : ''}${L(l, tgt)}${rest}"`; // abszolút hivatkozás (canonical) abszolút marad
   });
 
-  for (const rel of pages) {
+  for (const [pi, rel] of pages.entries()) {
     const src = fs.readFileSync(path.join(DIST, rel), 'utf8');
     const p = huPath(rel);
     const cluster = ['hu', ...BASE, ...(DLIVE ? DL : [])].map((l) => `<link rel="alternate" hreflang="${HREFLANG[l]}" href="${ABS(l, p)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${SITE}${p}">`;
     const dropAlt = (h) => h.replace(/[ \t]*<link rel="alternate" hreflang="[^"]*" href="[^"]*"\s*\/?>\s*\n?/g, '');
     // magyar oldal: teljes klaszter
     let huh = linkFix(switcher(dropAlt(src), 'hu', p), 'hu'); // belső linkek perjellel (eddig minden menükattintás 308-as átirányítás volt) if (DLIVE && DL.length) huh = addSwitch(huh, DL, (c) => DU(c, p), 'hu');
-    fs.writeFileSync(path.join(DIST, rel), huh.replace(/<\/head>/i, cluster + '\n</head>'));
+    if (!CHILD) fs.writeFileSync(path.join(DIST, rel), huh.replace(/<\/head>/i, cluster + '\n</head>'));
 
-    for (const l of PAGE_LANGS) {
+    for (const l of doLangs) {
       const D = dicts[l]; let hit = 0, miss = 0;
       const doc = parse(src);
       const TP = TPL[l];
@@ -130,18 +151,23 @@ try {
       const cover = hit / Math.max(1, hit + miss);
       h = h.replace(/[ \t]*<meta\s+name=["']robots["'][^>]*>\s*\n?/gi, '');
       if (cover < MIN_COVER || (isDom && !DLIVE)) h = h.replace(/<\/head>/i, '<meta name="robots" content="noindex,follow">\n</head>');
-      else if (isDom) domMap[l].push(url); else sitemapAdd.push(url);
+      else if (isDom) domMap[l].push(url); else sitemapAdd.push([pi, LANGS.indexOf(l), url]);
       if (isDom) h = skczPost(h, l, fxOf(M, l), LEGAL.test(rel));
       if (p === '/berelheto/') { const t = L(l, '/autoink/') + '#berelheto'; h = `<!DOCTYPE html><html lang="${HREFLANG[l]}"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="${SITE}${L(l, '/autoink/')}"><meta http-equiv="refresh" content="0;url=${t}"><script>location.replace(${JSON.stringify(t)})</script></head><body><a href="${t}">${t}</a></body></html>`; }
       const out = path.join(DIST, L(l, p).replace(/^\//, ''), 'index.html'); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, h);
       const s = stats[l] || (stats[l] = { pages: 0, indexed: 0, hit: 0, miss: 0 }); s.pages++; s.hit += hit; s.miss += miss; if (cover >= MIN_COVER) s.indexed++;
     }
   }
+  if (CHILD) { fs.writeFileSync(process.env.CA_MIRROR_OUT, JSON.stringify({ sitemapAdd, domMap, stats })); process.exit(0); }
+  // a gyerekfolyamatok eredménye — ugyanabban a sorrendben, mint egymás után futtatva
+  for (const r of parts) { sitemapAdd.push(...r.sitemapAdd); for (const [l, u] of Object.entries(r.domMap)) if (u.length) domMap[l] = u; Object.assign(stats, r.stats); }
+  sitemapAdd.sort((a, b) => a[0] - b[0] || a[1] - b[1]); const smAdd = sitemapAdd.map((x) => x[2]);
+  const statsOrdered = {}; for (const l of PAGE_LANGS) if (stats[l]) statsOrdered[l] = stats[l];
   // sitemap kiegészítés
   const smf = path.join(DIST, 'sitemap.xml');
-  if (fs.existsSync(smf) && sitemapAdd.length) {
+  if (fs.existsSync(smf) && smAdd.length) {
     let sm = fs.readFileSync(smf, 'utf8'); const now = new Date().toISOString().slice(0, 10);
-    const add = sitemapAdd.filter((u) => !/\/berelheto\/$/.test(u) && !sm.includes(`<loc>${u}</loc>`)).map((u) => `  <url><loc>${u}</loc><lastmod>${now}</lastmod></url>`).join('\n');
+    const add = smAdd.filter((u) => !/\/berelheto\/$/.test(u) && !sm.includes(`<loc>${u}</loc>`)).map((u) => `  <url><loc>${u}</loc><lastmod>${now}</lastmod></url>`).join('\n');
     sm = sm.replace('</urlset>', add + '\n</urlset>'); fs.writeFileSync(smf, sm);
   }
   for (const l of DL) {
@@ -150,7 +176,7 @@ try {
     fs.writeFileSync(path.join(DIST, l, 'robots.txt'), DLIVE ? `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${DOMS[l]}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n');
     console.log(`[mirror] ${l}: domain ${DOMS[l]} ${DLIVE ? 'ÉLES' : 'előnézet (noindex)'} — sitemap ${domMap[l].length} URL`);
   }
-  for (const [l, s] of Object.entries(stats)) console.log(`[mirror] ${l}: ${s.pages} oldal, indexelve ${s.indexed}, lefedettség ${(100 * s.hit / Math.max(1, s.hit + s.miss)).toFixed(1)}%`);
+  for (const [l, s] of Object.entries(statsOrdered)) console.log(`[mirror] ${l}: ${s.pages} oldal, indexelve ${s.indexed}, lefedettség ${(100 * s.hit / Math.max(1, s.hit + s.miss)).toFixed(1)}%`);
 } catch (e) {
   console.log('[mirror] FIGYELEM - ' + (e && e.stack || e) + ' (a build megy tovabb)');
   process.exit(0);
