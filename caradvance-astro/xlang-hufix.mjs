@@ -16,6 +16,8 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { LANGS, ROWS, MONTHS, WORDS, TPL, NM } from './xlang-hufix-data.mjs';
 import { LANGS2, ROWS2, TPL2, DESC, SUB, ARTICLE_DROP } from './xlang-hufix-data2.mjs';
 import { ROWS3 } from './xlang-hufix-data3.mjs';
@@ -205,23 +207,54 @@ function patchRuntime(file, D) {
   return 'ok (+' + Object.keys(D.R).length + ' szöveg)';
 }
 
-try {
-  for (const [v, lang, rt, skip] of VARIANTS) {
-    const root = path.join(DIST, v);
-    if (!fs.existsSync(root)) { console.log(`[xlang-hufix] ${v}: nincs mappa — kihagyva`); continue; }
-    const huv = ARTICLE_DROP.includes(v);
-    const D = dataFor(lang, v === 'ch' || v.startsWith('ch/'), huv);
-    const st = { n: 0 };
-    let files = 0, changed = 0;
-    for (const f of walkDir(root, root, skip)) {
-      files++;
-      const h = fs.readFileSync(f, 'utf8');
-      const o = huv ? capArticle(fixHtml(preArticle(dropArticle(h), D, st), D, st)) : fixHtml(h, D, st);
-      if (o !== h) { fs.writeFileSync(f, o); changed++; }
-    }
-    console.log(`[xlang-hufix] ${v} (${lang}): ${files} oldal, ${changed} módosítva, ${st.n} szöveg fordítva · runtime ${rt}: ${patchRuntime(rt, D)}`);
-  }
-} catch (e) {
-  console.log('[xlang-hufix] hiba:', (e && e.stack) || e);
+// egy változat egy oldalának javítása (a fő szálon vagy worker szálon)
+const DCACHE = new Map();
+function dOf(vi) {
+  if (!DCACHE.has(vi)) { const [v, lang] = VARIANTS[vi]; DCACHE.set(vi, dataFor(lang, v === 'ch' || v.startsWith('ch/'), ARTICLE_DROP.includes(v))); }
+  return DCACHE.get(vi);
 }
-process.exit(0);
+function fixFiles(items) { // items: [vi, file] → változatonként { n, changed }
+  const res = {};
+  for (const [vi, f] of items) {
+    const r = res[vi] || (res[vi] = { n: 0, changed: 0 });
+    const D = dOf(vi), st = { n: 0 };
+    const h = fs.readFileSync(f, 'utf8');
+    const o = ARTICLE_DROP.includes(VARIANTS[vi][0]) ? capArticle(fixHtml(preArticle(dropArticle(h), D, st), D, st)) : fixHtml(h, D, st);
+    if (o !== h) { fs.writeFileSync(f, o); r.changed++; }
+    r.n += st.n;
+  }
+  return res;
+}
+const XNW = Math.max(1, Math.min(8, +(process.env.CA_XLANG_WORKERS || 0) || (os.availableParallelism ? os.availableParallelism() : os.cpus().length)));
+
+if (!isMainThread && workerData && workerData.xlang) {
+  let r; try { r = { ok: fixFiles(workerData.xlang) }; } catch (e) { r = { err: (e && e.stack) || String(e) }; }
+  parentPort.postMessage(r);
+} else {
+  try {
+    // fájllista változatonként; az oldalak a magok között szétosztva (minden oldal csak a saját fájlját írja)
+    const per = VARIANTS.map(([v, lang, rt, skip]) => { const root = path.join(DIST, v); return fs.existsSync(root) ? walkDir(root, root, skip) : null; });
+    const items = []; per.forEach((fl, vi) => { if (fl) for (const f of fl) items.push([vi, f]); });
+    let parts;
+    if (XNW < 2 || items.length < 200) parts = [fixFiles(items)];
+    else {
+      const chunks = Array.from({ length: XNW }, () => []);
+      items.forEach((it, i) => chunks[i % XNW].push(it));
+      parts = await Promise.all(chunks.map((ch) => new Promise((resolve, reject) => {
+        let done = false;
+        const w = new Worker(new URL(import.meta.url), { workerData: { xlang: ch } });
+        w.once('message', (m) => { done = true; if (m.err) reject(new Error(m.err)); else resolve(m.ok); });
+        const fb = (e) => { if (done) return; done = true; console.log('[xlang-hufix] szál hiba, egy szálon folytatja: ' + (e && e.message)); try { resolve(fixFiles(ch)); } catch (x) { reject(x); } };
+        w.once('error', fb); w.once('exit', () => fb(new Error('kilépett')));
+      })));
+    }
+    VARIANTS.forEach(([v, lang, rt], vi) => {
+      if (!per[vi]) { console.log(`[xlang-hufix] ${v}: nincs mappa — kihagyva`); return; }
+      let n = 0, changed = 0; for (const p of parts) if (p[vi]) { n += p[vi].n; changed += p[vi].changed; }
+      console.log(`[xlang-hufix] ${v} (${lang}): ${per[vi].length} oldal, ${changed} módosítva, ${n} szöveg fordítva · runtime ${rt}: ${patchRuntime(rt, dOf(vi))}`);
+    });
+  } catch (e) {
+    console.log('[xlang-hufix] hiba:', (e && e.stack) || e);
+  }
+  process.exit(0);
+}
