@@ -201,6 +201,8 @@ const POPUP = {
 };
 // JSON-LD: a caradvance.hu-n tárolt képek (logó, autófotók) a piac saját domainjén is elérhetők → saját domain
 function fixMisc(h, l) {
+  // csonka cím („… cena na požiadanie, objednávka z”) a title / og:title / twitter:title-ben → a csonka rész nélkül
+  h = h.replace(/(<title>|<meta (?:property|name)="(?:og|twitter):title" content=")([^<"]*?), objednávka z(<\/title>|")/g, (m, a, t, b) => { hit(l, 'csonka cím'); return a + t + b; });
   let n = h.split(POPUP_HU).length - 1;
   if (n) { h = h.split(POPUP_HU).join(POPUP[l]); hit(l, 'PDF felugró-ablak üzenet', n); }
   h = h.replace(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g, (m, a, j, b) => {
@@ -211,6 +213,29 @@ function fixMisc(h, l) {
     return a + j2 + b;
   });
   return h;
+}
+
+
+// hreflang: a feltételek-oldal „hu” / „x-default” változata a saját (www nélküli) címre mutatott → a magyar oldal
+const HREFLANG_FIX = [
+  [/(<link rel="alternate" hreflang="(?:hu|x-default)" href=")https:\/\/caradvance\.sk\/prenajom\/podmienky-a-kaucia\/(")/g, '$1https://www.caradvance.hu/berlesi-feltetelek/$2'],
+  [/(<link rel="alternate" hreflang="(?:hu|x-default)" href=")https:\/\/caradvance\.cz\/pronajem\/podminky-a-kauce\/(")/g, '$1https://www.caradvance.hu/berlesi-feltetelek/$2'],
+];
+function fixHreflang(h, l) {
+  for (const [re, to] of HREFLANG_FIX) h = h.replace(re, (...m) => { hit(l, 'hreflang feltételek-oldal'); return to.replace('$1', m[1]).replace('$2', m[2]); });
+  return h;
+}
+
+
+// mobil / iPad: vízszintes kilógás (2026-11-24 este, élő oldalon mérve 375 / 768 / 834 / 1024 px-en)
+//  - lábléc jogi sora (nowrap) iPaden 768–1100 px között kilógott → tördelhető
+//  - /prenajom/ · /pronajem/ kalkulátor: a hosszú modellnév-opció 375 px-en kitolta a választómezőt
+//  - főoldal 3D autó-karusszel: a széle 6–25 px-lel túlnyúlt → a lap nem görgethető oldalra (overflow-x: clip)
+const LAYOUT_CSS = '<style id="skcz-fix1124-css">html{overflow-x:clip}@media (max-width:1100px){.cafoot-copy span{white-space:normal!important;max-width:100%}}.tb-cf>label{min-width:0}.tb-cf select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}</style>';
+function fixLayout(h, l) {
+  if (h.includes('id="skcz-fix1124-css"') || !h.includes('</head>')) return h;
+  hit(l, 'mobil/iPad CSS');
+  return h.replace('</head>', LAYOUT_CSS + '</head>');
 }
 
 /* ---------------- futtatás ---------------- */
@@ -232,6 +257,8 @@ try {
       const h0 = fs.readFileSync(f, 'utf8'); let h = h0;
       h = fixLinks(h, l, sub);
       h = fix7(h, l);
+      h = fixHreflang(h, l);
+      h = fixLayout(h, l);
       if (!sub) { h = fix1(h, l); h = fix6(h, l); h = fix16(h, l); h = fixLegal(h, l, rel); h = fixMisc(h, l); }
       files++;
       if (h !== h0) { fs.writeFileSync(f, h); changed++; }
