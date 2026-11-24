@@ -227,6 +227,9 @@ function onpage(h, li, mk, rel, st) {
   if (tt) h = h.replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*"/g, (m, a) => a + tt + '"');
   h = h.replace(/(<meta name="description" content=")([^"]*)"/, (m, a, d) => { const o = unesc(d); const n = fitMeta(o, li); if (n !== o) { st.d++; return a + esc(n) + '"'; } return m; });
   if (!/<h1\b/.test(h)) { const n = h.replace(/<h2( class="lk-title"[^>]*)>([\s\S]*?)<\/h2>/, '<h1$1>$2</h1>'); if (n !== h) { h = n; st.h1++; } }
+  /* telefon / iPad: vízszintes kilógás javítása (2026-11-24 mérés: CH/EU főoldal 3D-autókarusszel, a hosszabb német/francia
+     jogi sáv nowrap szövege iPaden, a renting-kalkulátor select mezői telefonon) */
+  if (!h.includes('id="x1124"')) h = h.replace('</head>', '<style id="x1124">html,body{overflow-x:clip}.cw.cf3d{max-width:100%}select{max-width:100%}.rb-card label{min-width:0;max-width:100%}.cacb-in span{white-space:normal;overflow-wrap:anywhere}</style></head>');
   h = h.replace(/data-key="hc0fbnlxNtmpnGbelDApVQ"/g, `data-key="${WA[mk]}"`);
   return h;
 }
