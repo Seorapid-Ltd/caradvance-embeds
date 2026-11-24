@@ -364,7 +364,8 @@ function run() {
       h = chPartner(h, l);
       h = swissPageImages(h, l, plPath);
       if (l === 'de') h = h.replace(/ß/g, 'ss');
-      h = h.replace(/[^.<>"]*CO₂[^.<>"]*/g, (m) => m.replace(/6(?:[\s\u00a0’'.]|&nbsp;)?000(?=(?:\s|&nbsp;|\u00a0)?km)/g, '5000'));
+      // (ugyanaz, mint /[^.<>"]*CO₂[^.<>"]*/g — a CO₂-t tartalmazó teljes szakasz —, csak lineáris időben)
+      if (h.includes('CO₂')) h = h.replace(/[^.<>"]+/g, (m) => m.indexOf('CO₂') < 0 ? m : m.replace(/6(?:[\s\u00a0’'.]|&nbsp;)?000(?=(?:\s|&nbsp;|\u00a0)?km)/g, '5000'));
       // robots: élesítésig noindex
       h = h.replace(/[ \t]*<meta\s+name=["']robots["'][^>]*>\s*\n?/gi, '');
       const noidx = !PL.live || cover < MIN_COVER;
