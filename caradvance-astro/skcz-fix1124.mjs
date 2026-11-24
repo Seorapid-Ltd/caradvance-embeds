@@ -231,11 +231,22 @@ function fixHreflang(h, l) {
 //  - lábléc jogi sora (nowrap) iPaden 768–1100 px között kilógott → tördelhető
 //  - /prenajom/ · /pronajem/ kalkulátor: a hosszú modellnév-opció 375 px-en kitolta a választómezőt
 //  - főoldal 3D autó-karusszel: a széle 6–25 px-lel túlnyúlt → a lap nem görgethető oldalra (overflow-x: clip a karusszel szakaszán)
-const LAYOUT_CSS = '<style id="skcz-fix1124-css">#autoink{overflow-x:clip}@media (max-width:1100px){.cafoot-copy span{white-space:normal!important;max-width:100%}}.tb-cf>label{min-width:0}.tb-cf select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}</style>';
+const LAYOUT_CSS = '<style id="skcz-fix1124-css">a[href*="facebook.com/caradvancehungary"],a[href*="instagram.com/caradvance_hungary"],a[href*="tiktok.com/search"],a[href*="linkedin.com/search"]{display:none!important}#autoink{overflow-x:clip}@media (max-width:1100px){.cafoot-copy span{white-space:normal!important;max-width:100%}}.tb-cf>label{min-width:0}.tb-cf select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}</style>';
 function fixLayout(h, l) {
   if (h.includes('id="skcz-fix1124-css"') || !h.includes('</head>')) return h;
   hit(l, 'mobil/iPad CSS');
   return h.replace('</head>', LAYOUT_CSS + '</head>');
+}
+
+
+// 7 (kiegészítés): a menü „Sledujte nás” blokkja szkriptből rajzolódik (mega-menu.js) — a magyar Facebook/Instagram
+// profil és a TikTok/LinkedIn kereső-link ott is elrejtve (LAYOUT_CSS). Média-oldal: a magyar Instagram-posztok
+// (#posztok) és a TikTok „čoskoro” kártya kimarad, amíg nincs szlovák/cseh profil; a YouTube marad.
+function fixMedia(h, l, rel) {
+  if (rel !== 'o-nas/media/index.html') return h;
+  h = h.replace(/<section\b[^>]*\bid="posztok"[\s\S]*?<\/section>/, () => { hit(l, '7 média: magyar posztok'); return ''; });
+  h = h.replace(/<div class="md-card md-card-soon"[^>]*>\s*<img[^>]*alt="TikTok"[\s\S]*?<\/div>/, () => { hit(l, '7 média: TikTok kártya'); return ''; });
+  return h;
 }
 
 /* ---------------- futtatás ---------------- */
@@ -259,7 +270,7 @@ try {
       h = fix7(h, l);
       h = fixHreflang(h, l);
       h = fixLayout(h, l);
-      if (!sub) { h = fix1(h, l); h = fix6(h, l); h = fix16(h, l); h = fixLegal(h, l, rel); h = fixMisc(h, l); }
+      if (!sub) { h = fix1(h, l); h = fix6(h, l); h = fix16(h, l); h = fixLegal(h, l, rel); h = fixMisc(h, l); h = fixMedia(h, l, rel); }
       files++;
       if (h !== h0) { fs.writeFileSync(f, h); changed++; }
     }
