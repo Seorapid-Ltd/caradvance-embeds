@@ -22,7 +22,11 @@ const PARENT = { legalName: 'Caradvance GmbH', vatID: 'DE232664616', foundingDat
   identifier: { '@type': 'PropertyValue', propertyID: 'Handelsregister Amtsgericht München', value: 'HRB 151009' } };
 
 const walk = (d, out = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p, out); else if (e.name === 'index.html') out.push(p); } return out; };
-let n = { date: 0, byline: 0, author: 0, dealer: 0 };
+let n = { date: 0, byline: 0, author: 0, dealer: 0, wa: 0 };
+// E4  Ahrefs Web Analytics: a .hu projekt kulcsa a .sk/.cz oldalon nem rögzít adatot (2026-11-24: 0 esemény 56 nap alatt).
+//     Saját projekt kulcsa ide kerül; üresen hagyva nem változtat semmit. BEÉPÍTÉSRE VÁR: kulcs a megrendelőtől / Ahrefs-projektből.
+const WA_KEY = { sk: '', cs: '' };
+const HU_WA_KEY = 'hc0fbnlxNtmpnGbelDApVQ';
 
 for (const [L, M] of Object.entries(MKT)) {
   const root = path.join(DIST, L); if (!fs.existsSync(root)) continue;
@@ -71,8 +75,10 @@ for (const [L, M] of Object.entries(MKT)) {
       return ch ? `<script type="application/ld+json">${JSON.stringify(d)}</script>` : all;
     });
 
+    if (WA_KEY[L] && h.includes(HU_WA_KEY)) { h = h.split(`data-key="${HU_WA_KEY}"`).join(`data-key="${WA_KEY[L]}"`); n.wa++; }
+
     if (h !== before) fs.writeFileSync(f, h);
   }
   console.log(`[skcz-trust] ${L}: csapat ${team.length} fő`);
 }
-console.log(`[skcz-trust] kész: dátum ${n.date}, szerzősor ${n.byline}, BlogPosting.author ${n.author}, AutoDealer ${n.dealer}`);
+console.log(`[skcz-trust] kész: dátum ${n.date}, szerzősor ${n.byline}, BlogPosting.author ${n.author}, AutoDealer ${n.dealer}, WA-kulcs ${n.wa}`);
