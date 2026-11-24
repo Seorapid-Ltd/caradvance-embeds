@@ -230,8 +230,8 @@ function fixHreflang(h, l) {
 // mobil / iPad: vízszintes kilógás (2026-11-24 este, élő oldalon mérve 375 / 768 / 834 / 1024 px-en)
 //  - lábléc jogi sora (nowrap) iPaden 768–1100 px között kilógott → tördelhető
 //  - /prenajom/ · /pronajem/ kalkulátor: a hosszú modellnév-opció 375 px-en kitolta a választómezőt
-//  - főoldal 3D autó-karusszel: a széle 6–25 px-lel túlnyúlt → a lap nem görgethető oldalra (overflow-x: clip)
-const LAYOUT_CSS = '<style id="skcz-fix1124-css">html{overflow-x:clip}@media (max-width:1100px){.cafoot-copy span{white-space:normal!important;max-width:100%}}.tb-cf>label{min-width:0}.tb-cf select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}</style>';
+//  - főoldal 3D autó-karusszel: a széle 6–25 px-lel túlnyúlt → a lap nem görgethető oldalra (overflow-x: clip a karusszel szakaszán)
+const LAYOUT_CSS = '<style id="skcz-fix1124-css">#autoink{overflow-x:clip}@media (max-width:1100px){.cafoot-copy span{white-space:normal!important;max-width:100%}}.tb-cf>label{min-width:0}.tb-cf select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}</style>';
 function fixLayout(h, l) {
   if (h.includes('id="skcz-fix1124-css"') || !h.includes('</head>')) return h;
   hit(l, 'mobil/iPad CSS');
