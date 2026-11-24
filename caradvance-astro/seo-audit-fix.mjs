@@ -13,6 +13,8 @@
 // Biztonság: minden lépés külön try/catch-ben; hiba esetén a fájl változatlan marad, a build sosem áll le.
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 const DIST = 'dist';
 const HOSTS = { '': 'www.caradvance.hu', sk: 'www.caradvance.sk', cs: 'www.caradvance.cz', pl: 'www.caradvance.pl', ch: 'www.caradvance.ch', eu: 'www.caradvance.eu' };
@@ -121,15 +123,27 @@ function locate(file) {
 
 const stat = { ld: 0, img: 0, dead: 0, hl: 0, hlPages: 0, sm: 0, href: 0, other: 0, errors: 0 };
 
-async function main() {
-  if (!fs.existsSync(DIST)) { console.log('seo-audit-fix: nincs dist/ - kihagyva'); return; }
-  const all = walk(DIST, []);
-  const htmlFiles = all.filter((f) => f.endsWith('.html'));
-  const textFiles = all.filter((f) => /\.(html|js|json)$/i.test(f));
-
-  // létező oldalak (könyvtár + index.html) gyors ellenőrzéshez
+/* ---------- párhuzamos futtatás: a fájlok szétosztva a processzormagok között (worker_threads) ----------
+ * Az A) és B) fázis csak olvas (az eredményt a fő szál fájlsorrendben rakja össze, így ugyanaz, mint egy
+ * szálon); a C) fázis fájlonként független (minden oldal csak a saját fájlját írja, a közös adat — oldaltérkép,
+ * eltűnt fotók — csak olvasott). CA_AUDIT_WORKERS=1: a régi, egyszálú futás. */
+const NW = Math.max(1, Math.min(8, +(process.env.CA_AUDIT_WORKERS || 0) || (os.availableParallelism ? os.availableParallelism() : os.cpus().length)));
+async function inWorkers(phase, files, extra) {
+  const idx = files.map((f, i) => i);
+  if (NW < 2 || files.length < 200) return [runPhase(phase, files, idx, extra)];
+  const parts = Array.from({ length: NW }, () => ({ files: [], idx: [] }));
+  files.forEach((f, i) => { const p = parts[i % NW]; p.files.push(f); p.idx.push(i); });
+  return Promise.all(parts.map((p) => new Promise((resolve) => {
+    let done = false;
+    const w = new Worker(new URL(import.meta.url), { workerData: { phase, files: p.files, idx: p.idx, extra } });
+    w.once('message', (r) => { done = true; resolve(r); });
+    w.once('error', (e) => { if (!done) { done = true; console.log('seo-audit-fix: szál hiba (' + phase + '), egy szálon folytatja: ' + e.message); resolve(runPhase(phase, p.files, p.idx, extra)); } });
+    w.once('exit', (c) => { if (!done) { done = true; resolve(runPhase(phase, p.files, p.idx, extra)); } });
+  })));
+}
+function makeExists() {
   const existsCache = new Map();
-  const exists = (siteDir, rel) => {
+  return (siteDir, rel) => {
     let p = rel.split(/[?#]/)[0];
     try { p = decodeURI(p); } catch (e) { /* marad */ }
     const key = siteDir + '|' + p;
@@ -139,23 +153,148 @@ async function main() {
     existsCache.set(key, r);
     return r;
   };
-  const slashUrl = (u) => {
+}
+function makeSlashUrl(exists) {
+  return (u) => {
     const m = String(u).match(/^(https:\/\/(?:www\.)?(caradvance\.(?:hu|sk|cz|pl|ch|eu)))(\/[^?#]*)$/i);
     if (!m || m[3].endsWith('/') || /\.[a-z0-9]{2,5}$/i.test(m[3])) return u;
     const d = DIR_OF_HOST['www.' + m[2].toLowerCase()];
     return d !== undefined && exists(d, m[3]) ? u + '/' : u;
   };
+}
+const PHOTO_RE = /https:\/\/img\.(?:classistatic\.de|hasznaltautocdn\.com)\/[^"'\s)<>&\\]+/g;
+
+// egy fázis a kapott fájlokon (a fő szálon vagy egy worker szálon)
+function runPhase(phase, files, idx, extra) {
+  if (phase === 'A') { // külső hirdetésfotók címei, fájlonként
+    const out = [];
+    files.forEach((f, k) => {
+      let s; try { s = fs.readFileSync(f, 'utf8'); } catch (e) { return; }
+      if (!/img\.(?:classistatic|hasznaltautocdn)/.test(s)) return;
+      const u = []; for (const m of s.replace(/\\\//g, '/').matchAll(PHOTO_RE)) u.push(m[0]);
+      if (u.length) out.push([idx[k], u]);
+    });
+    return { out };
+  }
+  if (phase === 'B') { // oldaltérkép-bejegyzések
+    const out = []; let errors = 0;
+    files.forEach((f, k) => {
+      const loc = locate(f); if (!loc) return;
+      try {
+        const h = fs.readFileSync(f, 'utf8');
+        const alts = altLinks(h);
+        out.push([idx[k], loc.url, loc.np, isNoindex(h) || INTERNAL.test(loc.path), normUrl(canonicalOf(h) || loc.url), alts.map((a) => normUrl(a.href)).filter(Boolean)]);
+      } catch (e) { errors++; }
+    });
+    return { out, errors };
+  }
+  // C) HTML-fájlok javítása
+  const pages = extra.pages, dead = new Set(extra.dead);
+  const st = { ld: 0, img: 0, hl: 0, hlPages: 0, href: 0, other: 0, errors: 0, internal: 0 };
+  const exists = makeExists(), slashUrl = makeSlashUrl(exists);
+  const dropAlts = (loc, alts, me) => {
+    const self = normUrl(loc.url);
+    const selfC = me ? me.canonical : self;
+    const drop = new Set();
+    for (const a of alts) {
+      const t = normUrl(a.href); if (!t) continue;
+      if (me && me.noindex) { drop.add(a.raw); continue; }
+      if (t === self || t === selfC) continue;
+      const tp = pages.get(t);
+      if (!tp) continue; // nem ismert cél: nem nyúlunk hozzá
+      if (tp.noindex) { drop.add(a.raw); continue; }
+      if (a.hl.toLowerCase() === 'x-default') continue;
+      if (!tp.alts.has(self) && !tp.alts.has(selfC)) drop.add(a.raw);
+    }
+    return drop;
+  };
+  for (const f of files) {
+    let h0, h;
+    try { h0 = fs.readFileSync(f, 'utf8'); } catch (e) { continue; }
+    h = h0;
+    const loc = locate(f);
+    const siteDir = loc ? loc.siteDir : (() => { const r = path.relative(DIST, f).split(path.sep); const i = r[0] === '_np' ? 1 : 0; return HOSTS[r[i]] && r.length > i + 1 ? r[i] : ''; })();
+
+    // 0. belső oldalak: csak noindex,nofollow + hreflang nélkül, más átalakítás nincs
+    if (loc && INTERNAL.test(loc.path)) {
+      try {
+        if (!isNoindex(h)) { h = /<\/head>/i.test(h) ? h.replace(/<\/head>/i, '<meta name="robots" content="noindex,nofollow">\n</head>') : h; st.internal++; }
+        for (const a of altLinks(h)) h = h.split(a.raw).join('');
+        if (h !== h0) fs.writeFileSync(f, h);
+      } catch (e) { st.errors++; }
+      continue;
+    }
+
+    // 1. JSON-LD
+    try {
+      h = h.replace(/(<script[^>]*application\/ld\+json[^>]*>)([\s\S]*?)(<\/script>)/gi, (m, a, body, c) => {
+        let j; try { j = JSON.parse(body); } catch (e) { return m; }
+        if (!fixLd(j, { slashUrl, dead })) return m;
+        st.ld++;
+        return a + JSON.stringify(j) + c;
+      });
+    } catch (e) { st.errors++; }
+
+    // 2. eltűnt fotók → helyettesítő kép (og:image: az oldal első saját fotója)
+    try {
+      if (dead.size && /img\.(?:classistatic|hasznaltautocdn)/.test(h)) {
+        const firstOwn = (h.match(/\/auto-foto\/[a-f0-9]+\.(?:webp|jpg|png|avif)/) || [])[0];
+        const origin = 'https://' + HOSTS[siteDir];
+        for (const u of dead) {
+          if (!h.includes(u) && !h.includes(u.replace(/\//g, '\\/'))) continue;
+          h = h.replace(new RegExp('(<meta\\s+(?:property|name)=["\'](?:og:image|twitter:image)["\']\\s+content=["\'])' + u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '$1' + origin + (firstOwn || PLACEHOLDER));
+          h = h.split(u).join(PLACEHOLDER).split(u.replace(/\//g, '\\/')).join(PLACEHOLDER.replace(/\//g, '\\/'));
+          st.img++;
+        }
+      }
+    } catch (e) { st.errors++; }
+
+    // 3. hreflang
+    try {
+      if (loc) {
+        const alts = altLinks(h);
+        if (alts.length) {
+          const drop = dropAlts(loc, alts, pages.get(loc.url));
+          if (drop.size) {
+            for (const raw of drop) h = h.split(raw).join('');
+            st.hl += drop.size; st.hlPages++;
+          }
+        }
+      }
+    } catch (e) { st.errors++; }
+
+    // 4. perjel nélküli belső linkek
+    try {
+      const n = slashHrefs(h, exists, siteDir);
+      if (n !== h) { st.href++; h = n; }
+    } catch (e) { st.errors++; }
+
+    // 5. más országok lábléc-blokkja csak a kezdőoldalakon
+    try {
+      if (loc && /data-ca-other/.test(h)) {
+        const segs = loc.path.split('/').filter(Boolean);
+        const isHome = segs.length === 0 || (segs.length === 1 && LANG_ROOTS.has(segs[0]));
+        if (!isHome) { const n = dropOtherMarkets(h); if (n !== h) { st.other++; h = n; } }
+      }
+    } catch (e) { st.errors++; }
+
+    if (h !== h0) { try { fs.writeFileSync(f, h); } catch (e) { st.errors++; } }
+  }
+  return { st };
+}
+
+async function main() {
+  if (!fs.existsSync(DIST)) { console.log('seo-audit-fix: nincs dist/ - kihagyva'); return; }
+  const all = walk(DIST, []);
+  const htmlFiles = all.filter((f) => f.endsWith('.html'));
+  const textFiles = all.filter((f) => /\.(html|js|json)$/i.test(f));
 
   /* ---- A) eltűnt hirdetésfotók felderítése ---- */
   const dead = new Set();
   try {
-    const RE = /https:\/\/img\.(?:classistatic\.de|hasznaltautocdn\.com)\/[^"'\s)<>&\\]+/g;
     const found = new Set();
-    for (const f of textFiles) {
-      const s = fs.readFileSync(f, 'utf8');
-      if (!/img\.(?:classistatic|hasznaltautocdn)/.test(s)) continue;
-      for (const m of s.replace(/\\\//g, '/').matchAll(RE)) found.add(m[0]);
-    }
+    const byFile = (await inWorkers('A', textFiles)).flatMap((r) => r.out).sort((a, b) => a[0] - b[0]);
+    for (const [, u] of byFile) for (const x of u) found.add(x);
     // a mirror-car-photos ugyanebben a buildben már lekérdezte ezeket: amit ott 404/410-nek látott, nem kérdezzük újra
     let known = new Set();
     try { const j = JSON.parse(fs.readFileSync('.gen/photo-dead.json', 'utf8')); if (Date.now() - j.t < 3600e3) known = new Set(j.urls); } catch (e) { /* nincs */ }
@@ -176,109 +315,18 @@ async function main() {
 
   /* ---- B) oldaltérkép (URL → oldal adatai) a hreflang- és sitemap-döntésekhez ---- */
   const pages = new Map();
-  for (const f of htmlFiles) {
-    const loc = locate(f); if (!loc) continue;
-    if (loc.np && pages.has(loc.url)) continue;
-    try {
-      const h = fs.readFileSync(f, 'utf8');
-      const alts = altLinks(h);
-      pages.set(loc.url, {
-        noindex: isNoindex(h) || INTERNAL.test(loc.path),
-        canonical: normUrl(canonicalOf(h) || loc.url),
-        alts: new Set(alts.map((a) => normUrl(a.href)).filter(Boolean)),
-      });
-    } catch (e) { stat.errors++; }
-  }
-  // URL → eltávolítandó hreflang-címek
-  const dropAlts = (loc, alts, me) => {
-    const self = normUrl(loc.url);
-    const selfC = me ? me.canonical : self;
-    const drop = new Set();
-    for (const a of alts) {
-      const t = normUrl(a.href); if (!t) continue;
-      if (me && me.noindex) { drop.add(a.raw); continue; }
-      if (t === self || t === selfC) continue;
-      const tp = pages.get(t);
-      if (!tp) continue; // nem ismert cél: nem nyúlunk hozzá
-      if (tp.noindex) { drop.add(a.raw); continue; }
-      if (a.hl.toLowerCase() === 'x-default') continue;
-      if (!tp.alts.has(self) && !tp.alts.has(selfC)) drop.add(a.raw);
+  {
+    const rs = await inWorkers('B', htmlFiles);
+    const ent = rs.flatMap((r) => { stat.errors += r.errors || 0; return r.out; }).sort((a, b) => a[0] - b[0]);
+    for (const [, url, np, noindex, canonical, alts] of ent) {
+      if (np && pages.has(url)) continue;
+      pages.set(url, { noindex, canonical, alts: new Set(alts) });
     }
-    return drop;
-  };
+  }
 
   /* ---- C) HTML-fájlok javítása ---- */
-  for (const f of htmlFiles) {
-    let h0, h;
-    try { h0 = fs.readFileSync(f, 'utf8'); } catch (e) { continue; }
-    h = h0;
-    const loc = locate(f);
-    const siteDir = loc ? loc.siteDir : (() => { const r = path.relative(DIST, f).split(path.sep); const i = r[0] === '_np' ? 1 : 0; return HOSTS[r[i]] && r.length > i + 1 ? r[i] : ''; })();
-
-    // 0. belső oldalak: csak noindex,nofollow + hreflang nélkül, más átalakítás nincs
-    if (loc && INTERNAL.test(loc.path)) {
-      try {
-        if (!isNoindex(h)) { h = /<\/head>/i.test(h) ? h.replace(/<\/head>/i, '<meta name="robots" content="noindex,nofollow">\n</head>') : h; stat.internal = (stat.internal || 0) + 1; }
-        for (const a of altLinks(h)) h = h.split(a.raw).join('');
-        if (h !== h0) fs.writeFileSync(f, h);
-      } catch (e) { stat.errors++; }
-      continue;
-    }
-
-    // 1. JSON-LD
-    try {
-      h = h.replace(/(<script[^>]*application\/ld\+json[^>]*>)([\s\S]*?)(<\/script>)/gi, (m, a, body, c) => {
-        let j; try { j = JSON.parse(body); } catch (e) { return m; }
-        if (!fixLd(j, { slashUrl, dead })) return m;
-        stat.ld++;
-        return a + JSON.stringify(j) + c;
-      });
-    } catch (e) { stat.errors++; }
-
-    // 2. eltűnt fotók → helyettesítő kép (og:image: az oldal első saját fotója)
-    try {
-      if (dead.size && /img\.(?:classistatic|hasznaltautocdn)/.test(h)) {
-        const firstOwn = (h.match(/\/auto-foto\/[a-f0-9]+\.(?:webp|jpg|png|avif)/) || [])[0];
-        const origin = 'https://' + HOSTS[siteDir];
-        for (const u of dead) {
-          if (!h.includes(u) && !h.includes(u.replace(/\//g, '\\/'))) continue;
-          h = h.replace(new RegExp('(<meta\\s+(?:property|name)=["\'](?:og:image|twitter:image)["\']\\s+content=["\'])' + u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '$1' + origin + (firstOwn || PLACEHOLDER));
-          h = h.split(u).join(PLACEHOLDER).split(u.replace(/\//g, '\\/')).join(PLACEHOLDER.replace(/\//g, '\\/'));
-          stat.img++;
-        }
-      }
-    } catch (e) { stat.errors++; }
-
-    // 3. hreflang
-    try {
-      if (loc) {
-        const alts = altLinks(h);
-        if (alts.length) {
-          const drop = dropAlts(loc, alts, pages.get(loc.url));
-          if (drop.size) {
-            for (const raw of drop) h = h.split(raw).join('');
-            stat.hl += drop.size; stat.hlPages++;
-          }
-        }
-      }
-    } catch (e) { stat.errors++; }
-
-    // 4. perjel nélküli belső linkek
-    try {
-      const n = slashHrefs(h, exists, siteDir);
-      if (n !== h) { stat.href++; h = n; }
-    } catch (e) { stat.errors++; }
-
-    // 5. más országok lábléc-blokkja csak a kezdőoldalakon
-    try {
-      if (loc && /data-ca-other/.test(h)) {
-        const segs = loc.path.split('/').filter(Boolean);
-        const isHome = segs.length === 0 || (segs.length === 1 && LANG_ROOTS.has(segs[0]));
-        if (!isHome) { const n = dropOtherMarkets(h); if (n !== h) { stat.other++; h = n; } }
-      }
-    } catch (e) { stat.errors++; }
-
-    if (h !== h0) { try { fs.writeFileSync(f, h); } catch (e) { stat.errors++; } }
+  for (const r of await inWorkers('C', htmlFiles, { pages, dead: [...dead] })) {
+    for (const [k, v] of Object.entries(r.st)) if (k === 'internal') { if (v) stat.internal = (stat.internal || 0) + v; } else stat[k] += v;
   }
 
   /* ---- D) JS/JSON adatfájlok: eltűnt fotók ---- */
@@ -312,9 +360,11 @@ async function main() {
     }
   } catch (e) { stat.errors++; }
 
-  console.log('seo-audit-fix: ' + JSON.stringify(stat));
+  console.log('seo-audit-fix: ' + JSON.stringify(stat) + (NW > 1 ? ' [' + NW + ' szálon]' : ''));
 }
 
-if (process.argv[1] && process.argv[1].endsWith('seo-audit-fix.mjs')) {
+if (!isMainThread && workerData && workerData.phase) {
+  parentPort.postMessage(runPhase(workerData.phase, workerData.files, workerData.idx, workerData.extra));
+} else if (process.argv[1] && process.argv[1].endsWith('seo-audit-fix.mjs')) {
   main().catch((e) => console.log('seo-audit-fix: FIGYELEM - ' + (e && e.message) + ' (a build megy tovabb)')).finally(() => process.exit(0));
 }
