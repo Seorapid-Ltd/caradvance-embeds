@@ -199,7 +199,7 @@ const CHN = ['CarAdvance Schweiz', 'CarAdvance Suisse', 'CarAdvance Svizzera', '
 const CTA = ['Jetzt unverbindlich Angebot anfordern.', 'Demandez votre offre sans engagement.', 'Richiedi ora un’offerta senza impegno.', 'Request a no-obligation offer today.', 'Solicite ahora una oferta sin compromiso.'];
 const esc = (t) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const unesc = (t) => t.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-function cutWords(t, n) { if (t.length <= n) return t; let c = t.slice(0, n + 1); c = c.slice(0, Math.max(c.lastIndexOf(' '), c.lastIndexOf('/'))); return c.replace(/[\s,;:·/—–-]+$/, '').replace(/\s+(?:–|—|-|und|et|e|and|y|mit|avec|con|with|de|di|von|from|ab|dès|da|desde|à|a|in|en|the|der|die|das|la|le|il|el)$/i, ''); }
+function cutWords(t, n) { if (t.length <= n) return t; let c = t.slice(0, n + 1); c = c.slice(0, Math.max(c.lastIndexOf(' '), c.lastIndexOf('/'))); for (let i = 0; i < 3; i++) c = c.replace(/[\s,;:·/—–-]+$/, '').replace(/\s+(?:–|—|-|und|et|e|and|y|mit|avec|con|with|de|di|von|from|ab|dès|da|desde|à|a|in|en|the|der|die|das|la|le|il|el|étape|passo)$/i, ''); return c; }
 function fitTitle(t, li, mk, rel) {
   if (t.length > 60) t = t.replace(BR, '');
   if (t.length > 60) t = t.replace(FROM, '');
@@ -231,25 +231,106 @@ function onpage(h, li, mk, rel, st) {
   return h;
 }
 
+/* ---------- 2–3. lépés: kulcsszótérkép (Ahrefs, 2026-11-24) — fő oldalak title + konfigurátor H1 ---------- */
+const KWT = {
+  ch: {
+    '/': 'Premium-Autos aus Deutschland für die Schweiz | CarAdvance',
+    '/kaufen/neuwagen-nach-mass/': 'BMW Konfigurator Schweiz – neuer BMW zum deutschen Preis',
+    '/konfigurator/mercedes/': 'Mercedes Konfigurator Schweiz – zum deutschen Preis',
+    '/konfigurator/audi/': 'Audi Konfigurator Schweiz – neuer Audi zum deutschen Preis',
+    '/konfigurator/mini/': 'MINI Konfigurator Schweiz – neuer MINI zum deutschen Preis',
+    '/import/': 'Auto Import aus Deutschland in die Schweiz – schlüsselfertig',
+    '/import/importkosten-rechner/': 'Importkosten Auto Schweiz 2026 – Rechner für Zoll & Steuern',
+    '/en/': 'Premium cars from Germany for Switzerland | CarAdvance',
+    '/en/kaufen/neuwagen-nach-mass/': 'BMW configurator Switzerland – new BMW at German prices',
+    '/en/konfigurator/mercedes/': 'Mercedes configurator Switzerland – at German prices',
+    '/en/konfigurator/audi/': 'Audi configurator Switzerland – new Audi at German prices',
+    '/en/konfigurator/mini/': 'MINI configurator Switzerland – new MINI at German prices',
+    '/en/import/importkosten-rechner/': 'Car import costs Switzerland 2026 – duty & tax calculator',
+    '/fr/': 'Voitures premium d’Allemagne pour la Suisse | CarAdvance',
+    '/fr/mieten/': 'Location voiture longue durée Suisse 2026 | CarAdvance',
+    '/fr/kaufen/neuwagen-nach-mass/': 'Configurateur BMW Suisse – BMW neuve au prix allemand',
+    '/fr/konfigurator/mercedes/': 'Configurateur Mercedes Suisse – neuve au prix allemand',
+    '/fr/konfigurator/audi/': 'Configurateur Audi Suisse – Audi neuve au prix allemand',
+    '/fr/konfigurator/mini/': 'Configurateur MINI Suisse – MINI neuve au prix allemand',
+    '/fr/import/': 'Importer une voiture d’Allemagne en Suisse – clé en main',
+    '/fr/import/importkosten-rechner/': 'Coûts d’importation voiture Suisse 2026 – calculateur',
+    '/fr/import/ablauf/': 'Importer une voiture d’Allemagne : processus étape par étape',
+    '/it/': 'Auto premium dalla Germania per la Svizzera | CarAdvance',
+    '/it/mieten/': 'Noleggio auto a lungo termine Svizzera 2026 | CarAdvance',
+    '/it/kaufen/neuwagen-nach-mass/': 'Configuratore BMW Svizzera – BMW nuova a prezzo tedesco',
+    '/it/konfigurator/mercedes/': 'Configuratore Mercedes Svizzera – nuova a prezzo tedesco',
+    '/it/konfigurator/audi/': 'Configuratore Audi Svizzera – Audi nuova a prezzo tedesco',
+    '/it/konfigurator/mini/': 'Configuratore MINI Svizzera – MINI nuova a prezzo tedesco',
+    '/it/import/': 'Importare auto dalla Germania in Svizzera – chiavi in mano',
+    '/it/import/importkosten-rechner/': 'Costi di importazione auto Svizzera 2026 – calcolatore',
+    '/it/import/ablauf/': 'Importare un’auto dalla Germania: la procedura passo passo',
+  },
+  eu: {
+    '/de/': 'Premium-Autos aus Deutschland kaufen & mieten | CarAdvance',
+    '/de/kaufen/neuwagen-nach-wunsch/': 'BMW Konfigurator – neuer BMW zum deutschen Preis bestellen',
+    '/de/konfigurator/mercedes/': 'Mercedes Konfigurator – neuer Mercedes zum deutschen Preis',
+    '/de/konfigurator/audi/': 'Audi Konfigurator – neuer Audi zum deutschen Preis bestellen',
+    '/de/konfigurator/mini/': 'MINI Konfigurator – neuer MINI zum deutschen Preis bestellen',
+    '/fr/': 'Voitures premium d’Allemagne : achat et LLD | CarAdvance',
+    '/fr/location-longue-duree/': 'LLD voiture : location longue durée dès 6 mois | CarAdvance',
+    '/fr/achat/voiture-neuve-sur-mesure/': 'Configurateur BMW – BMW neuve au prix allemand | CarAdvance',
+    '/fr/configurateur/mercedes/': 'Configurateur Mercedes – Mercedes neuve au prix allemand',
+    '/fr/configurateur/audi/': 'Configurateur Audi – Audi neuve au prix allemand',
+    '/fr/configurateur/mini/': 'Configurateur MINI – MINI neuve au prix allemand',
+    '/it/': 'Auto premium dalla Germania: acquisto e noleggio',
+    '/it/noleggio-lungo-termine/': 'Noleggio lungo termine auto premium da 6 mesi | CarAdvance',
+    '/it/acquisto/auto-nuova-su-misura/': 'Configuratore BMW – BMW nuova a prezzo tedesco | CarAdvance',
+    '/it/configuratore/mercedes/': 'Configuratore Mercedes – Mercedes nuova a prezzo tedesco',
+    '/it/configuratore/audi/': 'Configuratore Audi – Audi nuova a prezzo tedesco',
+    '/it/configuratore/mini/': 'Configuratore MINI – MINI nuova a prezzo tedesco',
+    '/es/': 'Coches premium de Alemania: compra y renting | CarAdvance',
+    '/es/compra/coche-nuevo-a-medida/': 'Configurador BMW – BMW nuevo a precio alemán | CarAdvance',
+    '/es/configurador/mercedes/': 'Configurador Mercedes – Mercedes nuevo a precio alemán',
+    '/es/configurador/audi/': 'Configurador Audi – Audi nuevo a precio alemán | CarAdvance',
+    '/es/configurador/mini/': 'Configurador MINI – MINI nuevo a precio alemán | CarAdvance',
+  },
+};
+/* bérlés főoldal: az ár dinamikus, ezért mintából: „Auto-Abo & Langzeitmiete …” (auto abo: CH 3 800, AT 900 keresés/hó) */
+const KWRX = [
+  [/^Langzeitmiete 2026 — Neuwagen ab (.+?)\/Monat, ab 6 Monaten$/, 'Auto-Abo & Langzeitmiete ab $1/Monat, ab 6 Monaten'],
+  [/^Renting 2026: coche nuevo desde (.+?)\/mes, desde 6 meses$/, 'Renting de coches desde $1/mes, desde 6 meses'],
+];
+const EGLH1 = ['BMW, Mercedes, Audi & MINI Konfigurator – Neuwagen nach Wunsch', 'Configurateur BMW, Mercedes, Audi et MINI – voiture neuve sur mesure', 'Configuratore BMW, Mercedes, Audi e MINI – auto nuova su misura', 'BMW, Mercedes, Audi & MINI configurator – new car to order', 'Configurador BMW, Mercedes, Audi y MINI – coche nuevo a medida'];
+function kwmap(h, li, mk, rel, st) {
+  const key = rel.replace(/index\.html$/, '');
+  const t = KWT[mk] && KWT[mk][key];
+  if (t) { h = h.replace(/<title>[^<]*<\/title>/, `<title>${esc(t)}</title>`); st.kw++; }
+  else h = h.replace(/<title>([^<]*)<\/title>/, (m, x) => { let y = unesc(x); for (const [re, r] of KWRX) y = y.replace(re, r); if (y === unesc(x)) return m; st.kw++; return `<title>${esc(y)}</title>`; });
+  if (/<h1 id="eglTitle">/.test(h) && /var HERO=\{/.test(h) && /\/(kaufen\/neuwagen-nach-(?:mass|wunsch)|achat\/voiture-neuve-sur-mesure|acquisto\/auto-nuova-su-misura|compra\/coche-nuevo-a-medida)\/$/.test(key)) {
+    h = h.replace(/<h1 id="eglTitle">[^<]*<\/h1>/, `<h1 id="eglTitle">${EGLH1[li]}</h1>`).replace(/('':\{crumb:'[^']*',title:')[^']*'/, `$1${EGLH1[li].replace(/'/g, "\\'")}'`);
+    st.kw++;
+  }
+  const tt = (/<title>([^<]*)<\/title>/.exec(h) || [])[1];
+  if (tt) h = h.replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*"/g, (m, a) => a + tt + '"');
+  return h;
+}
+
 function walk(d, out = []) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p, out); else if (e.name.endsWith('.html')) out.push(p); } return out; }
 
-export { fixHtml, tr, onpage };
+export { fixHtml, tr, onpage, kwmap };
 
 if (process.argv[1] && process.argv[1].endsWith('xlang-sk1124.mjs')) {
   try {
     for (const mk of MARKETS) {
       const root = path.join(DIST, mk);
       if (!fs.existsSync(root)) { console.log(`[xlang-sk1124] nincs ${root}`); continue; }
-      const st = { files: 0, n: 0, drop: 0, dropped: new Set(), t: 0, d: 0, h1: 0 };
+      const st = { files: 0, n: 0, drop: 0, dropped: new Set(), t: 0, d: 0, h1: 0, kw: 0 };
       for (const f of walk(root)) {
         const h = fs.readFileSync(f, 'utf8');
         const lang = (/<html lang="([a-z]{2})/.exec(h) || [])[1];
         const li = L5.indexOf(lang);
         if (li < 0) continue;
-        const o = onpage(fixHtml(h, li, mk, st), li, mk, '/' + path.relative(root, f).replace(/\\/g, '/'), st);
+        const rel = '/' + path.relative(root, f).replace(/\\/g, '/');
+        const o = kwmap(onpage(fixHtml(h, li, mk, st), li, mk, rel, st), li, mk, rel, st);
         if (o !== h) { fs.writeFileSync(f, o); st.files++; }
       }
-      console.log(`[xlang-sk1124] ${mk}: ${st.files} oldal, ${st.n} szövegegység fordítva, ${st.drop} szlovák leírás-bekezdés kivéve; title ${st.t}, meta ${st.d}, H1 ${st.h1} javítva`);
+      console.log(`[xlang-sk1124] ${mk}: ${st.files} oldal, ${st.n} szövegegység fordítva, ${st.drop} szlovák leírás-bekezdés kivéve; title ${st.t}, meta ${st.d}, H1 ${st.h1} javítva; kulcsszótérkép ${st.kw}`);
     }
   } catch (e) { console.error('[xlang-sk1124] hiba:', e.message); }
   process.exit(0);

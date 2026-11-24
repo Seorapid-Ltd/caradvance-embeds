@@ -97,6 +97,11 @@ try {
     if (tt) h = h.replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*"/g, (m, a) => a + tt + '"');
     if (/<meta name="description"/.test(h)) h = h.replace(/(<meta name="description" content=")([^"]*)"/, (m, a, d) => { const x = unesc(d); const n = fitMeta(x); if (n === x) return m; st.d++; return a + esc(n) + '"'; });
     else if (META[rel]) { h = h.replace(/<\/title>/, `</title>\n<meta name="description" content="${esc(META[rel])}">`); st.d++; }
+    /* kulcsszótérkép: a konfigurátor főoldal H1-e (bmw konfigurátor 900, mercedes 3 400, audi 800, mini 150 keresés/hó) */
+    if (rel === '/egyedi-auto-rendeles/' && /<h1 id="eglTitle">/.test(h)) {
+      const H = 'BMW, Mercedes, Audi és MINI konfigurátor – egyedi autó rendelés';
+      h = h.replace(/<h1 id="eglTitle">[^<]*<\/h1>/, `<h1 id="eglTitle">${H}</h1>`).replace(/('':\{crumb:'[^']*',title:')[^']*'/, `$1${H}'`);
+    }
     if (h !== o) fs.writeFileSync(f, h);
   }
   /* nyelvi tükrök (en/de/fr/uk/zh/_np): csak a belső linkek */
