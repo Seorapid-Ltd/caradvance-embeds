@@ -12,10 +12,12 @@ const eurOfHuf = (huf) => Math.round(huf / HUF / 10) * 10;
 const fmtEur = (huf) => nb(eurOfHuf(huf).toLocaleString('sk-SK')) + ' €';
 const fmtCzk = (huf) => nb((Math.round(huf / HUF * CZK / 100) * 100).toLocaleString('cs-CZ')) + ' Kč';
 const r = (s, f = 'g') => new RegExp(s, f);
+// ugyanaz a szabály, de csak akkor fut a (lassú, a teljes oldalt végigpásztázó) minta, ha a kötelező szövegrész szerepel az oldalon
+const rg = (s, lit) => { const re = r(s); return { [Symbol.replace]: (h, b) => (h.includes(lit) ? h.replace(re, b) : h) }; };
 
 /* forint-összegek (G6): „410–460 tisíc … forintov” → € / Kč */
 function forint(fmt, tisic, word) {
-  return [r('[^.<>"]*(?:forintov|forintů)(?=[\\s.,;<"]|$)[^.<>"]*'), (seg) => seg
+  return [rg('[^.<>"]*(?:forintov|forintů)(?=[\\s.,;<"]|$)[^.<>"]*', 'forint'), (seg) => seg
     .replace(r('(\\d{2,3})\\s?–\\s?(\\d{2,3})\\s' + tisic), (m, a, b) => fmt(a * 1000).replace(/ (€|Kč)$/, '') + '–' + fmt(b * 1000))
     .replace(r('(\\d{2,3})\\s' + tisic), (m, a) => fmt(a * 1000))
     .replace(r('\\s(?:forintov|forintů)(?=[\\s.,;<"]|$)'), '')];
@@ -136,7 +138,7 @@ export const P3 = {
       ['C-osztály Limuzin', 'trieda C Limuzína'],
       [r('Jelenleg a (.+?), ([\\d\\u00a0\\u202f .]+?)\\s?(€|Kč)/hó-tól \\(nettó\\)\\.'), 'Aktuálne $1, od $2 $3/mes. (bez DPH).'],
       [r('(\\d[\\d\\u00a0\\u202f .]*?)\\s?(€|Kč)/hó-tól'), 'od $1 $2/mes.'],
-      [r('(\\S+) konfigurátor magyarul – új \\1 német áron, árlistával'), 'Konfigurátor $1 po slovensky – nové $1 za nemecké ceny, s cenníkom'], [r('(\\S+) konfigurátor magyarul'), 'Konfigurátor $1 po slovensky'],
+      [rg('(\\S+) konfigurátor magyarul – új \\1 német áron, árlistával', ' konfigurátor magyarul'), 'Konfigurátor $1 po slovensky – nové $1 za nemecké ceny, s cenníkom'], [rg('(\\S+) konfigurátor magyarul', ' konfigurátor magyarul'), 'Konfigurátor $1 po slovensky'],
       [r('>\\s*Árlista\\s*<'), '>Cenník<'], [r('Jelenleg (\\d+) változat közül választhatsz:'), 'Aktuálne si môžete vybrať z $1 verzií:'],
       ['⛽ Benzin <b', '⛽ Benzín <b'], ['· Dízel <b', '· Diesel <b'], ['· Áram <b', '· Elektrina <b'],
       [r('Hol találom a (.+?) konfigurátort magyarul\\?'), 'Kde nájdem konfigurátor $1 po slovensky?'],
@@ -147,7 +149,7 @@ export const P3 = {
       ['Német rendszám, forgalomba helyezés', 'Nemecké EČV, prihlásenie do premávky'],
       ['német rendszám', 'nemecké EČV'],
       ['egyterű', 'MPV'],
-      [r('([^"<>]+?) bérlés — \\1 tartós bérletben'), 'Dlhodobý prenájom $1'],
+      [rg('([^"<>]+?) bérlés — \\1 tartós bérletben', ' bérlés — '), 'Dlhodobý prenájom $1'],
       [' havas hegyek előtt', ' pred zasneženými horami'], [' panoráma tetőablak', ' — panoramatické strešné okno'], [' vezetőtér', ' — priestor vodiča'],
       [' belső tér, sportülések', ' — interiér, športové sedadlá'], [' belső tér, műszerfal', ' — interiér, palubná doska'], [' kormány és kijelző', ' — volant a displej'],
       [' — külső dizájn', ' — exteriér'], [' belső tér', ' — interiér'],
@@ -208,7 +210,7 @@ export const P3 = {
       [r('Jelenleg a (.+?), ([\\d\\u00a0\\u202f .]+?)\\s?(€|Kč)/hó-tól \\(nettó\\)\\.'), 'Aktuálně $1, od $2 $3/měs. (bez DPH).'],
       [r('Tartós autóbérlés árak 2026: valós nettó havidíjak BMW, Mercedes, Audi, MINI, VW és elektromos modellekre ([\\d\\u00a0\\u202f .]+?)\\s?(Kč|€)/hó-tól, havi 2 000–4 000 km futáskerettel'), 'Ceny dlouhodobého pronájmu aut 2026: skutečné měsíční splátky bez DPH pro BMW, Mercedes, Audi, MINI, VW a elektromobily od $1 $2/měs., s limitem 2 000–4 000 km měsíčně'],
       [r('(\\d[\\d\\u00a0\\u202f .]*?)\\s?(€|Kč)/hó-tól'), 'od $1 $2/měs.'],
-      [r('(\\S+) konfigurátor magyarul – új \\1 német áron, árlistával'), 'Konfigurátor $1 česky – nové $1 za německé ceny, s ceníkem'], [r('(\\S+) konfigurátor magyarul'), 'Konfigurátor $1 česky'],
+      [rg('(\\S+) konfigurátor magyarul – új \\1 német áron, árlistával', ' konfigurátor magyarul'), 'Konfigurátor $1 česky – nové $1 za německé ceny, s ceníkem'], [rg('(\\S+) konfigurátor magyarul', ' konfigurátor magyarul'), 'Konfigurátor $1 česky'],
       [r('>\\s*Árlista\\s*<'), '>Ceník<'], [r('Jelenleg (\\d+) változat közül választhatsz:'), 'Aktuálně si můžete vybrat z $1 verzí:'],
       ['⛽ Benzin <b', '⛽ Benzín <b'], ['· Dízel <b', '· Nafta <b'], ['· Áram <b', '· Elektřina <b'],
       [r('Hol találom a (.+?) konfigurátort magyarul\\?'), 'Kde najdu konfigurátor $1 v češtině?'],
@@ -222,7 +224,7 @@ export const P3 = {
       ['Német rendszám, forgalomba helyezés', 'Německá SPZ, registrace'],
       ['német rendszám', 'německá SPZ'],
       ['egyterű', 'MPV'],
-      [r('([^"<>]+?) bérlés — \\1 tartós bérletben'), 'Dlouhodobý pronájem $1'],
+      [rg('([^"<>]+?) bérlés — \\1 tartós bérletben', ' bérlés — '), 'Dlouhodobý pronájem $1'],
       [' havas hegyek előtt', ' před zasněženými horami'], [' panoráma tetőablak', ' — panoramatické střešní okno'], [' vezetőtér', ' — místo řidiče'],
       [' belső tér, sportülések', ' — interiér, sportovní sedadla'], [' belső tér, műszerfal', ' — interiér, palubní deska'], [' kormány és kijelző', ' — volant a displej'],
       [' — külső dizájn', ' — exteriér'], [' belső tér', ' — interiér'],
