@@ -194,7 +194,18 @@ edit('cs', (c) => {
 // A JS (applyHero) betöltéskor felülírja a H1-et és a bevezetőt; a „(1 € = 368 €/Kč)” hibás árfolyam-szöveg is innen jön (HUF-árfolyam).
 function egl(c, h1, note) {
   rep(c, 'H1 statikus', /<h1 id="eglTitle">[^<]*<\/h1>/, `<h1 id="eglTitle">${h1}</h1>`, `<h1 id="eglTitle">${h1}</h1>`);
-  rep(c, 'H1 JS (HERO[""])', /('':\{crumb:'[^']*',title:)'[^']*'/, `$1'${h1}'`, `title:'${h1}'`);
+  // a teljes HERO objektum a piac nyelvén (a futásidejű fordító a vegyes szöveget nem ismerte fel → magyar bevezető maradt)
+  const sk = c.rel.startsWith('sk/');
+  const B = { BMW: 'BMW', MINI: 'MINI', MB: 'Mercedes-Benz', AUDI: 'Audi' };
+  const row = (k, crumb, title, intro) => `    '${k}':{crumb:'${crumb}',title:'${title}',intro:'${intro}'}`;
+  const hero = 'var HERO={\n' + [
+    ...Object.entries(B).map(([k, n]) => sk
+      ? row(k, n, `Objednávka nového ${n} na mieru`, `Nové modely ${n} z Nemecka, s individuálnou konfiguráciou a dovozom na kľúč.`)
+      : row(k, n, `Objednávka nového ${n} na míru`, `Nové modely ${n} z Německa, s individuální konfigurací a dovozem na klíč.`)),
+    sk ? row('', 'Objednávka auta na mieru', h1, 'Nové modely BMW, MINI, Mercedes-Benz a Audi z Nemecka, s individuálnou konfiguráciou a dovozom na kľúč.')
+       : row('', 'Objednávka vozu na míru', h1, 'Nové modely BMW, MINI, Mercedes-Benz a Audi z Německa, s individuální konfigurací a dovozem na klíč.')
+  ].join(',\n') + '\n  };';
+  rep(c, 'HERO objektum JS', /var HERO=\{[\s\S]*?\n  \};/, hero, hero);
   rep(c, 'árfolyam-szöveg JS', `' Az árak tájékoztató német nettó listaárak, élő árfolyammal (1&nbsp;€ = <span id="eglFx">'+fx+'</span>&nbsp;Ft).'`,
     `' ${note}<span id="eglFx" style="display:none">'+fx+'</span>'`, `' ${note}<span id="eglFx"`);
   rep(c, 'árfolyam-szöveg statikus', /(<p class="egl-sub" id="eglSub">.*?) Ce(ny|ny) (sú|jsou) [^<]*<span id="eglFx" style="display:none"><\/span>\.<\/p>/, `$1 ${note}<span id="eglFx" style="display:none"></span></p>`, `${note}<span id="eglFx" style="display:none"></span></p>`);
