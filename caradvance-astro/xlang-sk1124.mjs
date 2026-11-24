@@ -151,6 +151,7 @@ const T = [
   R(/\/mes\./g, '/Monat', '/mois', '/mese', '/month', '/mes.'),
   R(/\bod (?=CHF|\d)/g, 'ab ', 'dès ', 'da ', 'from ', 'desde '),
 ];
+const WA = { ch: 'DJbjsf26eljsayu+GLlVHQ', eu: 'ZxOFSK3mMMN97K5yFHaqCQ' }; // Ahrefs Web Analytics: saját CH / EU projekt (nem a magyar)
 const VAT = { ch: ['ohne MWST', 'hors TVA', 'IVA esclusa', 'excl. VAT', 'sin IVA'], eu: ['ohne MwSt.', 'HT', 'IVA esclusa', 'excl. VAT', 'sin IVA'] };
 
 function tr(s, li, mk) {
@@ -221,6 +222,7 @@ function onpage(h, li, mk, rel, st) {
   if (tt) h = h.replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*"/g, (m, a) => a + tt + '"');
   h = h.replace(/(<meta name="description" content=")([^"]*)"/, (m, a, d) => { const o = unesc(d); const n = fitMeta(o, li); if (n !== o) { st.d++; return a + esc(n) + '"'; } return m; });
   if (!/<h1\b/.test(h)) { const n = h.replace(/<h2( class="lk-title"[^>]*)>([\s\S]*?)<\/h2>/, '<h1$1>$2</h1>'); if (n !== h) { h = n; st.h1++; } }
+  h = h.replace(/data-key="hc0fbnlxNtmpnGbelDApVQ"/g, `data-key="${WA[mk]}"`);
   return h;
 }
 
