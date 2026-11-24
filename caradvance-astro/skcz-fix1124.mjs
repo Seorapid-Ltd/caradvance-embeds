@@ -191,6 +191,28 @@ function fix17() {
   return 'CZ sitemap +' + add.length + ' /auto/ oldal';
 }
 
+
+/* ---------------- 2026-11-24 este — utóellenőrzés ---------------- */
+// PDF-adatlap: ha a böngésző blokkolja a felugró ablakot, a figyelmeztetés magyarul jelent meg
+const POPUP_HU = 'A böngésző blokkolta a felugró ablakot. Engedélyezd, majd próbáld újra a letöltést.';
+const POPUP = {
+  sk: 'Prehliadač zablokoval vyskakovacie okno. Povoľte ho a skúste sťahovanie znova.',
+  cs: 'Prohlížeč zablokoval vyskakovací okno. Povolte ho a zkuste stahování znovu.',
+};
+// JSON-LD: a caradvance.hu-n tárolt képek (logó, autófotók) a piac saját domainjén is elérhetők → saját domain
+function fixMisc(h, l) {
+  let n = h.split(POPUP_HU).length - 1;
+  if (n) { h = h.split(POPUP_HU).join(POPUP[l]); hit(l, 'PDF felugró-ablak üzenet', n); }
+  h = h.replace(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g, (m, a, j, b) => {
+    const j2 = j.replace(/https?:\/\/(?:www\.)?caradvance\.hu\/([^"\s]+?\.(?:webp|jpe?g|png|avif|svg|gif))(?=["\s])/g, (u, p) => {
+      if (!fs.existsSync(path.join(DIST, p.split('?')[0]))) return u;
+      hit(l, 'JSON-LD kép saját domainre'); return SITE[l] + '/' + p;
+    });
+    return a + j2 + b;
+  });
+  return h;
+}
+
 /* ---------------- futtatás ---------------- */
 function* walk(d) {
   for (const e of fs.readdirSync(d, { withFileTypes: true })) {
@@ -210,7 +232,7 @@ try {
       const h0 = fs.readFileSync(f, 'utf8'); let h = h0;
       h = fixLinks(h, l, sub);
       h = fix7(h, l);
-      if (!sub) { h = fix1(h, l); h = fix6(h, l); h = fix16(h, l); h = fixLegal(h, l, rel); }
+      if (!sub) { h = fix1(h, l); h = fix6(h, l); h = fix16(h, l); h = fixLegal(h, l, rel); h = fixMisc(h, l); }
       files++;
       if (h !== h0) { fs.writeFileSync(f, h); changed++; }
     }
