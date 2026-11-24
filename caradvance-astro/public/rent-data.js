@@ -4,7 +4,7 @@
 // rental price (2000 km/month tier) and a Kaution (deposit), both net EUR.
 window.RENT = (function () {
   var RATE = 362; // EUR->HUF fallback; updated live from frankfurter
-  var SHEET_CSV = 'https://docs.google.com/spreadsheets/d/1rVdjNPmwPnqZ-whBBs0f_xnAnZRXP-ozeaNkQBvIO2Y/gviz/tq?tqx=out:csv';
+  var SHEET_CSV = '/api/sheet?s=rent'; // szűrt, nyilvános oszlopok (functions/api/sheet.js) — a Google-táblát a böngésző nem tölti le közvetlenül
 
   function slugify(m){return String(m||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
   var MAIN_PICK = {"bmw-x7-m50d-m-sport-pro-22-b-w": "fe568239", "bmw-x2-xdrive20d-m-sport-pro-20-h-k": "0ec9c853", "bmw-x6-m60i-xdrive-full-option-carbon-m-sitze": "b71ffd45", "bmw-i5-m60-xdrive-i5m60-xdrive": "c2e8e425", "bmw-x5-xdrive30d": "905fe271", "bmw-x6-xdrive30d-m-sport-pro": "c6b0483d", "bmw-x5-xdrive30d-m-sport-pro-luft-22": "7cc9ba26", "porsche-911-carrera-4-gts-approved-3-jahre-voll-leder": "44ce52eb", "bmw-m4-comp-cabrio-20-carbon-driv-assist-prof-h-k": "2182e56e", "bmw-x7-xdrive40d-m-sport-pro-23-luft-h-k": "64574841", "bmw-x5-xdrive40d-m-sport-pro-full-option": "a3dc7592", "bmw-x6-xdrive30d-m-sport-pro-individual-22": "921b1d29", "bmw-x6-xdrive30d-m-sport-pro-luft-22": "a05d3035", "bmw-x5-xdrive30d-m-sport-pro-22-luft": "db6ae02a", "bmw-x5-xdrive30d-m-sport-pro-22": "1f451f43", "bmw-x5-m-competition-21-22": "4783b10e", "porsche-911-carrera-gts-approved-3-jahre-voll-leder": "7544b234", "bmw-x6-xdrive30d-m-sport-pro-22-individual": "f445dc54", "bmw-x7-xdrive40d-m-sport-pro-22": "2ad119b8", "porsche-panamera-gts-standheizung-allradlenkung-ptv-pano": "c25bffa2", "bmw-x7-40d-british-racing-green-brown-b-w-full": "252375f1", "porsche-992-targa-4s-480hp-pacha-black-black-uvp-220k": "21517196", "mercedes-benz-g-450d-amg-my2027-black-beige-superior-full-full": "d7d9e97b", "bmw-m3-competition-touring-xdrive-carbon-h-k": "8d296feb", "bmw-x5-xdrive30d-m-sport-pro-22-ahk-h-k": "63ae502c"};
@@ -69,8 +69,8 @@ window.RENT = (function () {
         var modell=g(row,'modell'); if(!modell)continue; if(/^BMW (M3|i5)\b/i.test(modell))continue; /* nem bérelhető (Marc, 2026-11-04) — = src/data/rentalStock.ts STOCK_EXCLUDE */
         if((g(row,'aktiv')||'').toLowerCase()==='nem')continue;
         // only CarAdvance's own fleet is rentable — exclude WeGa/partner cars
-        var _forras=(g(row,'forras')||'').toLowerCase(), _sajat=(g(row,'sajat')||'').toLowerCase();
-        if(_forras && _forras!=='caradvance' && _sajat!=='igen') continue;
+        // (a forras/sajat oszlopot a szerver már nem adja ki; helyette: berles_ok = „nem” a partnerautóknál)
+        if((g(row,'berles_ok')||'').toLowerCase()==='nem') continue;
         // A Sheet dont (Marc, 2026.08.30.): a `berelheto` oszlop es a Rental.xlsx arai
         // az igazsag, hogy a /berelheto/ oldal es az /autoink/ berlet-fule ugyanazt mutassa.
         var _num=function(v){return parseFloat(String(v||'').replace(/[^0-9.]/g,''))||0;};
