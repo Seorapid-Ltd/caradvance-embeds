@@ -230,8 +230,9 @@ function fixHreflang(h, l) {
 // mobil / iPad: vízszintes kilógás (2026-11-24 este, élő oldalon mérve 375 / 768 / 834 / 1024 px-en)
 //  - lábléc jogi sora (nowrap) iPaden 768–1100 px között kilógott → tördelhető
 //  - /prenajom/ · /pronajem/ kalkulátor: a hosszú modellnév-opció 375 px-en kitolta a választómezőt
+//  - főoldal számkártyák (5,0 ★ hodnocení) 834 px-en (iPad Air) kilógtak → 1000 px alatt 2 oszlop
 //  - főoldal 3D autó-karusszel: a széle 6–25 px-lel túlnyúlt → a lap nem görgethető oldalra (overflow-x: clip a karusszel szakaszán)
-const LAYOUT_CSS = '<style id="skcz-fix1124-css">a[href*="facebook.com/caradvancehungary"],a[href*="instagram.com/caradvance_hungary"],a[href*="tiktok.com/search"],a[href*="linkedin.com/search"]{display:none!important}#autoink{overflow-x:clip}@media (max-width:1100px){.cafoot-copy span{white-space:normal!important;max-width:100%}}.tb-cf>label{min-width:0}.tb-cf select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}</style>';
+const LAYOUT_CSS = '<style id="skcz-fix1124-css">a[href*="facebook.com/caradvancehungary"],a[href*="instagram.com/caradvance_hungary"],a[href*="tiktok.com/search"],a[href*="linkedin.com/search"]{display:none!important}.stat-logos img[alt="Facebook"],.stat-logos img[alt="Instagram"],.stat-logos img[alt="TikTok"],.stat-logos img[alt="LinkedIn"]{display:none!important}@media (max-width:1000px){.stats .stats-in{grid-template-columns:repeat(2,minmax(0,1fr))!important}}#autoink{overflow-x:clip}@media (max-width:1100px){.cafoot-copy span{white-space:normal!important;max-width:100%}}.tb-cf>label{min-width:0}.tb-cf select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}</style>';
 function fixLayout(h, l) {
   if (h.includes('id="skcz-fix1124-css"') || !h.includes('</head>')) return h;
   hit(l, 'mobil/iPad CSS');
