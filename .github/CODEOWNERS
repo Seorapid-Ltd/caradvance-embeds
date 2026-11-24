@@ -1,0 +1,3 @@
+# A main ágra (élő oldal) csak tulajdonosi jóváhagyással kerülhet változás (pull request).
+# A 2 óránkénti készletfrissítés és a tulajdonosi fiók közvetlenül is publikálhat (ruleset: bypass).
+* @Seorapid @marcNemethy-ux

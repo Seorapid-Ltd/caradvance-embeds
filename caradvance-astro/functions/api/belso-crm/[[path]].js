@@ -302,9 +302,9 @@ async function handleCreate(request, env, user) {
 }
 
 /* ---------------- készlet ---------------- */
-async function handleInventory(url) {
+async function handleInventory(url, env) {
   const line = url.searchParams.get('line') || '';
-  try { return json({ items: await inventory(line) }); }
+  try { return json({ items: await inventory(line, env) }); }
   catch (e) { return json({ error: String(e.message || e) }, 502); }
 }
 
@@ -1577,7 +1577,7 @@ export async function onRequest(context) {
     await ensureCrm(env);
     if (path === '/list' && method === 'GET') return await handleList(env, user);
     if (path === '/clients' && method === 'POST') return await handleCreate(request, env, user);
-    if (path === '/inventory' && method === 'GET') return await handleInventory(url);
+    if (path === '/inventory' && method === 'GET') return await handleInventory(url, env);
     if (path === '/fin/summary' && method === 'GET') return await handleFinSummary(env, user);
     if (path === '/fx' && method === 'GET') return json({ rate: await eurHuf() });
     if (path === '/docmeta' && method === 'GET') return await handleDocMeta(env);

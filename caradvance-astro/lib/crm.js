@@ -10,6 +10,7 @@
  * Használja: functions/api/belso-crm/[[path]].js (munkatárs) és functions/api/crm-ajanlat/[[path]].js (ügyfél).
  */
 import { renderDocPdf } from './docpdf.js';
+import { fetchGviz } from './sheet-src.js';
 import { LESSOR } from './szerzodes-tpl.js';
 import { shellFooter, contactOf, idLineL, deliveryL, vatShort, vatLong, periodText, OFFER_MAIL, hello } from './crmi18n.js';
 export { siteOf, langOf } from './crmi18n.js';
@@ -343,7 +344,6 @@ export async function saveCard(env, dealId, fields, userId, actor, reason) {
 }
 
 /* ============================== készlet (Google-tábla) ============================== */
-const SHEET = 'https://docs.google.com/spreadsheets/d/1rVdjNPmwPnqZ-whBBs0f_xnAnZRXP-ozeaNkQBvIO2Y/gviz/tq?tqx=out:csv';
 export function parseCsv(t) {
   const rows = []; let row = [], f = '', q = false;
   for (let i = 0; i < t.length; i++) {
@@ -366,12 +366,12 @@ const yes = (v) => /^(igen|yes|true|1|x)$/i.test(String(v || '').trim());
  *  Bérlés: havi bérleti díj (berlet_eur) · Eladás: vételár (vetel_huf, ha nincs: vetel_eur)
  *  Import: vételár EUR-ban · Bizományos: a "bizomanyos" lap.
  */
-export async function inventory(line) {
+export async function inventory(line, env = {}) {
   // Bérlés: pontosan a weboldal bérelhető kínálata (/autoink/#berelheto, Auto-Abo flotta) az opciókkal együtt —
   // a táblázat régi bérleti sorai a weboldalon már nem bérelhetők, ezért itt sem jelennek meg
   if (line === 'Bérlés') return aboFleet();
-  const src = line === 'Bizományos' ? SHEET + '&sheet=bizomanyos' : SHEET;
-  const r = await fetch(src, { cf: { cacheTtl: 120, cacheEverything: true } });
+  const q = line === 'Bizományos' ? 'tqx=out:csv&sheet=bizomanyos' : 'tqx=out:csv';
+  const r = await fetchGviz(env, q, { cf: { cacheTtl: 120, cacheEverything: true } });
   if (!r.ok) throw new Error('A készlet-tábla nem érhető el (' + r.status + ').');
   const rows = parseCsv(await r.text());
   const out = [];

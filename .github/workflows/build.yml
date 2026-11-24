@@ -1,12 +1,12 @@
 name: Build CarAdvance site
 
 # Rebuilds the static site from the Google Sheet and publishes it.
-# - Runs automatically every 2 hours (new cars / price edits go live within ~2h)
+# - Runs automatically every 15 minutes (new cars / price edits go live within ~20 min)
 # - Runs on demand from the Actions tab ("Run workflow")
 # - Runs when the generator itself changes
 on:
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # a kész készletfrissítés után elindítja az oldal buildjét (pages-build.yml)
 
 concurrency:
   group: build-site
@@ -26,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # a GitHub az időzített futást az alapértelmezett ágról (develop) indítja — a készlet mindig a main-re (élő oldal) kerül
 
       - uses: actions/setup-node@v4
         with:
@@ -35,6 +38,7 @@ jobs:
         run: node generate.mjs
         env:
           OUT: "."
+          GOOGLE_SHEETS_SA: ${{ secrets.GOOGLE_SHEETS_SA }}  # hitelesített táblaolvasás (üresen: nyilvános cím)
 
       - name: Remove obsolete pages
         run: rm -f auto.html autoink.html
@@ -48,5 +52,9 @@ jobs:
             echo "No changes to publish."
           else
             git commit -m "Rebuild site from sheet"
-            git push
+            git push origin HEAD:main
+            # a GITHUB_TOKEN-nel küldött push nem indít másik workflow-t — az élő oldal buildjét külön kell indítani
+            gh workflow run pages-build.yml --ref main
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
