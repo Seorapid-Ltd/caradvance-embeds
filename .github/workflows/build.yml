@@ -1,12 +1,12 @@
 name: Build CarAdvance site
 
 # Rebuilds the static site from the Google Sheet and publishes it.
-# - Runs automatically every 2 hours (new cars / price edits go live within ~2h)
+# - Runs automatically every 15 minutes (new cars / price edits go live within ~20 min)
 # - Runs on demand from the Actions tab ("Run workflow")
 # - Runs when the generator itself changes
 on:
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
