@@ -14,6 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { parse, serialize, visit, finishLd } from './i18n-core.mjs';
 import { loadIntl, applyExpat } from './i18n-expat.mjs';
 import { writeRuntime } from './i18n-runtime.mjs';
@@ -85,8 +86,10 @@ try {
   const sitemapAdd = []; const stats = {};
   const TPL = {}; for (const l of LANGS) { const t1 = makeTemplater(l, dicts[l]); let rt = {}; try { rt = JSON.parse(fs.readFileSync(`src/i18n/dict/rt-${l}.json`, 'utf8')); } catch {} const t2 = makeRental(l, dicts[l], rt); TPL[l] = (k) => t1(k) || t2(k); }
   const XJS = {}; for (const l of DL) XJS[l] = runtimeJs(fxOf(M, l));
-  const RTV = process.env.CA_MIRROR_RTV || Date.now().toString(36);
   if (!CHILD) { const rtn = writeRuntime(DIST, LANGS, [...PAGESET], SLUG, REDIR, XJS); console.log('[mirror] runtime szótár: ' + Object.entries(rtn).map(([l, n]) => l + ' ' + n).join(', ')); }
+  // a futásidejű szótár verziója a tartalmából (nem az időből): ha nem változott, az oldalak sem változnak,
+  // így a feltöltésnél sem kell minden oldalt újra küldeni, és a böngésző-gyorsítótár is megmarad
+  const RTV = process.env.CA_MIRROR_RTV || (() => { const h = createHash('sha1'); const dir = path.join(DIST, 'i18n'); for (const f of fs.readdirSync(dir).filter((n) => /^rt-[a-z]+\.js$/.test(n)).sort()) h.update(f).update(fs.readFileSync(path.join(dir, f))); return h.digest('hex').slice(0, 10); })();
 
   // ---- párhuzamos fordítás: nyelvenként szétosztva ----
   let doLangs = PAGE_LANGS; let parts = [];
