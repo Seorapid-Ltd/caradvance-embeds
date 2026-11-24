@@ -48,9 +48,24 @@ jobs:
       - name: Install
         run: npm ci --no-audit --no-fund --progress=false
 
+      # fordítási gyorsítótár (tcache.mjs): az előző build lefordított oldalai — ami nem változott, nem fordítjuk újra
+      - name: Restore translation cache
+        uses: actions/cache/restore@v4
+        with:
+          path: caradvance-astro/.tcache
+          key: tcache-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            tcache-${{ github.ref_name }}-
+            tcache-develop-
+
+      - name: Prepare translation cache
+        run: rm -rf .tcache-old && if [ -d .tcache ]; then mv .tcache .tcache-old; fi
+
       - name: Build
         env:
           CF_PAGES_BRANCH: ${{ github.ref_name }}
+          CA_TCACHE_DIR: .tcache
+          CA_TCACHE_OLD: .tcache-old
         run: |
           nproc; free -g | head -2
           npm run build
@@ -70,3 +85,11 @@ jobs:
           --commit-hash "${{ github.sha }}"
           --commit-message "$(git log -1 --format=%s | head -c 300)"
           --commit-dirty=true
+
+      # a feltöltés után mentjük, hogy ne késleltesse az élesítést
+      - name: Save translation cache
+        if: ${{ success() }}
+        uses: actions/cache/save@v4
+        with:
+          path: caradvance-astro/.tcache
+          key: tcache-${{ github.ref_name }}-${{ github.run_id }}
