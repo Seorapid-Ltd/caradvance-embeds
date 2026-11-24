@@ -16,7 +16,7 @@
  * Új build-lépés: a package.json "build:full" láncába. Ha csak bizonyos országokat érint,
  * vedd fel az ONLY listába is (különben az egy-ország buildekben is lefut).
  */
-import { execSync } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -67,14 +67,57 @@ function prune() {
   console.log(`[build-run] ${n} másik ország / nyelv mappája kihagyva a további lépésekből`);
 }
 
+/* ---- párhuzamos lépések (a build-gépnek 4 CPU-ja van, a lépések egyenként csak egyet használnak) ----
+ * Egy csoport sávjai egyszerre futnak; egy sávon belül a lépések sorban. A csoport tagjai a
+ * "build:full" láncban egymás után állnak; a csoport ott indul, ahol az első tagja állna.
+ * .pl / .cz / .ch / .eu: mind a kész szlovák (ill. cseh) oldalból dolgozik, és csak a saját mappáját
+ * írja; az egyetlen közös fájl (_routes.json) módosítását a routes-apply.mjs utána, sorrendben végzi. */
+const GROUPS = [
+  { lanes: [['pl-site'], ['cz-phone', 'cz-final'], ['ch-site'], ['eu-site']], env: { CA_ROUTES_DEFER: '1' }, after: 'node routes-apply.mjs' },
+];
+const SERIAL = process.env.CA_SERIAL === '1'; // összehasonlításhoz: CA_SERIAL=1 = minden lépés egymás után
+const groupOf = (n) => GROUPS.find((g) => g.lanes.some((l) => l.includes(n)));
+
+function runOne(s) {
+  const t = Date.now();
+  try { execSync(s, { stdio: 'inherit', env: ENV }); } catch (e) { console.error(`[build-run] HIBA: ${s}`); process.exit(e.status || 1); }
+  times.push([s, (Date.now() - t) / 1000]);
+}
+
+function runLane(cmds, env) {
+  // a sáv kimenetét összegyűjtjük, és a sáv végén egyben írjuk ki (olvasható napló)
+  return new Promise((resolve) => {
+    const t = Date.now(); let out = '';
+    const script = cmds.map((c) => c).join(' && ');
+    const ch = spawn(script, { shell: true, env: { ...ENV, ...env } });
+    ch.stdout.on('data', (d) => { out += d; }); ch.stderr.on('data', (d) => { out += d; });
+    ch.on('close', (code) => { process.stdout.write(out); resolve({ code, script, sec: (Date.now() - t) / 1000 }); });
+  });
+}
+
+const skip = (n) => market && ONLY[n] && !ONLY[n].includes(market);
+const done = new Set();
 for (const s of steps) {
   const n = name(s);
-  if (market && ONLY[n] && !ONLY[n].includes(market)) { console.log(`[build-run] kihagyva (${market}): ${s}`); }
-  else {
-    const t = Date.now();
-    try { execSync(s, { stdio: 'inherit', env: ENV }); } catch (e) { console.error(`[build-run] HIBA: ${s}`); process.exit(e.status || 1); }
-    times.push([s, (Date.now() - t) / 1000]);
+  if (done.has(s)) { if (market && n === PRUNE_AFTER) prune(); continue; }
+  const g = !SERIAL && groupOf(n);
+  if (g) {
+    const lanes = g.lanes.map((l) => l.map((ln) => steps.find((x) => name(x) === ln)).filter((x) => x && !skip(name(x))));
+    for (const l of g.lanes) for (const ln of l) { const x = steps.find((y) => name(y) === ln); if (x) { done.add(x); if (skip(ln)) console.log(`[build-run] kihagyva (${market}): ${x}`); } }
+    const run = lanes.filter((l) => l.length);
+    if (run.length) {
+      const t = Date.now();
+      console.log(`[build-run] párhuzamosan: ${run.map((l) => l.map(name).join(' → ')).join('  |  ')}`);
+      const res = (await Promise.all(run.map((l) => runLane(l, g.env))));
+      for (const r of res) { if (r.code !== 0) { console.error(`[build-run] HIBA: ${r.script}`); process.exit(r.code || 1); } }
+      times.push([`párhuzamos csoport (${run.map((l) => l.map(name).join('→')).join(', ')})`, (Date.now() - t) / 1000]);
+      runOne(g.after);
+    }
+    if (market && n === PRUNE_AFTER) prune();
+    continue;
   }
+  if (skip(n)) { console.log(`[build-run] kihagyva (${market}): ${s}`); }
+  else runOne(s);
   if (market && n === PRUNE_AFTER) prune();
 }
 
