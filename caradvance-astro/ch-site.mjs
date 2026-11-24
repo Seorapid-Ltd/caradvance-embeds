@@ -23,6 +23,7 @@ import { parse, serialize, visit, finishLd, maskNums, unmaskNums } from './i18n-
 import { maskModels, unmaskModels, neutralL, maskModels2, normNums, phraseFix } from './skcz-langs-mask.mjs';
 import { SKL } from './skcz-langs-data.mjs';
 import { chCalcPage, CALC_PAGES } from './ch-calc.mjs';
+import { deferOrApply } from './routes-market.mjs';
 
 const PL = JSON.parse(fs.readFileSync('ch-site-config.json', 'utf8'));
 const BASE = 'de';
@@ -453,18 +454,8 @@ function run() {
   }
 
   // _routes.json: a svájci útvonalak is a middleware-en menjenek
-  try {
-    const rp = path.join(DIST, '_routes.json'); const r = JSON.parse(fs.readFileSync(rp, 'utf8'));
-    // a /ch/ előnézet a caradvance.hu-n statikus (noindex + canonical), nem kell rá szabály
-    const tops = new Set(LANGS.filter((x) => x !== BASE).map((x) => '/' + x + '/*')); for (const p of map.values()) { const t = p.split('/')[0]; if (t) tops.add('/' + t + '/*'); }
-    for (const x of tops) if (!r.include.includes(x) && !r.include.includes('/' + x.split('/')[1] + '/*')) r.include.push(x);
-    // 2 helyet meghagyunk az am-routes.mjs-nek (/belso/ajanlatmotor/*, /ajanlat/auto/*), különben a build megállna
-    const res = ['/belso/ajanlatmotor/*', '/ajanlat/auto/*'].filter((w) => !r.include.includes(w) && !r.include.includes('/' + w.split('/')[1] + '/*')).length;
-    // ha nem fér bele a 100 szabályba: a teszt- és ikonoldalak szabálya elhagyható (ezeken a middleware-nek nincs dolga)
-    for (const x of ['/teszt-mega-menu/*', '/icons/*']) if (r.include.length + (r.exclude || []).length + res > 100 && r.include.includes(x)) r.include.splice(r.include.indexOf(x), 1);
-    if (r.include.length + (r.exclude || []).length + res <= 100) { fs.writeFileSync(rp, JSON.stringify(r, null, 2)); console.log('[ch-site] _routes.json: ' + (r.include.length + (r.exclude || []).length) + ' szabály (+' + res + ' am-routes)'); }
-    else console.log('[ch-site] _routes.json: több mint 100 szabály, nem írtam át');
-  } catch (e) {}
+  // (a kód: routes-market.mjs)
+  deferOrApply(DIST, 'ch', { mapValues: [...map.values()], LANGS, BASE });
 
   // a hiányzó szlovák egységek (fr / it / de / en szerint), angol referenciával — a következő fordításhoz
   try {
