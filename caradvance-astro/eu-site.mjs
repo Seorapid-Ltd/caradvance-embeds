@@ -18,6 +18,7 @@ import path from 'node:path';
 import { parse, serialize, visit, finishLd, maskNums, unmaskNums } from './i18n-core.mjs';
 import { maskModels, unmaskModels, neutralL, maskModels2, normNums, phraseFix } from './skcz-langs-mask.mjs';
 import { SKL } from './skcz-langs-data.mjs';
+import { deferOrApply } from './routes-market.mjs';
 
 const EU = JSON.parse(fs.readFileSync('eu-site-config.json', 'utf8'));
 const DIST = 'dist';
@@ -447,20 +448,8 @@ function run() {
   }
 
   // _routes.json: /es/* kell; hely a 100-as korláton belül (összevonás: /berles*, /vasarlas*)
-  try {
-    const rp = path.join(DIST, '_routes.json'); const r = JSON.parse(fs.readFileSync(rp, 'utf8'));
-    const res = ['/belso/ajanlatmotor/*', '/ajanlat/auto/*'].filter((w) => !r.include.includes(w)).length;
-    const want = LANGS.map((x) => '/' + x + '/*').filter((x) => !r.include.includes(x));
-    const MERGE = [['/berles*', ['/berles-elonyei/*', '/berles-gyakori-kerdesek/*', '/berlesi-folyamat/*', '/berlesi-feltetelek/*']], ['/vasarlas*', ['/vasarlas-elonyei/*', '/vasarlas-gyakori-kerdesek/*']]];
-    for (const [to, from] of MERGE) {
-      if (r.include.length + (r.exclude || []).length + res + want.length <= 100) break;
-      if (from.filter((x) => r.include.includes(x)).length < 2) continue;
-      r.include = r.include.filter((x) => !from.includes(x)); r.include.push(to);
-    }
-    r.include.push(...want);
-    if (r.include.length + (r.exclude || []).length + res <= 100) { fs.writeFileSync(rp, JSON.stringify(r, null, 2)); console.log('[eu-site] _routes.json: ' + (r.include.length + (r.exclude || []).length) + ' szabály (+' + res + ' am-routes)'); }
-    else console.log('[eu-site] _routes.json: több mint 100 szabály, nem írtam át');
-  } catch (e) {}
+  // (a kód: routes-market.mjs)
+  deferOrApply(DIST, 'eu', { LANGS });
 
   try {
     const all = [...miss].map(([k, m]) => ({ k, p: m.p, l: [...m.l], n: m.n, en: (m.raw && look1(D, 'en', m.raw)) || null, de: (m.raw && look1(D, 'de', m.raw)) || null, raw: m.raw !== k ? m.raw : undefined }));
