@@ -157,16 +157,16 @@ edit('cs/vozy', (c) => {
 // ---------- SK /dovoz/kalkulacka-poplatkov/ (prihlasenie auta 1 200, prihlasenie auta cena 700) ----------
 edit('sk/dovoz/kalkulacka-poplatkov', (c) => {
   meta2(c, 'Prihlásenie auta 2026 – cena a kalkulačka | CarAdvance',
-    'Prihlásenie auta 2026: koľko stojí prihlásenie dovezeného auta na Slovensku? Kalkulačka správneho poplatku podľa výkonu a normy Euro, sadzby a postup.');
+    'Prihlásenie auta 2026 – cena: koľko stojí prihlásenie dovezeného auta na Slovensku? Kalkulačka správneho poplatku podľa výkonu a normy Euro a postup.');
   rep(c, 'H1', '<h1 class="lk-title">Kalkulačka poplatku za prihlásenie dovezeného auta</h1>', '<h1 class="lk-title">Prihlásenie auta 2026 – cena a kalkulačka poplatku</h1>', 'Prihlásenie auta 2026 – cena a kalkulačka poplatku</h1>');
   rep(c, 'bevezető', '<p class="lk-lead">Zadajte výkon motora,', '<p class="lk-lead">Cena za prihlásenie auta je najmä správny poplatok podľa položky 65 — vypočítate ho nižšie. Zadajte výkon motora,', 'Cena za prihlásenie auta je najmä');
 });
 // ---------- CZ /dovoz/kalkulacka-prepisu/ (kolik stojí přepis auta 500, přepis auta cena 400) ----------
 edit('cs/dovoz/kalkulacka-prepisu', (c) => {
-  meta2(c, 'Přepis auta 2026: cena a kalkulačka poplatků | CarAdvance',
+  meta2(c, 'Kolik stojí přepis auta 2026: cena a kalkulačka | CarAdvance',
     'Kolik stojí přepis auta v roce 2026? Přepis auta – cena: správní poplatek 800 Kč a emisní poplatek podle normy Euro. Kalkulačka, sazby a postup přepisu.');
-  rep(c, 'H1', '<h1 class="lk-title">Kalkulačka poplatků za přepis vozidla</h1>', '<h1 class="lk-title">Přepis auta 2026 – kolik stojí a kalkulačka poplatků</h1>', 'Přepis auta 2026 – kolik stojí');
-  rep(c, 'bevezető', '<p class="lk-lead">Vyberte druh vozidla,', '<p class="lk-lead">Kolik stojí přepis auta? Správní poplatek 800 Kč a případný emisní poplatek podle normy Euro. Vyberte druh vozidla,', 'Kolik stojí přepis auta? Správní');
+  rep(c, 'H1', '<h1 class="lk-title">Kalkulačka poplatků za přepis vozidla</h1>', '<h1 class="lk-title">Přepis auta 2026: kolik stojí, cena a kalkulačka poplatků</h1>', 'Přepis auta 2026: kolik stojí, cena');
+  rep(c, 'bevezető', '<p class="lk-lead">Vyberte druh vozidla,', '<p class="lk-lead">Kolik stojí přepis auta? Cena přepisu auta = správní poplatek 800 Kč a případný emisní poplatek podle normy Euro. Vyberte druh vozidla,', 'Kolik stojí přepis auta? Cena přepisu');
 });
 // ---------- CZ /dovoz/kalkulacka-poplatku/ (přihlášení auta z německa 150, eko daň 150) ----------
 edit('cs/dovoz/kalkulacka-poplatku', (c) => {
@@ -186,6 +186,7 @@ edit('sk', (c) => {
 edit('cs', (c) => {
   meta2(c, 'Auta z Německa – pronájem, prodej a dovoz | CarAdvance',
     'Auta z Německa bez starostí: prémiové vozy na prodej, dlouhodobý pronájem od 6 měsíců bez akontace a dovoz auta z Německa na klíč. Ceny bez DPH, se zárukou.');
+  rep(c, 'H1', '<h1>Prémiové vozy z Německa</h1>', '<h1>Prémiová auta z Německa</h1>', '<h1>Prémiová auta z Německa</h1>');
   rep(c, 'bevezető', '<p class="sub">Pronájem a prodej prémiových vozů, dovoz aut z Německa.</p>', '<p class="sub">Auta z Německa bez starostí: pronájem a prodej prémiových vozů, dovoz aut z Německa na klíč.</p>', 'Auta z Německa bez starostí:');
 });
 
@@ -233,7 +234,8 @@ edit('cs/blog/dlouhodoby-pronajem-vozu', (c) => {
   meta2(c, 'Dlouhodobý pronájem vozu: jak funguje a kolik stojí 2026',
     'Jak funguje dlouhodobý pronájem vozu 2026: co obsahuje měsíční poplatek, jak probíhá pronájem krok za krokem, pro koho se vyplatí a čím se liší od leasingu.');
   rep(c, 'H1', `<h1 ${XJ}>Dlouhodobý pronájem vozu — pro koho se vyplatí a kolik stojí?</h1>`, `<h1 ${XJ}>Dlouhodobý pronájem vozu — jak funguje, pro koho se vyplatí a kolik stojí?</h1>`, 'jak funguje, pro koho se vyplatí');
-  rep(c, 'H2', /<h2([^>]*)>Jak začít\?<\/h2>/, '<h2$1>Jak funguje pronájem vozu krok za krokem?</h2>', 'Jak funguje pronájem vozu krok za krokem?');
+  rep(c, 'H2', /<h2([^>]*)>Jak začít\?<\/h2>/, '<h2$1>Jak funguje dlouhodobý pronájem krok za krokem?</h2>', 'Jak funguje dlouhodobý pronájem krok za krokem?');
+  rep(c, 'bevezető', `<p class="bp-lead" ${XJ}>Dlouhodobý pronájem zahrnuje`, `<p class="bp-lead" ${XJ}>Jak funguje dlouhodobý pronájem? Zahrnuje`, 'Jak funguje dlouhodobý pronájem? Zahrnuje');
   // a „co je operativní leasing” kérdés a /prodej/operativni-leasing/ oldalé — kannibalizáció helyett belső link
   rep(c, 'link operativní leasing', 'abyste dostali přesně to, co potřebujete.</p>', 'abyste dostali přesně to, co potřebujete. Čím se dlouhodobý pronájem liší od leasingu, vysvětlujeme v článku <a href="/cs/prodej/operativni-leasing/">co je operativní leasing</a>.</p>', 'v článku <a href="/cs/prodej/operativni-leasing/">');
 });
