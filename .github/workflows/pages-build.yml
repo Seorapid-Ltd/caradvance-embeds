@@ -10,6 +10,13 @@ name: Site build + deploy (Cloudflare Pages)
 on:
   push:
     branches: [main, develop, 'dev-*']
+    # ezek nem részei a weboldalnak (külön worker / dokumentáció) — változásuk nem indít buildet
+    paths-ignore:
+      - 'docs/**'
+      - 'ajanlatmotor/**'
+      - 'belso-api/**'
+      - 'caradvance-chatbot/**'
+      - '*.md'
   workflow_dispatch:
 
 permissions:
