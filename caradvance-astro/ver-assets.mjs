@@ -22,19 +22,21 @@ try {
   let cv = '';
   try { cv = hash('caradvance-chat.js'); } catch (e) { /* nincs chat.js */ }
   let files = 0;
-  if (cv) {
-    (function walk(d) {
-      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-        const p = path.join(d, e.name);
-        if (e.isDirectory()) { walk(p); continue; }
-        if (!/\.html$/.test(e.name)) continue;
-        const s = fs.readFileSync(p, 'utf8');
-        const n = s.replace(/\/caradvance-chat\.js(\?v=[0-9a-z]+)?(?=["'])/g, '/caradvance-chat.js?v=' + cv);
-        if (n !== s) { fs.writeFileSync(p, n); files++; }
-      }
-    })(dist);
-  }
-  console.log('ver-assets: ca-forms v=' + fv + ', caradvance-chat v=' + cv + ', ' + files + ' HTML frissítve');
+  // 3) a futásidejű fordítók (/i18n/rt-*.js) verziója is a végleges tartalmuk hash-e — eddig a build ideje volt,
+  //    ami minden buildben minden lefordított oldalt megváltoztatott (lassú feltöltés, elveszett gyorsítótár)
+  const rtv = {}; const rtHash = (f) => (f in rtv ? rtv[f] : (rtv[f] = fs.existsSync(path.join(dist, 'i18n', f)) ? hash(path.join('i18n', f)) : null));
+  (function walk(d) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { walk(p); continue; }
+      if (!/\.html$/.test(e.name)) continue;
+      const s = fs.readFileSync(p, 'utf8');
+      let n = cv ? s.replace(/\/caradvance-chat\.js(\?v=[0-9a-z]+)?(?=["'])/g, '/caradvance-chat.js?v=' + cv) : s;
+      n = n.replace(/(\/i18n\/)(rt-[a-z-]+\.js)\?v=[0-9a-z]+/g, (m, pre, f) => { const h = rtHash(f); return h ? pre + f + '?v=' + h : m; });
+      if (n !== s) { fs.writeFileSync(p, n); files++; }
+    }
+  })(dist);
+  console.log('ver-assets: ca-forms v=' + fv + ', caradvance-chat v=' + cv + ', i18n ' + Object.keys(rtv).length + ' fájl, ' + files + ' HTML frissítve');
 } catch (e) {
   console.log('ver-assets: kihagyva — ' + (e && e.message));
 }
