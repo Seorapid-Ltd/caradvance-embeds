@@ -9,6 +9,8 @@
 // Hiba esetén logol, a buildet nem állítja meg. Idempotens.
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 const DIST = 'dist';
 function walk(d, out) {
@@ -22,7 +24,9 @@ const bkey = (s) => { const n = norm(s); return ALIAS[n] || n; };
 
 /* ---------- 1) bérelhető márkák ---------- */
 let BR = null;
-try {
+const WK = !isMainThread && workerData && workerData.fix1110;
+if (WK) BR = WK.BR ? new Set(WK.BR) : null;
+else try {
   const h = fs.readFileSync(path.join(DIST, 'autoink', 'index.html'), 'utf8');
   const m = h.match(/"brand_totals"\s*:\s*(\{[^}]*\})/);
   if (m) { const o = JSON.parse(m[1]); BR = new Set(Object.keys(o).filter((k) => +o[k] > 0).map(bkey)); }
@@ -53,28 +57,101 @@ const hubJs = (lg) => '<script id="ca-brand-note">(function(){var N=' + JSON.str
   'l.parentNode.insertBefore(d,l);return true;}' +
   'var n=0;(function t(){if(run()||++n>40)return;setTimeout(t,150);})();})();</script>';
 const mm = { rm: 0, menu: 0, hub: 0, js: 0 };
-try {
-  if (BR && BR.size) {
-    for (const f of walk(DIST, [])) {
+/* A három teljes bejárás (márkamenü, autólisták, nem elérhető modellek) fájlonként független munkája worker szálakon
+   fut (os.availableParallelism() szál, CA_FIX1110_WORKERS=1 → egy szálon); a sorrendfüggő összesítés (autólisták,
+   keresőindexből kimaradó oldalak, kártyák) a fő szálon, a fájlok eredeti sorrendjében. */
+// 1. kör: márkamenü-javítás (1) + autólista-jelöltek; items: [sorszám, fájl]
+function round1(items) {
+  const m = { rm: 0, menu: 0, hub: 0, js: 0 }; const hubs = [];
+  for (const [i, f] of items) {
+    if (BR && BR.size) {
       if (/\.html$/.test(f)) {
         let h = fs.readFileSync(f, 'utf8'); const s = h;
         if (h.indexOf('ddi-brand') > -1) {
-          h = h.replace(/<a class="ddi ddi-brand" href="[^"]*[?&]marka=([a-z0-9-]+)[^"]*">[\s\S]*?<\/a>/g, (a, k) => { if (BR.has(bkey(k))) return a; mm.rm++; return ''; });
+          h = h.replace(/<a class="ddi ddi-brand" href="[^"]*[?&]marka=([a-z0-9-]+)[^"]*">[\s\S]*?<\/a>/g, (a, k) => { if (BR.has(bkey(k))) return a; m.rm++; return ''; });
         }
         if (h.indexOf('id="sf-brand"') > -1 && h.indexOf('id="ca-brand-note"') < 0) {
           const lg = ((h.match(/<html[^>]*\slang="([a-z]{2})/i) || [])[1] || 'hu').toLowerCase();
-          const bi = h.lastIndexOf('</body>'); if (bi > 0) { h = h.slice(0, bi) + hubJs(lg) + h.slice(bi); mm.hub++; }
+          const bi = h.lastIndexOf('</body>'); if (bi > 0) { h = h.slice(0, bi) + hubJs(lg) + h.slice(bi); m.hub++; }
         }
-        if (h !== s) { fs.writeFileSync(f, h); mm.menu++; }
+        if (h !== s) { fs.writeFileSync(f, h); m.menu++; }
       } else if (/(^|[\\/])mega-menu(-test)?\.js$/.test(f)) {
         let j = fs.readFileSync(f, 'utf8'); const s = j;
         j = j.replace(/(var RENT_BRANDS = \[)([^\]]*)(\])/, (a, p1, body, p3) => p1 + body.split(/,\s*(?=B\()/).filter((b) => { const k = (b.match(/B\('([a-z]+)'/) || [])[1]; return !k || BR.has(bkey(k)); }).join(', ') + p3);
-        if (j !== s) { fs.writeFileSync(f, j); mm.js++; }
+        if (j !== s) { fs.writeFileSync(f, j); m.js++; }
       }
     }
+    // (2) autólisták (hub): a márkamenü-javítás utáni tartalom alapján
+    if (!/[\\/]index\.html$/.test(f)) continue;
+    const rel = path.relative(DIST, f).split(path.sep).join('/');
+    if (/^(admin|i18n)\//.test(rel)) continue;
+    const h0 = fs.readFileSync(f, 'utf8');
+    if (h0.indexOf('id="sf-brand"') < 0 || h0.indexOf('<div id="sub-list"></div>') < 0) continue;
+    const parts = rel.split('/'); parts.pop(); const slug = parts.pop(); const pre = parts.join('/');
+    hubs.push([i, pre, { file: f, url: '/' + (pre ? pre + '/' : '') + slug + '/' }]);
   }
-  console.log('[skcz-fix1110] bérelhető márkák: ' + (BR ? [...BR].join(',') : '?') + ' · menüből kivett link: ' + mm.rm + ' (' + mm.menu + ' oldal) · mega-menu.js: ' + mm.js + ' · lista-üzenet: ' + mm.hub + ' oldal');
-} catch (e) { console.log('[skcz-fix1110] márkák hiba:', e && e.stack || e); }
+  return { m, hubs };
+}
+// 2. kör: nem elérhető modelloldalak (3); items: [sorszám, fájl]
+function round2(items, HUB) {
+  const out = [];
+  for (const [i, f] of items) {
+    const rel = path.relative(DIST, f).split(path.sep).join('/');
+    if (!/\/index\.html$/.test(rel) || /^(admin|i18n)\//.test(rel)) continue; // az ár nélküli (_np) változatok is
+    const R = {};
+    const r = (() => {
+    let h = fs.readFileSync(f, 'utf8');
+    // bérlési modelloldal sablon (cd-hero + cd-lead, magyar megfelelője /berelheto-auto/…), de bérlési ablak (sub-rent) nélkül = már nincs kínálatban
+    if (h.indexOf('cd-hero') < 0 || h.indexOf('cd-lead') < 0 || h.indexOf('sub-rent') > -1 || h.indexOf('/berelheto-auto/') < 0) return null;
+    R.gone = '/' + rel.replace(/index\.html$/, '');
+    const lg = naLang(h); const T = NA[lg];
+    const car = ((h.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const brand = car.split(' ')[0] || '';
+    const parts = rel.split('/'); parts.pop(); parts.pop(); parts.pop(); const pre = parts.join('/');
+    const hub = HUB.get(pre); const bq = bkey(brand);
+    const hubUrl = hub ? hub.url + '?marka=' + encodeURIComponent(bq) + '#berelheto' : '/';
+    if (h.indexOf('id="ca-na-css"') < 0) {
+      // jelzés: elérhetőség-chip → „nem elérhető”, ár rejtve, gombok → érdeklődés + elérhető autók
+      h = h.replace(/(<span class="cd-chip)(">)([^<]*)(<\/span><span class="cd-chip cd-chip-year">)/, (a, p1, p2, t, p4) => p1 + ' ca-na-chip' + p2 + escH(T.badge) + p4);
+      const box = '<div class="ca-na-box"><b>' + escH(T.box) + '</b><span>' + escH(T.boxTx) + '</span></div>';
+      if (/<div class="ca-pbox/.test(h)) h = h.replace(/(<div class="ca-pbox)/, box + '$1');
+      h = h.replace(/<div class="cd-cta">[\s\S]*?<\/div>/g, () => '<div class="cd-cta"><a class="cd-btn cd-btn-red ca-wl-open" href="#" data-car="' + escH(car) + '">' + escH(T.want) + '</a><a class="cd-btn cd-btn-white" href="' + escH(hubUrl) + '">' + escH(T.avail) + '</a></div>');
+      // az információs blokk második gombsora (cd-cta2) és minden további bérlési gomb (?berles=… — sticky menü, alsó sáv)
+      h = h.replace(/<div class="cd-cta2">[\s\S]*?<\/div>/g, () => '<div class="cd-cta2"><a class="cd-btn cd-btn-red ca-wl-open" href="#" data-car="' + escH(car) + '">' + escH(T.want) + '</a><a class="cd-btn cd-btn-dark" href="' + escH(hubUrl) + '">' + escH(T.avail) + '</a></div>');
+      h = h.replace(/<a class="([^"]*)" href="[^"]*[?&]berles=[^"]*">[\s\S]*?<\/a>/g, (m0, cls) => '<a class="' + cls + ' ca-wl-open" href="#" data-car="' + escH(car) + '">' + escH(T.want) + '</a>');
+      if (h.indexOf('ca-na-box') < 0) h = h.replace(/<div class="cd-cta">/, box + '<div class="cd-cta">');
+      h = h.replace(/<body([^>]*)>/, (a, at) => (/class="/.test(at) ? '<body' + at.replace(/class="/, 'class="ca-na ') + '>' : '<body' + at + ' class="ca-na">'));
+      h = h.replace('</head>', NA_CSS + '</head>');
+      const bi = h.lastIndexOf('</body>'); if (bi > 0) h = h.slice(0, bi) + naJs(lg) + h.slice(bi);
+      fs.writeFileSync(f, h); R.nP = 1;
+    }
+    // kártya az autólistára
+    const og = (h.match(/<meta property="og:image" content="([^"]+)"/) || [])[1] || '';
+    const img = og.replace(/^https:\/\/www\.caradvance\.(hu|sk|cz|pl|ch|eu)/, '');
+    if (hub && car) {
+      R.card = [pre, car, { car, bq, img, url: '/' + rel.replace(/index\.html$/, '') }];
+    }
+      return R;
+    })();
+    if (r) out.push([i, r]);
+  }
+  return out;
+}
+const FX_NW = Math.max(1, Math.min(8, +(process.env.CA_FIX1110_WORKERS || 0) || (os.availableParallelism ? os.availableParallelism() : os.cpus().length)));
+async function fan(kind, items, extra) {
+  const run1 = (it) => (kind === 1 ? round1(it) : round2(it, extra));
+  if (FX_NW < 2 || items.length < 200) return [run1(items)];
+  const chunks = Array.from({ length: FX_NW }, () => []);
+  items.forEach((x, i) => chunks[i % FX_NW].push(x));
+  return Promise.all(chunks.map((ch) => new Promise((resolve, reject) => {
+    let done = false;
+    const w = new Worker(new URL(import.meta.url), { workerData: { fix1110: { kind, items: ch, BR: BR ? [...BR] : null, HUB: extra ? [...extra] : null } } });
+    w.once('message', (m) => { done = true; if (m.err) reject(new Error(m.err)); else resolve(m.ok); });
+    const fb = (e) => { if (done) return; done = true; console.log('[skcz-fix1110] szál hiba, egy szálon folytatja: ' + (e && e.message)); try { resolve(run1(ch)); } catch (x) { reject(x); } };
+    w.once('error', fb); w.once('exit', () => fb(new Error('kilépett')));
+  })));
+}
+
 
 /* ---------- 2) jelenleg nem bérelhető modellek (Marc, 2026-11-10) ----------
    A régi, a bérelhető kínálatban már nem szereplő modelloldalak MEGMARADNAK (nincs törlés / 301, nincs halott link):
@@ -170,55 +247,25 @@ const NA_CLIENT = function () {
 };
 const naJs = (lg) => '<script id="ca-na-js">window.__CA_NA_T=' + JSON.stringify(NA[lg]) + ';window.__CA_NA_L=' + JSON.stringify(lg) + ';(' + NA_CLIENT.toString() + ')();</script>';
 const gone = []; // a keresőindexből kimaradó oldalak
+if (WK) {
+  let r; try { r = { ok: WK.kind === 1 ? round1(WK.items) : round2(WK.items, new Map(WK.HUB)) }; } catch (e) { r = { err: (e && e.stack) || String(e) }; }
+  parentPort.postMessage(r);
+} else {
+const ALL = walk(DIST, []).map((f, i) => [i, f]);
+const HUB = new Map();
 try {
-  // a piaci / nyelvi autólisták (hub): prefix → hub útvonal
-  const HUB = new Map();
-  for (const f of walk(DIST, [])) {
-    if (!/[\\/]index\.html$/.test(f)) continue;
-    const rel = path.relative(DIST, f).split(path.sep).join('/');
-    if (/^(admin|i18n)\//.test(rel)) continue;
-    const h0 = fs.readFileSync(f, 'utf8');
-    if (h0.indexOf('id="sf-brand"') < 0 || h0.indexOf('<div id="sub-list"></div>') < 0) continue;
-    const parts = rel.split('/'); parts.pop(); const slug = parts.pop(); const pre = parts.join('/');
-    if (!HUB.has(pre)) HUB.set(pre, { file: f, url: '/' + (pre ? pre + '/' : '') + slug + '/' });
-  }
+  const rs = await fan(1, ALL);
+  for (const r of rs) for (const k of Object.keys(mm)) mm[k] += r.m[k];
+  for (const [, pre, v] of rs.flatMap((r) => r.hubs).sort((a, b) => a[0] - b[0])) if (!HUB.has(pre)) HUB.set(pre, v);
+  console.log('[skcz-fix1110] bérelhető márkák: ' + (BR ? [...BR].join(',') : '?') + ' · menüből kivett link: ' + mm.rm + ' (' + mm.menu + ' oldal) · mega-menu.js: ' + mm.js + ' · lista-üzenet: ' + mm.hub + ' oldal');
+} catch (e) { console.log('[skcz-fix1110] márkák hiba:', e && e.stack || e); }
+try {
   const byPre = new Map();
   let nP = 0;
-  for (const f of walk(DIST, [])) {
-    const rel = path.relative(DIST, f).split(path.sep).join('/');
-    if (!/\/index\.html$/.test(rel) || /^(admin|i18n)\//.test(rel)) continue; // az ár nélküli (_np) változatok is
-    let h = fs.readFileSync(f, 'utf8');
-    // bérlési modelloldal sablon (cd-hero + cd-lead, magyar megfelelője /berelheto-auto/…), de bérlési ablak (sub-rent) nélkül = már nincs kínálatban
-    if (h.indexOf('cd-hero') < 0 || h.indexOf('cd-lead') < 0 || h.indexOf('sub-rent') > -1 || h.indexOf('/berelheto-auto/') < 0) continue;
-    gone.push('/' + rel.replace(/index\.html$/, ''));
-    const lg = naLang(h); const T = NA[lg];
-    const car = ((h.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    const brand = car.split(' ')[0] || '';
-    const parts = rel.split('/'); parts.pop(); parts.pop(); parts.pop(); const pre = parts.join('/');
-    const hub = HUB.get(pre); const bq = bkey(brand);
-    const hubUrl = hub ? hub.url + '?marka=' + encodeURIComponent(bq) + '#berelheto' : '/';
-    if (h.indexOf('id="ca-na-css"') < 0) {
-      // jelzés: elérhetőség-chip → „nem elérhető”, ár rejtve, gombok → érdeklődés + elérhető autók
-      h = h.replace(/(<span class="cd-chip)(">)([^<]*)(<\/span><span class="cd-chip cd-chip-year">)/, (a, p1, p2, t, p4) => p1 + ' ca-na-chip' + p2 + escH(T.badge) + p4);
-      const box = '<div class="ca-na-box"><b>' + escH(T.box) + '</b><span>' + escH(T.boxTx) + '</span></div>';
-      if (/<div class="ca-pbox/.test(h)) h = h.replace(/(<div class="ca-pbox)/, box + '$1');
-      h = h.replace(/<div class="cd-cta">[\s\S]*?<\/div>/g, () => '<div class="cd-cta"><a class="cd-btn cd-btn-red ca-wl-open" href="#" data-car="' + escH(car) + '">' + escH(T.want) + '</a><a class="cd-btn cd-btn-white" href="' + escH(hubUrl) + '">' + escH(T.avail) + '</a></div>');
-      // az információs blokk második gombsora (cd-cta2) és minden további bérlési gomb (?berles=… — sticky menü, alsó sáv)
-      h = h.replace(/<div class="cd-cta2">[\s\S]*?<\/div>/g, () => '<div class="cd-cta2"><a class="cd-btn cd-btn-red ca-wl-open" href="#" data-car="' + escH(car) + '">' + escH(T.want) + '</a><a class="cd-btn cd-btn-dark" href="' + escH(hubUrl) + '">' + escH(T.avail) + '</a></div>');
-      h = h.replace(/<a class="([^"]*)" href="[^"]*[?&]berles=[^"]*">[\s\S]*?<\/a>/g, (m0, cls) => '<a class="' + cls + ' ca-wl-open" href="#" data-car="' + escH(car) + '">' + escH(T.want) + '</a>');
-      if (h.indexOf('ca-na-box') < 0) h = h.replace(/<div class="cd-cta">/, box + '<div class="cd-cta">');
-      h = h.replace(/<body([^>]*)>/, (a, at) => (/class="/.test(at) ? '<body' + at.replace(/class="/, 'class="ca-na ') + '>' : '<body' + at + ' class="ca-na">'));
-      h = h.replace('</head>', NA_CSS + '</head>');
-      const bi = h.lastIndexOf('</body>'); if (bi > 0) h = h.slice(0, bi) + naJs(lg) + h.slice(bi);
-      fs.writeFileSync(f, h); nP++;
-    }
-    // kártya az autólistára
-    const og = (h.match(/<meta property="og:image" content="([^"]+)"/) || [])[1] || '';
-    const img = og.replace(/^https:\/\/www\.caradvance\.(hu|sk|cz|pl|ch|eu)/, '');
-    if (hub && car) {
-      if (!byPre.has(pre)) byPre.set(pre, new Map());
-      const mp = byPre.get(pre); if (!mp.has(car)) mp.set(car, { car, bq, img, url: '/' + rel.replace(/index\.html$/, '') });
-    }
+  const res = (await fan(2, ALL, HUB)).flat().sort((a, b) => a[0] - b[0]);
+  for (const [, R] of res) {
+    gone.push(R.gone); if (R.nP) nP++;
+    if (R.card) { const [pre, car, v] = R.card; if (!byPre.has(pre)) byPre.set(pre, new Map()); const mp = byPre.get(pre); if (!mp.has(car)) mp.set(car, v); }
   }
   // szekció az autólisták aljára
   let nH = 0;
@@ -267,3 +314,4 @@ try {
   }
   console.log('[skcz-fix1110] keresőindex: ' + idxFiles.length + ' fájl · eladott autó kivéve: ' + sold + ' · régi bérlési oldal kivéve: ' + gi + ' · CZ euróár: ' + ep);
 } catch (e) { console.log('[skcz-fix1110] index hiba:', e && e.stack || e); }
+}
