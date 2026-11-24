@@ -2,7 +2,8 @@
 // Mindhárom fülön (Bérelhető, Eladó, Bizományos):
 //  · nagy, lekerekített fotó (4:3, nem vágjuk le az autót), a fotón belül lapozható képek (pöttyök + nyilak), címke balra fent
 //  · alatta kategória, név, jobbra az ár (alatta a megjegyzés), egy sor adat pöttyökkel, alul teljes szélességű „Érdeklődöm” sáv
-//  · gépen 3 oszlop × 3 sor, telefonon oldalra húzható sor (nem lesz hosszú az oldal)
+//  · gépen 2 sor × 3 oszlop „oldalanként”, nyilakkal / húzással / érintőpaddal lapozható (hullámszerű átmenet, parallaxis);
+//    a szomszéd oldal autói halványan kilátszanak a széleken; telefonon oldalra húzható sor (nem lesz hosszú az oldal)
 //  · Eladó: a legutóbb feltöltött autók elöl (a táblázat „hozzaadva” dátuma szerint), ugyanaz a modell csak egyszer; az új autók „Új” címkét kapnak
 // A régi körhinta és a „színpad” rejtve marad (adatforrásként szolgál, az ajánlatkérő ablak az eredeti kártyákról nyílik).
 // Csak a magyar főoldalt érinti. Idempotens.
@@ -16,7 +17,7 @@ const CSS = '<style id="ca-grid-css">'
   + S + ' .autok-panel .cw,' + S + ' #ca-stg,' + S + ' .cf-none,' + S + ' .ca-sh .ca-sh-r{display:none!important}'
   + S + ' .autok-panel.on .autok-more{display:flex!important;justify-content:center;margin:34px 0 6px!important}'
   + S + ' .cg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:44px 32px;margin-top:30px}'
-  + S + ' .cg-c{display:flex;flex-direction:column;min-width:0;animation:cgIn .45s cubic-bezier(.2,.7,.2,1) both}'
+  + S + ' .cg-c{display:flex;flex-direction:column;min-width:0;animation:cgIn .45s cubic-bezier(.2,.7,.2,1) backwards}'
   + '@keyframes cgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}'
   + S + ' .cg-ph{position:relative;display:block;aspect-ratio:4/3;border-radius:20px;overflow:hidden;background:#ECECEF;text-decoration:none!important;isolation:isolate}'
   + S + ' .cg-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .25s,transform .6s cubic-bezier(.2,.7,.2,1)}'
@@ -59,6 +60,31 @@ const CSS = '<style id="ca-grid-css">'
   + 'html.ca-dark body #autoink.ca-grid .cg-cta{background:rgba(255,255,255,.07);color:#fff}html.ca-dark body #autoink.ca-grid .cg-cta:hover{background:#fff;color:#121317}'
   // nagy képernyőn ugyanakkora tartalomszélesség, mint a caradvance.de-n (1536 px-es konténer, 24 px belső margó → 1488 px), így a fotók is ugyanakkorák
   + '@media(min-width:1536px){html body #autoink.ca-grid{padding-left:max(24px,calc((100% - 1488px)/2))!important;padding-right:max(24px,calc((100% - 1488px)/2))!important}}'
+  // gépen: két sor, oldalra lapozható „oldalak” (3×2 autó); a szomszéd oldal autói halványan kilátszanak a két szélen;
+  // lapozáskor az oszlopok hullámszerűen, kicsit egymás után indulnak, a fotók enyhén elúsznak (parallaxis)
+  + '@media(min-width:721px){'
+  + S + ' .cg-vp{position:relative;margin-top:30px;overflow:hidden;margin-left:calc(0px - var(--cg-sl,0px));margin-right:calc(0px - var(--cg-sr,0px));padding:4px var(--cg-sr,0px) 10px var(--cg-sl,0px);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--cg-sl,0px),#000 calc(100% - var(--cg-sr,0px)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--cg-sl,0px),#000 calc(100% - var(--cg-sr,0px)),transparent 100%)}'
+  + S + ' .cg-vp .cg-grid{margin-top:0;grid-template-columns:none;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:calc((100% - 64px)/3);touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}'
+  + S + ' .cg-vp.drag .cg-grid{cursor:grabbing}'
+  + S + ' .cg-vp .cg-c{transition:transform .9s cubic-bezier(.65,0,.15,1),opacity .55s ease;will-change:transform}'
+  + S + ' .cg-vp .cg-c.off{opacity:.32}' + S + ' .cg-vp .cg-c.off *{cursor:pointer}'
+  + S + ' .cg-vp.drag .cg-c,' + S + ' .cg-vp.snap .cg-c{transition:opacity .55s ease!important}'
+  + S + ' .cg-vp .cg-ph img{transition:opacity .25s,transform 1.1s cubic-bezier(.2,.7,.2,1)}'
+  + S + ' .cg-vp.mvr .cg-ph img{transform:scale(1.07) translateX(-3.5%);transition:opacity .25s,transform .35s ease-out}' + S + ' .cg-vp.mvl .cg-ph img{transform:scale(1.07) translateX(3.5%);transition:opacity .25s,transform .35s ease-out}'
+  + S + ' .cg-vp img{-webkit-user-drag:none}'
+  + S + ' .cg-pg{display:flex;align-items:center;gap:22px;margin-top:26px}' + S + ' .cg-pg[hidden]{display:none}'
+  + S + ' .cg-seg{display:flex;gap:8px;width:min(420px,40%)}' + S + ' .cg-seg i{position:relative;flex:1;height:4px;border-radius:4px;background:rgba(18,19,23,.12);overflow:hidden;cursor:pointer}'
+  + S + ' .cg-seg i::after{content:"";position:absolute;inset:0;background:#E2001A;transform:scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.65,0,.15,1)}' + S + ' .cg-seg i.on::after{transform:scaleX(1)}' + S + ' .cg-seg i.past::after{transform:scaleX(1);background:rgba(18,19,23,.35)}'
+  + S + ' .cg-cn{font-size:14px;font-weight:700;color:#6E6E73;font-variant-numeric:tabular-nums;white-space:nowrap}' + S + ' .cg-cn b{font-size:20px;color:#121317;margin-right:2px}'
+  + S + ' .cg-pb{margin-left:auto;display:flex;gap:10px}' + S + ' .cg-pb button{width:54px;height:54px;border-radius:50%;border:1px solid #E1E1E6;background:#fff;color:#121317;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,border-color .2s,transform .2s,opacity .2s}'
+  + S + ' .cg-pb button svg{width:20px;height:20px}' + S + ' .cg-pb .cg-pp svg{transform:scaleX(-1)}' + S + ' .cg-pb button:hover{transform:translateY(-2px);border-color:#121317}'
+  + S + ' .cg-pb .cg-pn2{background:#E2001A;border-color:#E2001A;color:#fff;box-shadow:0 10px 24px rgba(226,0,26,.28)}' + S + ' .cg-pb .cg-pn2:hover{background:#C70017;border-color:#C70017}'
+  + S + ' .cg-pb button:disabled{opacity:.3;cursor:default;transform:none;box-shadow:none}'
+  + 'html.ca-dark body #autoink.ca-grid .cg-seg i{background:rgba(255,255,255,.14)}html.ca-dark body #autoink.ca-grid .cg-seg i.past::after{background:rgba(255,255,255,.45)}html.ca-dark body #autoink.ca-grid .cg-cn b{color:#fff}html.ca-dark body #autoink.ca-grid .cg-cn{color:rgba(255,255,255,.6)}'
+  + 'html.ca-dark body #autoink.ca-grid .cg-pb button:not(.cg-pn2){background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);color:#fff}html.ca-dark body #autoink.ca-grid .cg-pb button:not(.cg-pn2):hover{border-color:#fff}'
+  + '}'
+  + '@media(min-width:721px) and (max-width:1100px){' + S + ' .cg-vp .cg-grid{grid-auto-columns:calc((100% - 32px)/2)}}'
+  + '@media(max-width:720px){' + S + ' .cg-pg{display:none!important}}'
   // tablet: 2 oszlop
   + '@media(max-width:1100px){' + S + ' .cg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}'
   // telefon: oldalra húzható sor
@@ -129,22 +155,46 @@ var o={b:brOf(c.marka||c.modell),title:title(c.modell),full:c.modell,year:c.evja
 o.note=o.eur+" · nettó";o.inq=function(){if(window.caInquiry){window.caInquiry({name:c.modell,img:c.img,price:o.price+" · "+o.eur,kind:"sale",isNew:false});return}var k=saleOrig(href);if(k)clickInq(k,href);else location.href=href};return o})}
 function saleFromCards(){return itemsOf("cw-elado").map(function(k){var t=tx(k,".title"),sp=tx(k,".specs").split(" · "),im=k.querySelector(".media img"),a=k.matches("a[href]")?k:k.querySelector("a[href]");
 return{b:brOf(t),title:title(t),full:t,cat:"Használt"+(tx(k,".year")?" · "+tx(k,".year"):""),img:im?(im.getAttribute("src")||""):"",href:a?a.getAttribute("href"):"",price:tx(k,".price"),note:tx(k,".peur")+" · nettó",facts:sp.map(function(x){return /^\d+$/.test(x.replace(/\s|km/g,""))&&/km/.test(x)?km(x):fuel(x)}),gal:true,inq:function(){clickInq(k,a&&a.getAttribute("href"))}}})}
+
+// ---- gépen: két soros, oldalanként lapozható rács ----
+function colsN(){return innerWidth<=1100?2:3}
+function pager(P,vp,G){var nav=P.querySelector(".cg-pg"),seg=nav.querySelector(".cg-seg"),cn=nav.querySelector(".cg-cn"),pp=nav.querySelector(".cg-pp"),pn=nav.querySelector(".cg-pn2"),C=[].slice.call(G.querySelectorAll(".cg-c")),cols=colsN(),per=cols*2,N=Math.max(1,Math.ceil(C.length/per)),i=0,stride=0;
+C.forEach(function(c,k){var pg=Math.floor(k/per),r=Math.floor((k%per)/cols),cc=k%cols;c.__pg=pg;c.__col=cc;c.__row=r;c.style.gridColumn=String(pg*cols+cc+1);c.style.gridRow=String(r+1)});
+seg.innerHTML="";for(var k=0;k<N;k++){(function(k){var d=el("i");d.title=(k+1)+". oldal";d.addEventListener("click",function(){go(k)});seg.appendChild(d)})(k)}
+nav.hidden=N<2;
+function side(){var de=document.documentElement,r=P.getBoundingClientRect();vp.style.setProperty("--cg-sl",Math.max(0,Math.round(r.left))+"px");vp.style.setProperty("--cg-sr",Math.max(0,Math.round(de.clientWidth-r.right))+"px");stride=G.clientWidth+32}
+var prev=0;function place(dir,inst){var lo=Math.min(prev,i),hi=Math.max(prev,i);C.forEach(function(c){var d=0;if(!inst){var g=c.__pg*cols+c.__col,rel=dir>0?g-lo*cols:(hi+1)*cols-1-g;rel=Math.max(0,Math.min(rel,2*cols+1));d=rel*55+c.__row*30}c.style.transitionDelay=inst?"0ms":d+"ms, 0ms";c.style.transform="translate3d("+(-i*stride)+"px,0,0)";c.classList.toggle("off",c.__pg!==i)})}
+function ui(){[].forEach.call(seg.children,function(d,k){d.classList.toggle("on",k===i);d.classList.toggle("past",k<i)});cn.innerHTML="<b>"+String(i+1).padStart(2,"0")+"</b>/ "+String(N).padStart(2,"0");pp.disabled=i===0;pn.disabled=i===N-1}
+function go(n,inst){side();n=Math.max(0,Math.min(N-1,n));var dir=n>i?1:n<i?-1:0;prev=i;i=n;if(dir&&!inst){vp.classList.remove("mvl","mvr");void vp.offsetWidth;vp.classList.add(dir>0?"mvr":"mvl");clearTimeout(vp.__mt);vp.__mt=setTimeout(function(){vp.classList.remove("mvl","mvr")},380)}place(dir||1,inst||!dir&&!vp.__dragged);ui()}
+pp.onclick=function(){go(i-1)};pn.onclick=function(){go(i+1)};
+// húzás egérrel / ujjal (ellenállással a széleken), a végén a legközelebbi oldalra ugrik
+var x0=null,y0=0,dx=0,t0=0,moved=false;
+vp.onpointerdown=function(e){if(e.button>0||N<2)return;if(e.target.closest&&e.target.closest(".cg-a,.cg-cta"))return;x0=e.clientX;y0=e.clientY;dx=0;t0=Date.now();moved=false;side()};
+vp.onpointermove=function(e){if(x0==null)return;dx=e.clientX-x0;if(!moved){if(Math.abs(dx)<8)return;if(Math.abs(e.clientY-y0)>Math.abs(dx)){x0=null;return}moved=true;vp.classList.add("drag");try{vp.setPointerCapture(e.pointerId)}catch(_){}}
+var off=dx;if((i===0&&dx>0)||(i===N-1&&dx<0))off=dx*.3;C.forEach(function(c){c.style.transitionDelay="0ms";c.style.transform="translate3d("+(-i*stride+off)+"px,0,0)"})};
+vp.onpointerup=vp.onpointercancel=function(){if(x0==null)return;x0=null;if(!moved)return;vp.classList.remove("drag");vp.__dragged=1;var v=dx/Math.max(1,Date.now()-t0),n=i;if(dx<-stride*.16||v<-.5)n=i+1;else if(dx>stride*.16||v>.5)n=i-1;if(n===i)place(1,false);go(n);setTimeout(function(){vp.__dragged=0;moved=false},60)};
+vp.addEventListener("click",function(e){if(moved){e.preventDefault();e.stopPropagation();return}var c=e.target.closest&&e.target.closest(".cg-c.off");if(c){e.preventDefault();e.stopPropagation();go(c.__pg)}},true);
+vp.addEventListener("dragstart",function(e){e.preventDefault()});
+// érintőpad: vízszintes görgetés lapoz
+var acc=0,lock=0;vp.addEventListener("wheel",function(e){if(N<2||Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(Date.now()<lock)return;acc+=e.deltaX;if(Math.abs(acc)>45){go(i+(acc>0?1:-1));acc=0;lock=Date.now()+850}},{passive:false});
+vp.__relayout=function(){side();place(1,true)};side();go(0,true)}
+var RL=0;addEventListener("resize",function(){clearTimeout(RL);RL=setTimeout(function(){[].forEach.call(document.querySelectorAll("#autoink .cg-vp"),function(v){v.__relayout&&v.__relayout()})},80)});
 // ---- kirajzolás ----
 var SIG={};
-function render(){A=document.getElementById("autoink");if(!A)return;var br=window.__caCFBrand||"",narrow=innerWidth<=720,max=narrow?12:9;
+function render(){A=document.getElementById("autoink");if(!A)return;var br=window.__caCFBrand||"",narrow=innerWidth<=720,max=narrow?12:18;
 [["panel-berelheto",rentList],["panel-elado",function(){return saleFromData()||saleFromCards()}],["panel-bizomanyos",bizList]].forEach(function(p){var P=document.getElementById(p[0]);if(!P)return;
 var L=p[1]()||[];if(br)L=L.filter(function(o){return o.b===br});else if(p[0]==="panel-elado"){var per={},seen={},out=[],rest=[];L.forEach(function(o){var mk=o.title.split(/\s+/).slice(0,3).join(" ").toLowerCase();if(seen[mk]){rest.push(o);return}seen[mk]=1;out.push(o)});L=out.concat(rest)}L=L.filter(function(o){return o.img}).slice(0,max);
-var g=L.map(function(o){return o.href+"|"+o.price+"|"+o.img}).join(",")+"#"+br+narrow;if(SIG[p[0]]===g&&P.querySelector(".cg-grid"))return;SIG[p[0]]=g;
-var G=P.querySelector(".cg-grid");if(!G){G=el("div","cg-grid");var cw=P.querySelector(".cw");P.insertBefore(G,cw?cw.nextSibling:P.firstChild);var sw=el("div","cg-sw");P.insertBefore(sw,G.nextSibling);
+var g=L.map(function(o){return o.href+"|"+o.price+"|"+o.img}).join(",")+"#"+br+narrow+colsN();if(SIG[p[0]]===g&&P.querySelector(".cg-grid"))return;SIG[p[0]]=g;
+var G=P.querySelector(".cg-grid"),VP=P.querySelector(".cg-vp");if(!G){VP=el("div","cg-vp");G=el("div","cg-grid");VP.appendChild(G);var cw=P.querySelector(".cw");P.insertBefore(VP,cw?cw.nextSibling:P.firstChild);var nv=el("div","cg-pg",'<div class="cg-seg"></div><span class="cg-cn"></span><div class="cg-pb"><button type="button" class="cg-pp" aria-label="Előző autók">'+ARR+'</button><button type="button" class="cg-pn2" aria-label="Következő autók">'+ARR+'</button></div>');P.insertBefore(nv,VP.nextSibling);var sw=el("div","cg-sw");P.insertBefore(sw,nv.nextSibling);
 G.addEventListener("scroll",function(){var s=P.querySelector(".cg-sw");if(!s||!G.children.length)return;var w=G.children[0].offsetWidth+14,j=Math.round(G.scrollLeft/w);[].forEach.call(s.children,function(d,k){d.classList.toggle("on",k===j)})},{passive:true})}
 G.innerHTML="";if(!L.length){var none=itemsOf(p[0].replace("panel","cw")).length;G.appendChild(el("div","cg-empty",none?"Ebben a kategóriában most nincs ilyen márkájú autó.":"Betöltés…"));}
-L.forEach(function(o){G.appendChild(card(o))});G.scrollLeft=0;
+L.forEach(function(o){G.appendChild(card(o))});G.scrollLeft=0;if(!narrow&&L.length)pager(P,VP,G);else{P.querySelector(".cg-pg").hidden=true;[].forEach.call(G.children,function(c){c.style.transform="";c.style.gridColumn="";c.style.gridRow=""})}
 var s=P.querySelector(".cg-sw");s.innerHTML="";if(L.length>1)L.forEach(function(_,k){s.appendChild(el("i",k===0?"on":""))})})}
 var to=0;function later(d){clearTimeout(to);to=setTimeout(render,d||120)}
 function boot(){A=document.getElementById("autoink");if(!A)return;A.classList.add("ca-grid","ca-stg-on");render();
 ["cw-berelheto","cw-elado","cw-bizomanyos"].forEach(function(id){var r=rootOf(id),t=r&&r.querySelector(".cw-track");if(t)new MutationObserver(function(){later()}).observe(t,{childList:true})});
-document.addEventListener("click",function(e){if(e.target.closest&&e.target.closest("#autoink .cf-br,#autoink .autok-tab"))later(60)});
-var w=innerWidth<=720;addEventListener("resize",function(){var n=innerWidth<=720;if(n!==w){w=n;later()}});
+document.addEventListener("click",function(e){if(e.target.closest&&e.target.closest("#autoink .cf-br,#autoink .autok-tab")){later(60);setTimeout(function(){[].forEach.call(document.querySelectorAll("#autoink .cg-vp"),function(v){v.__relayout&&v.__relayout()})},90)}});
+var w=(innerWidth<=720)+"|"+colsN();addEventListener("resize",function(){var n=(innerWidth<=720)+"|"+colsN();if(n!==w){w=n;later()}});
 var tries=0;(function sale(){var R=window.RENT;if(R&&R.loadAll){R.loadAll(function(c){if(c&&c.length){SALE=c;later(30)}})}else if(tries++<40)setTimeout(sale,250)})()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot()})();</script>`;
 
