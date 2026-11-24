@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fcGet, fcPut, fcReport } from './filecache.mjs';
 
 const DIST = 'dist';
 const SUB = 'auto-foto';
@@ -41,7 +42,7 @@ async function get(u) {
   const t = setTimeout(() => ac.abort(), 25000);
   try {
     const r = await fetch(u, { signal: ac.signal, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CaradvanceBuild/1.0)', Accept: 'image/webp,image/jpeg,image/*;q=0.8' } });
-    if (!r.ok) return null;
+    if (!r.ok) { try { if (r.body) await r.body.cancel(); } catch (e) { /* */ } return (r.status === 404 || r.status === 410) ? { dead: true } : null; }
     const ct = String(r.headers.get('content-type') || '');
     if (!/^image\//i.test(ct)) return null;
     const b = Buffer.from(await r.arrayBuffer());
@@ -66,21 +67,30 @@ try {
   fs.mkdirSync(OUT, { recursive: true });
   const map = new Map();
   const list = [...urls];
-  let fail = 0, late = 0, bytes = 0;
+  let fail = 0, late = 0, bytes = 0, cached = 0;
+  const deadList = []; // 404/410 — a seo-audit-fix ezeket nem kérdezi le újra
   async function worker() {
     while (list.length) {
       const u = list.shift();
       if (Date.now() > DEADLINE) { late++; continue; }
+      const key = crypto.createHash('sha1').update(u).digest('hex').slice(0, 20);
+      const c = fcGet('auto-foto', key); // előző buildben már letöltött kép
+      if (c) {
+        try { fs.copyFileSync(c.file, path.join(OUT, c.name), fs.constants.COPYFILE_FICLONE); map.set(u, '/' + SUB + '/' + c.name); cached++; continue; } catch (e) { /* letöltjük */ }
+      }
       const r = await get(u);
-      if (!r) { fail++; continue; }
-      const name = crypto.createHash('sha1').update(u).digest('hex').slice(0, 20) + r.ext;
+      if (!r || r.dead) { if (r) deadList.push(u); fail++; continue; }
+      const name = key + r.ext;
       fs.writeFileSync(path.join(OUT, name), r.b);
+      fcPut('auto-foto', key, r.ext, r.b);
       bytes += r.b.length;
       map.set(u, '/' + SUB + '/' + name);
     }
   }
   await Promise.all(Array.from({ length: CONC }, worker));
 
+  // ugyanebben a buildben, másodpercekkel később a seo-audit-fix is lekérdezné ezeket — átadjuk neki (nem kerül a dist-be)
+  try { fs.mkdirSync('.gen', { recursive: true }); fs.writeFileSync(path.join('.gen', 'photo-dead.json'), JSON.stringify({ t: Date.now(), urls: deadList })); } catch (e) { /* */ }
   let changed = 0;
   for (const f of hit) {
     const s = fs.readFileSync(f, 'utf8');
@@ -95,8 +105,8 @@ try {
     fs.writeFileSync(f, n);
     changed++;
   }
-  console.log('mirror-car-photos: ' + urls.size + ' külső autófotó, ' + map.size + ' letöltve (' + Math.round(bytes / 1048576) + ' MB), '
-    + fail + ' hiba, ' + late + ' időkorlát miatt kihagyva; ' + changed + ' fájl átírva');
+  console.log('mirror-car-photos: ' + urls.size + ' külső autófotó, ' + (map.size - cached) + ' letöltve (' + Math.round(bytes / 1048576) + ' MB), ' + cached + ' a gyorsítótárból, '
+    + fail + ' hiba, ' + late + ' időkorlát miatt kihagyva; ' + changed + ' fájl átírva'); fcReport('mirror-car-photos');
 } catch (e) {
   console.log('mirror-car-photos: kihagyva — ' + (e && e.message));
 }
