@@ -16,7 +16,7 @@ const MK = (process.env.CA_MARKET || '').trim().toLowerCase();
 const MARKETS = ['ch', 'eu'].filter((m) => !MK || MK === 'all' || MK === m);
 const L5 = ['de', 'fr', 'it', 'en', 'es'];
 
-const SK = /[ľťňĺŕďčšžýĽŤŇČŠŽÝ]|(?<!\p{L})(?:Predané|[Nn]a predaj|bez DPH|[Tt]rieda|Cena|Áno|áut|autá|Hlavná|Prenájom|prenájm\p{L}*|dlhodob\p{L}*|kaucia|lízingu|kérésre|Odovzdávame|mesiacov|verzií|najazdené|ročník|benzín|kisautó|kabrió)(?!\p{L})|\/mes\.|(?<!\p{L})od (?=CHF|\d)/u;
+const SK = /[ľťňĺŕďčšžýĽŤŇČŠŽÝ]|(?<!\p{L})(?:Predané|[Nn]a predaj|bez DPH|[Tt]rieda|Cena|Áno|áut|autá|Hlavná|Prenájom|prenájm\p{L}*|dlhodob\p{L}*|kaucia|lízingu|kérésre|Odovzdávame|mesiacov|verzií|najazdené|ročník|benzín|kisautó|kabrió|csomaggal)(?!\p{L})|\/mes\.|(?<!\p{L})od (?=CHF|\d)/u;
 
 const MON = { január: ['Januar', 'janvier', 'gennaio', 'January', 'enero'], február: ['Februar', 'février', 'febbraio', 'February', 'febrero'], marec: ['März', 'mars', 'marzo', 'March', 'marzo'], apríl: ['April', 'avril', 'aprile', 'April', 'abril'], máj: ['Mai', 'mai', 'maggio', 'May', 'mayo'], jún: ['Juni', 'juin', 'giugno', 'June', 'junio'], júl: ['Juli', 'juillet', 'luglio', 'July', 'julio'], august: ['August', 'août', 'agosto', 'August', 'agosto'], september: ['September', 'septembre', 'settembre', 'September', 'septiembre'], október: ['Oktober', 'octobre', 'ottobre', 'October', 'octubre'], november: ['November', 'novembre', 'novembre', 'November', 'noviembre'], december: ['Dezember', 'décembre', 'dicembre', 'December', 'diciembre'] };
 
@@ -81,6 +81,11 @@ const T = [
   R(/štvorvalcový benzínový, (\d+) V mild-hybrid/g, 'Vierzylinder-Benziner, $1-V-Mildhybrid', 'essence 4 cylindres, hybride léger $1 V', 'benzina 4 cilindri, mild hybrid $1 V', 'four-cylinder petrol, $1 V mild hybrid', 'gasolina de cuatro cilindros, mild hybrid de $1 V'),
   R(/výkonný štvorvalcový diesel/g, 'starker Vierzylinder-Diesel', 'diesel 4 cylindres puissant', 'potente diesel 4 cilindri', 'powerful four-cylinder diesel', 'potente diésel de cuatro cilindros'),
   R(/šesťvalcový diesel, xDrive összkerékhajtással/g, 'Sechszylinder-Diesel, xDrive-Allradantrieb', 'diesel 6 cylindres, transmission intégrale xDrive', 'diesel 6 cilindri, trazione integrale xDrive', 'six-cylinder diesel, xDrive all-wheel drive', 'diésel de seis cilindros, tracción total xDrive'),
+  R(/šesťvalcový diesel/g, 'Sechszylinder-Diesel', 'diesel 6 cylindres', 'diesel 6 cilindri', 'six-cylinder diesel', 'diésel de seis cilindros'),
+  R(/ M Sport csomaggal/g, ' mit M Sportpaket', ' avec pack M Sport', ' con pacchetto M Sport', ' with M Sport package', ' con paquete M Sport'),
+  R(/trojvalcový/g, 'Dreizylinder', '3 cylindres', '3 cilindri', 'three-cylinder', 'tres cilindros'),
+  R(/, ideálny do mesta/g, ', ideal für die Stadt', ', idéal en ville', ', ideale in città', ', ideal for the city', ', ideal para la ciudad'),
+  R(/, vyvážená voľba/g, ', ausgewogene Wahl', ', choix équilibré', ', scelta equilibrata', ', a balanced choice', ', opción equilibrada'),
   R(/mild-hybridný benzínový motor, úsporný/g, 'Mildhybrid-Benziner, sparsam', 'essence hybride léger, sobre', 'benzina mild hybrid, parco', 'mild-hybrid petrol, economical', 'gasolina mild hybrid, eficiente'),
   R(/mild-hybridný benzín/g, 'Mildhybrid-Benziner', 'essence hybride léger', 'benzina mild hybrid', 'mild-hybrid petrol', 'gasolina mild hybrid'),
   R(/turbo benzínový motor/g, 'Turbo-Benziner', 'moteur essence turbo', 'motore turbo benzina', 'turbo petrol engine', 'motor de gasolina turbo'),
