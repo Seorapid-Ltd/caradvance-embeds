@@ -21,6 +21,7 @@ import { maskModels, unmaskModels, neutralL, maskModels2, normNums, phraseFix } 
 import { SKL } from './skcz-langs-data.mjs';
 import { plCalcPage, CALC_PAGES } from './pl-calc.mjs';
 import { plRt } from './pl-rt-fix.mjs';
+import { deferOrApply } from './routes-market.mjs';
 
 const PL = JSON.parse(fs.readFileSync('pl-site-config.json', 'utf8'));
 const DIST = 'dist';
@@ -360,13 +361,8 @@ function run() {
   }
 
   // _routes.json: a lengyel útvonalak is a middleware-en menjenek
-  try {
-    const rp = path.join(DIST, '_routes.json'); const r = JSON.parse(fs.readFileSync(rp, 'utf8'));
-    const tops = new Set(['/pl/*']); for (const p of map.values()) { const t = p.split('/')[0]; if (t) tops.add('/' + t + '/*'); }
-    for (const x of tops) if (!r.include.includes(x) && !r.include.includes('/' + x.split('/')[1] + '/*')) r.include.push(x);
-    if (r.include.length + (r.exclude || []).length <= 100) fs.writeFileSync(rp, JSON.stringify(r, null, 2));
-    else console.log('[pl-site] _routes.json: több mint 100 szabály, nem írtam át');
-  } catch (e) {}
+  // (a kód: routes-market.mjs)
+  deferOrApply(DIST, 'pl', { mapValues: [...map.values()] });
 
   // a hiányzó szlovák egységek darabokban (kb. 20 000 karakter), angol referenciával — a következő fordításhoz (https://www.caradvance.hu/_pl-missing/N.json)
   try {
