@@ -2,7 +2,7 @@
 // Mindhárom fülön (Bérelhető, Eladó, Bizományos):
 //  · nagy, lekerekített fotó (4:3, nem vágjuk le az autót), a fotón belül lapozható képek (pöttyök + nyilak), címke balra fent
 //  · alatta kategória, név, jobbra az ár (alatta a megjegyzés), egy sor adat pöttyökkel, alul teljes szélességű „Érdeklődöm” sáv
-//  · gépen 3 oszlop × 2 sor, telefonon oldalra húzható sor (nem lesz hosszú az oldal)
+//  · gépen 3 oszlop × 3 sor, telefonon oldalra húzható sor (nem lesz hosszú az oldal)
 //  · Eladó: a legutóbb feltöltött autók elöl (a táblázat „hozzaadva” dátuma szerint), ugyanaz a modell csak egyszer; az új autók „Új” címkét kapnak
 // A régi körhinta és a „színpad” rejtve marad (adatforrásként szolgál, az ajánlatkérő ablak az eredeti kártyákról nyílik).
 // Csak a magyar főoldalt érinti. Idempotens.
@@ -87,7 +87,7 @@ function isNew(d){if(!d)return false;var t=Date.parse(d);return t&&(Date.now()-t
 // ---- képlista az autó oldaláról (lustán, egyszer) ----
 var PC={};function pics(hr,first,cb){var P=PC[hr];if(P){if(P.l)cb(P.l);else P.q.push(cb);return}P=PC[hr]={q:[cb]};var done=function(l){P.l=l;P.q.forEach(function(g){g(l)});P.q=[]};
 fetch(hr,{credentials:"same-origin"}).then(function(r){return r.text()}).then(function(h){var d=new DOMParser().parseFromString(h,"text/html"),u=[].map.call(d.querySelectorAll("#thumbs img,.thumbs img"),function(x){return x.getAttribute("src")||x.getAttribute("data-src")});
-if(!u.length)u=h.match(/https:\/\/(img\.classistatic\.de\/api\/v1\/mo-prod\/images\/[0-9a-f]{2}\/[0-9a-f-]{36}(\?rule=mo-\d+)?|img\.hasznaltautocdn\.com\/2048x1536\/\d+\/\d+\.jpg)/g)||[];
+/* csak az autó saját galériája (#thumbs) számít — az oldalon lévő „hasonló autók” képei nem */
 u=u.filter(Boolean).map(function(x){return /classistatic/.test(x)?x.split("?")[0]+"?rule=mo-1024":x});var seen={},out=[];u.forEach(function(x){var k=x.split("?")[0];if(!seen[k]){seen[k]=1;out.push(x)}});
 var f0=String(first||"").split("?")[0];out.sort(function(a,b){return (b.split("?")[0]===f0)-(a.split("?")[0]===f0)});done(out.length?out:[first])}).catch(function(){done([first])})}
 // ---- egy kártya ----
@@ -131,7 +131,7 @@ function saleFromCards(){return itemsOf("cw-elado").map(function(k){var t=tx(k,"
 return{b:brOf(t),title:title(t),full:t,cat:"Használt"+(tx(k,".year")?" · "+tx(k,".year"):""),img:im?(im.getAttribute("src")||""):"",href:a?a.getAttribute("href"):"",price:tx(k,".price"),note:tx(k,".peur")+" · nettó",facts:sp.map(function(x){return /^\d+$/.test(x.replace(/\s|km/g,""))&&/km/.test(x)?km(x):fuel(x)}),gal:true,inq:function(){clickInq(k,a&&a.getAttribute("href"))}}})}
 // ---- kirajzolás ----
 var SIG={};
-function render(){A=document.getElementById("autoink");if(!A)return;var br=window.__caCFBrand||"",narrow=innerWidth<=720,max=narrow?12:6;
+function render(){A=document.getElementById("autoink");if(!A)return;var br=window.__caCFBrand||"",narrow=innerWidth<=720,max=narrow?12:9;
 [["panel-berelheto",rentList],["panel-elado",function(){return saleFromData()||saleFromCards()}],["panel-bizomanyos",bizList]].forEach(function(p){var P=document.getElementById(p[0]);if(!P)return;
 var L=p[1]()||[];if(br)L=L.filter(function(o){return o.b===br});else if(p[0]==="panel-elado"){var per={},seen={},out=[],rest=[];L.forEach(function(o){var mk=o.title.split(/\s+/).slice(0,3).join(" ").toLowerCase();if(seen[mk]){rest.push(o);return}seen[mk]=1;out.push(o)});L=out.concat(rest)}L=L.filter(function(o){return o.img}).slice(0,max);
 var g=L.map(function(o){return o.href+"|"+o.price+"|"+o.img}).join(",")+"#"+br+narrow;if(SIG[p[0]]===g&&P.querySelector(".cg-grid"))return;SIG[p[0]]=g;
