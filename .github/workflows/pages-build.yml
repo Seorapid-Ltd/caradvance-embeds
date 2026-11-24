@@ -73,6 +73,10 @@ jobs:
           rm -rf .tcache-old && if [ -d .tcache ]; then mv .tcache .tcache-old; fi
           rm -rf .fcache-old && if [ -d .fcache ]; then mv .fcache .fcache-old; fi
 
+      # a build ~60 lépése mind végigolvassa és újraírja a ~1 GB-nyi HTML-t: memóriában (tmpfs) ez kb. negyedével gyorsabb, mint lemezen
+      - name: Put dist in memory
+        run: mkdir -p dist && sudo mount -t tmpfs -o size=8g,uid=$(id -u),gid=$(id -g) tmpfs dist && df -h dist
+
       - name: Build
         env:
           CF_PAGES_BRANCH: ${{ github.ref_name }}
