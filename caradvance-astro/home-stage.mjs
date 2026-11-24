@@ -252,7 +252,7 @@ const JS = '<script id="ca-stage-js">(function(){'
   + 'clearTimeout(busy);if(instant){put();tl.classList.remove("sw")}else{tl.classList.add("sw");busy=setTimeout(function(){put();tl.classList.remove("sw")},300)}}'
   + 'function fit(){if(!stg||innerWidth<821)return;var t=stg.querySelector(".stg-top");if(!t)return;var b=t.getBoundingClientRect().bottom-stg.getBoundingClientRect().top;stg.style.setProperty("--stg-sidetop",Math.round(b+44)+"px");var tb=t.querySelector(".autok-tabs");if(tb){var r0=stg.getBoundingClientRect(),rt=tb.getBoundingClientRect();stg.style.setProperty("--stg-hinttop",Math.round(rt.top-r0.top+(rt.height-36)/2)+"px")}}addEventListener("resize",fit);setInterval(fit,1500);'
   + 'var to=0;function later(){clearTimeout(to);to=setTimeout(build,140)}'
-  + 'function boot(){S=document.getElementById("autoink");if(!S||!S.querySelector(".cw.cf3d .cw-item"))return setTimeout(boot,300);build();'
+  + 'function boot(){if(window.__caGrid)return;S=document.getElementById("autoink");if(!S||!S.querySelector(".cw.cf3d .cw-item"))return setTimeout(boot,300);build();'
   + 'new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){if(!stg||!stg.contains(ms[i].target)){later();return}}}).observe(S,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["hidden","class"]});'
   // fül- vagy márkaváltás: azonnal elhalványul a régi tartalom, és csak az új autókkal jelenik meg újra
   + 'S.addEventListener("click",function(e){var tb=e.target.closest&&e.target.closest(".autok-tab,.cf-br");if(!tb||!stg)return;stg.classList.add("swap");sig="";'
