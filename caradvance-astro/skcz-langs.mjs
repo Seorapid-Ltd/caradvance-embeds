@@ -22,6 +22,7 @@ import { neutral } from './i18n-templates.mjs';
 import { maskModels, unmaskModels, neutralL, maskModels2, normNums, phraseFix } from './skcz-langs-mask.mjs';
 import { SKL } from './skcz-langs-data.mjs';
 import { CSL } from './skcz-langs-data-cs.mjs';
+import { memo, tcacheReport } from './tcache.mjs';
 
 const DIST = 'dist';
 /* piaconként: caradvance.sk → szlovák + angol, német, magyar; caradvance.cz → cseh + angol, német */
@@ -161,18 +162,24 @@ function run(ml) {
     const src = fs.readFileSync(path.join(SK, rel, 'index.html'), 'utf8');
     if (/http-equiv=["']?refresh/i.test(src)) continue;
     for (const l of LANGS) {
-      const doc = parse(src);
-      let hit = 0, tot = 0;
-      visit(doc, (kind, k, apply) => {
-        tot++;
-        const t = /English<\/g\d+>[\s\S]*Deutsch<\/g\d+>/.test(k) ? k : lookup(D, l, k); // a nyelvválasztó listát a switcher() cseréli
-        if (t != null) { hit++; if (t !== k) { try { apply(t); } catch (e) {} } }
-        else { const { km } = maskModels(k); const m = miss.get(km) || { n: 0, l: new Set(), p: rel }; m.n++; m.l.add(l); miss.set(km, m); }
+      // a fordítási mag gyorsítótárral (tcache.mjs); a hiányzó szövegek (kms) ugyanabban a sorrendben kerülnek a miss-be
+      const r = memo('skcz-' + ML, l + '|' + rel, src, () => {
+        const doc = parse(src);
+        let hit = 0, tot = 0; const kms = [];
+        visit(doc, (kind, k, apply) => {
+          tot++;
+          const t = /English<\/g\d+>[\s\S]*Deutsch<\/g\d+>/.test(k) ? k : lookup(D, l, k); // a nyelvválasztó listát a switcher() cseréli
+          if (t != null) { hit++; if (t !== k) { try { apply(t); } catch (e) {} } }
+          else kms.push(maskModels(k).km);
+        });
+        finishLd(doc);
+        return { h: serialize(doc), hit, tot, kms };
       });
-      finishLd(doc);
+      const { hit, tot } = r;
+      for (const km of r.kms) { const m = miss.get(km) || { n: 0, l: new Set(), p: rel }; m.n++; m.l.add(l); miss.set(km, m); }
       const cover = tot ? hit / tot : 1;
       stat[l][0] += hit; stat[l][1] += tot;
-      out[l + '|' + rel] = { h: serialize(doc), cover };
+      out[l + '|' + rel] = { h: r.h, cover };
       if (cover >= MIN_COVER) ok[l].add(pathOf(rel));
     }
   }
@@ -352,3 +359,4 @@ function run(ml) {
 }
 
 for (const ml of Object.keys(MARKETS)) { try { console.log(run(ml)); } catch (e) { console.log(`[skcz-langs ${ml}] hiba: ` + (e && e.stack || e)); } }
+tcacheReport('skcz-langs');
