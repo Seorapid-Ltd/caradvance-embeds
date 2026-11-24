@@ -19,6 +19,8 @@
 import { execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
+import os from 'node:os';
 
 const full = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).scripts['build:full'];
 const name = (s) => (s.split(/\s+/)[1] || s).replace(/\.mjs$/, '');
@@ -55,7 +57,21 @@ if (develop) steps = steps.filter((s) => !DEV_SKIP.has(name(s)));
 console.log(market ? `[build-run] EGY ORSZÁG: ${market} (előnézet)` : develop ? `[build-run] develop: gyors build, ${steps.length} lépés` : '[build-run] teljes build');
 
 const PATH = path.resolve('node_modules/.bin') + path.delimiter + process.env.PATH;
-const ENV = { ...process.env, PATH, ...(market ? { CA_MIRROR_LANGS: MIRROR[market] } : {}) };
+
+/* ---- fordítási gyorsítótár (tcache.mjs): a környezet ujjlenyomata a build ELEJÉN, a forrásfájlokból ----
+ * (a gyökér .mjs/.json/.js fájlai, lib/ és src/i18n/ — szkriptek, szótárak, adatok). Ha CA_TCACHE_DIR nincs
+ * megadva (pl. helyi build), a gyorsítótár ki van kapcsolva. */
+function tcacheCtx() {
+  const h = crypto.createHash('sha1'); const list = [];
+  for (const f of fs.readdirSync('.')) if (/\.(mjs|cjs|js|json)$/.test(f) && fs.statSync(f).isFile()) list.push(f);
+  const walk = (d) => { if (!fs.existsSync(d)) return; for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else list.push(p); } };
+  walk('lib'); walk(path.join('src', 'i18n'));
+  for (const f of list.sort()) h.update(f).update('\0').update(fs.readFileSync(f)).update('\0');
+  return h.digest('hex');
+}
+const TC = process.env.CA_TCACHE_DIR ? { CA_TCACHE_CTX: tcacheCtx() } : {};
+if (TC.CA_TCACHE_CTX) console.log(`[build-run] fordítási gyorsítótár: ${process.env.CA_TCACHE_DIR} (környezet ${TC.CA_TCACHE_CTX.slice(0, 10)}, előző: ${process.env.CA_TCACHE_OLD && fs.existsSync(process.env.CA_TCACHE_OLD) ? 'van' : 'nincs'})`);
+const ENV = { ...process.env, PATH, ...TC, ...(market ? { CA_MIRROR_LANGS: MIRROR[market] } : {}) };
 const t0 = Date.now(); const times = [];
 
 function prune() {

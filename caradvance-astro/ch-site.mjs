@@ -24,6 +24,7 @@ import { maskModels, unmaskModels, neutralL, maskModels2, normNums, phraseFix } 
 import { SKL } from './skcz-langs-data.mjs';
 import { chCalcPage, CALC_PAGES } from './ch-calc.mjs';
 import { deferOrApply } from './routes-market.mjs';
+import { memo, tcacheReport } from './tcache.mjs';
 
 const PL = JSON.parse(fs.readFileSync('ch-site-config.json', 'utf8'));
 const BASE = 'de';
@@ -230,10 +231,18 @@ function switcher(h, cur, plPath) {
 
 const DUMP = process.env.CH_DUMP ? new Map() : null;
 /* ---------- egy oldal fordítása ---------- */
+/* ---------- egy oldal fordítása (gyorsítótárral, lásd tcache.mjs) ----------
+ * a translateRaw a hiányzó szövegeket a `notes` tömbbe gyűjti; itt kerülnek a miss-be, ugyanabban a sorrendben */
 function translate(src, l, D, rel, miss) {
+  const raw = () => { const notes = []; const o = translateRaw(src, l, D, rel, notes); return { h: o.h, cover: o.cover, notes }; };
+  const r = DUMP ? raw() : memo('ch', l + '|' + rel, src, raw);
+  for (const k of r.notes) { const { km } = maskModels(k); const m = miss.get(km) || { n: 0, l: new Set(), p: rel, raw: k }; m.n++; m.l.add(l); miss.set(km, m); }
+  return { h: r.h, cover: r.cover };
+}
+function translateRaw(src, l, D, rel, miss) {
   const doc = parse(src);
   const st = { miss: 0 }; let tot = 0;
-  const note = (k) => { const { km } = maskModels(k); const m = miss.get(km) || { n: 0, l: new Set(), p: rel, raw: k }; m.n++; m.l.add(l); miss.set(km, m); };
+  const note = (k) => { miss.push(k); }; // miss itt: a hiányzó szövegek listája (translate() dolgozza fel)
   visit(doc, (kind, k, apply) => {
     tot++;
     if (/English<\/g\d+>[\s\S]*Deutsch<\/g\d+>/.test(k)) return;
@@ -468,4 +477,4 @@ function run() {
 }
 
 try { console.log(run()); } catch (e) { console.log('[ch-site] hiba: ' + (e && e.stack || e)); }
-
+tcacheReport('ch-site');

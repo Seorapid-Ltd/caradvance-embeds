@@ -22,6 +22,7 @@ import { makeTemplater, neutral } from './i18n-templates.mjs';
 import { navSync } from './i18n-navsync.mjs';
 import { makeRental } from './i18n-rental.mjs';
 import { skczPost, fxOf, addSwitch, LBL, runtimeJs } from './i18n-skcz.mjs';
+import { memo, tcacheReport, tcacheStats } from './tcache.mjs';
 
 const DIST = 'dist';
 const SITE = 'https://www.caradvance.hu';
@@ -128,12 +129,18 @@ try {
     if (!CHILD) fs.writeFileSync(path.join(DIST, rel), huh.replace(/<\/head>/i, cluster + '\n</head>'));
 
     for (const l of doLangs) {
-      const D = dicts[l]; let hit = 0, miss = 0;
-      const doc = parse(src);
+      const D = dicts[l];
       const TP = TPL[l];
-      visit(doc, (kind, k, apply) => { const tr = D[k] || TP(k); if (tr && placeholdersOk(k, tr)) { try { apply(tr); hit++; } catch { miss++; } } else if (neutral(k)) hit++; else miss++; });
-      finishLd(doc);
-      let h = serialize(doc);
+      // a fordítási mag gyorsítótárral (tcache.mjs)
+      const r0 = memo('mirror', l + '|' + rel, src, () => {
+        let hit = 0, miss = 0;
+        const doc = parse(src);
+        visit(doc, (kind, k, apply) => { const tr = D[k] || TP(k); if (tr && placeholdersOk(k, tr)) { try { apply(tr); hit++; } catch { miss++; } } else if (neutral(k)) hit++; else miss++; });
+        finishLd(doc);
+        return { h: serialize(doc), hit, miss };
+      });
+      const { hit, miss } = r0;
+      let h = r0.h;
       h = h.replace(/<html([^>]*)\slang="[^"]*"/i, `<html$1 lang="${HREFLANG[l]}"`);
       if (!/<html[^>]*\slang=/i.test(h)) h = h.replace(/<html/i, `<html lang="${HREFLANG[l]}"`);
       if (KEY[p]) h = applyExpat(h, KEY[p], l, INTL[l], M);
@@ -161,7 +168,7 @@ try {
       const s = stats[l] || (stats[l] = { pages: 0, indexed: 0, hit: 0, miss: 0 }); s.pages++; s.hit += hit; s.miss += miss; if (cover >= MIN_COVER) s.indexed++;
     }
   }
-  if (CHILD) { fs.writeFileSync(process.env.CA_MIRROR_OUT, JSON.stringify({ sitemapAdd, domMap, stats })); process.exit(0); }
+  if (CHILD) { fs.writeFileSync(process.env.CA_MIRROR_OUT, JSON.stringify({ sitemapAdd, domMap, stats, tc: tcacheStats() })); process.exit(0); }
   // a gyerekfolyamatok eredménye — ugyanabban a sorrendben, mint egymás után futtatva
   for (const r of parts) { sitemapAdd.push(...r.sitemapAdd); for (const [l, u] of Object.entries(r.domMap)) if (u.length) domMap[l] = u; Object.assign(stats, r.stats); }
   sitemapAdd.sort((a, b) => a[0] - b[0] || a[1] - b[1]); const smAdd = sitemapAdd.map((x) => x[2]);
@@ -180,6 +187,7 @@ try {
     console.log(`[mirror] ${l}: domain ${DOMS[l]} ${DLIVE ? 'ÉLES' : 'előnézet (noindex)'} — sitemap ${domMap[l].length} URL`);
   }
   for (const [l, s] of Object.entries(statsOrdered)) console.log(`[mirror] ${l}: ${s.pages} oldal, indexelve ${s.indexed}, lefedettség ${(100 * s.hit / Math.max(1, s.hit + s.miss)).toFixed(1)}%`);
+  tcacheReport('mirror', parts.reduce((a, r) => ({ hit: a.hit + (r.tc ? r.tc.hit : 0), miss: a.miss + (r.tc ? r.tc.miss : 0) }), { hit: 0, miss: 0 }));
 } catch (e) {
   console.log('[mirror] FIGYELEM - ' + (e && e.stack || e) + ' (a build megy tovabb)');
   process.exit(0);
