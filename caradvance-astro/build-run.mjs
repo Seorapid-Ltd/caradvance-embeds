@@ -30,7 +30,7 @@ const SKCHAIN = ['sk', 'cz', 'pl', 'ch', 'eu'];
 const ONLY = {
   'seo-noprice': ['hu'], // ár nélküli (_np) változat: csak a caradvance.hu-n van
   'skcz-local': SKCHAIN, 'skcz-langs': SKCHAIN,
-  'skcz-seo1124': ['sk', 'cz'], 'skcz-onpage1124': ['sk', 'cz'], // SEO 1–3. lépés (2026-11-24): csak a .sk és a .cz oldal
+  'skcz-seo1124': ['sk', 'cz'], 'skcz-onpage1124': ['sk', 'cz'], 'skcz-trust1124': ['sk', 'cz'], // SEO 1–3. lépés (2026-11-24): csak a .sk és a .cz oldal
   'pl-site': ['pl'], 'cz-phone': ['cz'], 'cz-final': ['cz'], 'ch-site': ['ch'], 'eu-site': ['eu'],
 };
 const PRUNE_AFTER = 'eu-site'; // utána a többi ország kész mappái törölhetők, a további lépések kevesebb oldalon futnak
