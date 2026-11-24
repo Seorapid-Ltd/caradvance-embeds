@@ -15,6 +15,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import os from 'node:os';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { legal } from './skcz-legal.mjs';
 import { CONTACT } from './i18n-skcz.mjs';
 
@@ -366,9 +368,28 @@ function notFound(dist) {
   return '404: ' + made.join(',');
 }
 
+// egy fájlcsomag átalakítása; items: [sorszám, bázis-index, fájl] → a módosult fájlok [sorszám, bázis-index, statisztika]
+function localFiles(jobs, items) {
+  const changed = [];
+  for (const [i, bi, p] of items) {
+    const { l, base } = jobs[bi]; const C = CFG[l];
+    const s = fs.readFileSync(p, 'utf8');
+    const rel = path.relative(base, p).split(path.sep).join('/');
+    let [n, st] = cleanHtml(s, l, C, rel);
+    const [n2, st2] = legal(n, l, rel, CONTACT, SITE[l]);
+    n = n2; for (const k in st2) st['legal.' + k] = st2[k];
+    if (globalThis.__CHV) n = n.replace(/\/caradvance-chat\.js(\?v=[0-9a-z]+)?"/g, '/caradvance-chat.js?v=' + globalThis.__CHV + '"');
+    if (globalThis.__BTV) n = n.replace(/ca-bt\.js\?v=[0-9a-z]+/g, 'ca-bt.js?v=' + globalThis.__BTV);
+    if (n !== s) { fs.writeFileSync(p, n); changed.push([i, bi, st]); }
+  }
+  return changed;
+}
+const LOC_NW = Math.max(1, Math.min(8, +(process.env.CA_SKCZLOCAL_WORKERS || 0) || (os.availableParallelism ? os.availableParallelism() : os.cpus().length)));
+
 /* ---------- futtatás ---------- */
-export function run(dist = DIST) {
+export async function run(dist = DIST) {
   const out = [];
+  const bases = [];
   // ca-bt.js: a sk/cs oldalakon a tartalom-hash a verzió (a módosított, csak céges árat mutató változat azonnal betöltődik)
   let BTV = '';
   try { BTV = crypto.createHash('sha1').update(fs.readFileSync(path.join(dist, 'ca-bt.js'))).digest('hex').slice(0, 10); } catch (e) {}
@@ -403,24 +424,18 @@ export function run(dist = DIST) {
         for (const b of bz) m['/auto/' + b + '/'] = l === 'cs' ? '/vozy/' : '/auta/';   // törölt bizományos autó → 301 a listára
         fs.writeFileSync(sf, JSON.stringify(m));
       }
-      // 3. HTML-ek
-      let files = 0; const tot = {};
+      // 3. HTML-ek: a fájllista most; maga az átalakítás lent, a magok között szétosztva
+      const flist = [];
       (function walk(d) {
         for (const e of fs.readdirSync(d, { withFileTypes: true })) {
           const p = path.join(d, e.name);
           if (e.isDirectory()) { walk(p); continue; }
           if (!/\.html$/.test(e.name)) continue;
-          const s = fs.readFileSync(p, 'utf8');
-          const rel = path.relative(base, p).split(path.sep).join('/');
-          let [n, st] = cleanHtml(s, l, C, rel);
-          const [n2, st2] = legal(n, l, rel, CONTACT, SITE[l]);
-          n = n2; for (const k in st2) st['legal.' + k] = st2[k];
-          if (globalThis.__CHV) n = n.replace(/\/caradvance-chat\.js(\?v=[0-9a-z]+)?"/g, '/caradvance-chat.js?v=' + globalThis.__CHV + '"');
-          if (globalThis.__BTV) n = n.replace(/ca-bt\.js\?v=[0-9a-z]+/g, 'ca-bt.js?v=' + globalThis.__BTV);
-          if (n !== s) { fs.writeFileSync(p, n); files++; for (const k in st) tot[k] = (tot[k] || 0) + st[k]; }
+          flist.push(p);
         }
       })(base);
-      out.push(`${path.relative(dist, base)}: törölt mappa ${del}, módosított HTML ${files} ${JSON.stringify(tot)}`);
+      bases.push({ l, base, del, flist, outAt: out.length });
+      out.push(null);
     }
     // 4. keresőindex
     for (const f of [path.join(dist, 'kereses-index-' + l + '.json'), path.join(dist, l, 'kereses-index.json'), path.join(dist, '_np', l, 'kereses-index.json')]) {
@@ -435,6 +450,27 @@ export function run(dist = DIST) {
       } catch (e) { out.push(f + ': hiba ' + e.message); }
     }
   }
+  // 3. HTML-ek átalakítása (cleanHtml + legal): fájlonként független, worker szálakon
+  const items = [];
+  bases.forEach((b, bi) => b.flist.forEach((p) => items.push([bi, p])));
+  const jobs = bases.map((b) => ({ l: b.l, base: b.base }));
+  let res;
+  if (LOC_NW < 2 || items.length < 200) res = [localFiles(jobs, items.map((x, i) => [i, ...x]))];
+  else {
+    const chunks = Array.from({ length: LOC_NW }, () => []);
+    items.forEach((x, i) => chunks[i % LOC_NW].push([i, ...x]));
+    res = await Promise.all(chunks.map((ch) => new Promise((resolve, reject) => {
+      let done = false;
+      const w = new Worker(new URL(import.meta.url), { workerData: { skczLocal: { jobs, items: ch, CHV: globalThis.__CHV, BTV: globalThis.__BTV } } });
+      w.once('message', (m) => { done = true; if (m.err) reject(new Error(m.err)); else resolve(m.ok); });
+      const fb = (e) => { if (done) return; done = true; console.log('[skcz-local] szál hiba, egy szálon folytatja: ' + (e && e.message)); try { resolve(localFiles(jobs, ch)); } catch (x) { reject(x); } };
+      w.once('error', fb); w.once('exit', () => fb(new Error('kilépett')));
+    })));
+  }
+  const changedList = res.flat().sort((a, b) => a[0] - b[0]);
+  bases.forEach((b) => { b.files = 0; b.tot = {}; });
+  for (const [, bi, st] of changedList) { const b = bases[bi]; b.files++; for (const k in st) b.tot[k] = (b.tot[k] || 0) + st[k]; }
+  for (const b of bases) out[b.outAt] = `${path.relative(dist, b.base)}: törölt mappa ${b.del}, módosított HTML ${b.files} ${JSON.stringify(b.tot)}`;
   // hreflang (C17): a sk/cs oldalakon önhivatkozó sk + a párja cs-ben (a magyar oldalak a 4. fázisban, indításkor kapják meg)
   try { out.push(hreflang(dist)); } catch (e) { out.push('hreflang hiba: ' + e.message); }
   // 4. fázis (indítás): végleges sk/cs címek a canonical / hreflang / sitemap URL-ekben
@@ -445,6 +481,10 @@ export function run(dist = DIST) {
   return '[skcz-local] ' + out.join(' | ');
 }
 
-if (import.meta.url === 'file://' + path.resolve(process.argv[1] || '')) {
-  try { console.log(run(DIST)); } catch (e) { console.log('[skcz-local] hiba: ' + (e && e.stack)); }
+if (!isMainThread && workerData && workerData.skczLocal) {
+  const J = workerData.skczLocal; globalThis.__CHV = J.CHV; globalThis.__BTV = J.BTV;
+  let r; try { r = { ok: localFiles(J.jobs, J.items) }; } catch (e) { r = { err: (e && e.stack) || String(e) }; }
+  parentPort.postMessage(r);
+} else if (import.meta.url === 'file://' + path.resolve(process.argv[1] || '')) {
+  try { console.log(await run(DIST)); } catch (e) { console.log('[skcz-local] hiba: ' + (e && e.stack)); }
 }
