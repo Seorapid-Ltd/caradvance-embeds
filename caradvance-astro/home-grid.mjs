@@ -57,6 +57,8 @@ const CSS = '<style id="ca-grid-css">'
   + 'html.ca-dark body #autoink.ca-grid :is(.cg-cat,.cg-pn,.cg-f){color:rgba(255,255,255,.6)}'
   + 'html.ca-dark body #autoink.ca-grid .cg-f span:not(:last-child)::after{background:rgba(255,255,255,.3)}'
   + 'html.ca-dark body #autoink.ca-grid .cg-cta{background:rgba(255,255,255,.07);color:#fff}html.ca-dark body #autoink.ca-grid .cg-cta:hover{background:#fff;color:#121317}'
+  // nagy képernyőn ugyanakkora tartalomszélesség, mint a caradvance.de-n (1536 px-es konténer, 24 px belső margó → 1488 px), így a fotók is ugyanakkorák
+  + '@media(min-width:1536px){html body #autoink.ca-grid{padding-left:max(24px,calc((100% - 1488px)/2))!important;padding-right:max(24px,calc((100% - 1488px)/2))!important}}'
   // tablet: 2 oszlop
   + '@media(max-width:1100px){' + S + ' .cg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}'
   // telefon: oldalra húzható sor
