@@ -80,6 +80,9 @@ for (const [L, M] of Object.entries(MKT)) {
 
     if (WA_KEY[L] && h.includes(HU_WA_KEY)) { h = h.split(`data-key="${HU_WA_KEY}"`).join(`data-key="${WA_KEY[L]}"`); n.wa++; }
 
+    /* telefon / iPad: vízszintes kilógás (2026-11-24 mérés: főoldali 3D-karusszel, lábléc, jogi sáv, blog-csempék) */
+    if (!h.includes('id="x1124"')) h = h.replace('</head>', '<style id="x1124">html,body{overflow-x:clip}.cw.cf3d{max-width:100%}select{max-width:100%}.cacb-in span{white-space:normal;overflow-wrap:anywhere}</style></head>');
+
     if (h !== before) fs.writeFileSync(f, h);
   }
   console.log(`[skcz-trust] ${L}: csapat ${team.length} fő`);
