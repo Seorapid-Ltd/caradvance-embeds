@@ -19,6 +19,7 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 
 const full = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).scripts['build:full'];
 const name = (s) => (s.split(/\s+/)[1] || s).replace(/\.mjs$/, '');
@@ -51,6 +52,7 @@ const develop = !market && BRANCH === 'develop';
 
 let steps = full.split('&&').map((s) => s.trim()).filter(Boolean);
 if (develop) steps = steps.filter((s) => !DEV_SKIP.has(name(s)));
+console.log(`[build-run] gép: ${os.cpus().length} CPU (${os.cpus()[0]?.model || '?'}), ${Math.round(os.totalmem() / 2 ** 30)} GB memória`);
 console.log(market ? `[build-run] EGY ORSZÁG: ${market} (előnézet)` : develop ? `[build-run] develop: gyors build, ${steps.length} lépés` : '[build-run] teljes build');
 
 const PATH = path.resolve('node_modules/.bin') + path.delimiter + process.env.PATH;
