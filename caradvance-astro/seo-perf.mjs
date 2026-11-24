@@ -12,6 +12,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
+// párhuzamos futás: a worker szálak csak a fix() oldalankénti átalakítást futtatják (lent), a fájlíró lépéseket nem
+const WORKER = !isMainThread && !!(workerData && workerData.seoPerf);
 
 const DIST = 'dist';
 const INLINE = {};
@@ -25,7 +29,7 @@ const LOADER = `<script id="ca-lazyvid">(function(){function go(v){if(v.__ld)ret
 
 // ---- Tartós bérlet oldalak: a kártyák „Ajánlatot kérek” gombja ugyanazt a bérlési ablakot nyitja,
 // mint az /autoink kártyái és a modell-oldalak (a konfiguráció a seo-abo.mjs STRIP blokkjából jön).
-try {
+if (!WORKER) try {
   const src = fs.readFileSync('seo-abo.mjs', 'utf8');
   const lit = (src.match(/const STRIP = ("(?:[^"\\]|\\.)*")/) || [])[1];
   if (lit) {
@@ -76,7 +80,7 @@ function renameRental(p, h) {
 
 
 // ---- 2026-10: a tartós bérlet aloldalai megszűntek → 301 (statikus szabályok a _redirects ELEJÉRE)
-try {
+if (!WORKER) try {
   const R = 'dist/_redirects';
   const MAP = { cegeknek: '/tartos-berlet/#cegeknek', maganszemelyeknek: '/tartos-berlet/#maganszemelyeknek', 'elektromos-auto': '/tartos-berlet/#elektromos',
     bmw: '/autoink/?marka=bmw#berelheto', mercedes: '/autoink/?marka=mercedes#berelheto', audi: '/autoink/?marka=audi#berelheto',
@@ -271,19 +275,50 @@ function fix(p) {
   }
 }
 
-try {
-  if (fs.existsSync(DIST)) walk(DIST);
+const PERF_NW = Math.max(1, Math.min(8, +(process.env.CA_PERF_WORKERS || 0) || (os.availableParallelism ? os.availableParallelism() : os.cpus().length)));
+function listHtml(d, out) {
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) { if (e.name === 'belso' || e.name === 'api') continue; listHtml(p, out); }
+    else if (e.name.endsWith('.html')) out.push(p);
+  }
+  return out;
+}
+const COUNTERS = () => ({ files, changed, vids, fonts, css, cmpPages, ogn, abd });
+function fixAll(list) { for (const p of list) { files++; try { fix(p); } catch (err) { /* egy oldal hibája ne állítsa meg */ } } }
+if (WORKER) {
+  fixAll(workerData.files);
+  parentPort.postMessage(COUNTERS());
+} else try {
+  if (fs.existsSync(DIST)) {
+    const list = listHtml(DIST, []);
+    if (PERF_NW < 2 || list.length < 200) fixAll(list);
+    else {
+      // az oldalak szétosztva a magok között; minden oldal csak a saját fájlját írja
+      const parts = Array.from({ length: PERF_NW }, () => []);
+      list.forEach((f, i) => parts[i % PERF_NW].push(f));
+      const rs = await Promise.all(parts.map((part) => new Promise((resolve) => {
+        let done = false;
+        const w = new Worker(new URL(import.meta.url), { workerData: { seoPerf: 1, files: part } });
+        w.once('message', (r) => { done = true; resolve(r); });
+        const fallback = (e) => { if (done) return; done = true; console.log('[perf] szál hiba, egy szálon folytatja: ' + (e && e.message)); const b = COUNTERS(); fixAll(part); const a = COUNTERS(); resolve(Object.fromEntries(Object.keys(a).map((k) => [k, a[k] - b[k]]))); };
+        w.once('error', fallback); w.once('exit', () => fallback(new Error('kilépett')));
+      })));
+      for (const r of rs) { files += r.files; changed += r.changed; vids += r.vids; fonts += r.fonts; css += r.css; cmpPages += r.cmpPages; ogn += r.ogn; abd += r.abd; }
+    }
+  }
   console.log(`[perf] összehasonlítás gomb az autókártyákon: ${cmpPages} oldal, ${Object.keys(CMP).length} modell`);
   console.log(`[perf] bérlési dátum + Choice link: ${abd} oldal`);
   console.log(`[perf] megosztási kép (og:image) cserélve: ${ogn} oldal`);
   console.log(`[perf] ${files} oldal, módosítva ${changed} · font ${fonts} · css ${css} · videó ${vids}`);
 } catch (e) { console.log('[perf] hiba: ' + (e && e.message)); }
 
+if (!WORKER) {
 // ---------- caradvance.sk / caradvance.cz: szlovák / cseh URL-ek (skcz-slugs.mjs) ----------
 try { const SK = await import('./skcz-slugs.mjs'); console.log(SK.run(DIST)); } catch (e) { console.log('[skcz] hiba: ' + (e && e.message)); }
 // caradvance.sk / .cz: maradék magyar szövegek fordítása a HTML-ben és a futásidejű fordítóban (skcz-text.mjs)
 // (a link-ciklus javítása lent fut, a kiegészített rt-*.js fájlokon is)
-try { const SKT = await import('./skcz-text.mjs'); console.log(SKT.run(DIST)); } catch (e) { console.log('[skcz-text] hiba: ' + (e && e.message)); }
+try { const SKT = await import('./skcz-text.mjs'); console.log(await SKT.run(DIST)); } catch (e) { console.log('[skcz-text] hiba: ' + (e && e.message)); }
 
 // ---------- caradvance.sk / caradvance.cz: a middleware minden szlovák/cseh oldalon fusson ----------
 // A _routes.json (seo-noprice.mjs) csak a magyar áras könyvtárakat tartalmazza. A saját domainen
@@ -349,3 +384,4 @@ try {
   console.log(`[perf] i18n runtime link-ciklus javítva: ${rtFixed}/${rtFiles} fájl`);
 } catch (e) { console.log('[perf] rt hiba: ' + (e && e.message)); }
 process.exit(0);
+}

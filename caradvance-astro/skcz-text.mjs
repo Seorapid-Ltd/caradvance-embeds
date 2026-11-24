@@ -12,6 +12,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import os from 'node:os';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { M as XM, G as XGL, LEGAL, LEGAL_HREF, LEGAL_PAGES, LEGAL_EXACT } from './skcz-text-data.mjs';
 import { runSk as calcSk, runCs as calcCs } from './skcz-calc.mjs';
 
@@ -476,22 +478,60 @@ function fixBlogIndex(html, l, base, map) {
 }
 
 // ---------- futtatás ----------
-export function run(DIST = 'dist') {
+// Az oldalak fordítása (2. lépés) a processzormagok között szétosztva fut (worker_threads): minden oldal csak a saját
+// fájlját írja; a közös előkészítés (rt-fájl, blog főoldal, képlista) és a kalkulátorok a fő szálon, a régi sorrendben.
+const TXT_NW = Math.max(1, Math.min(8, +(process.env.CA_SKCZTEXT_WORKERS || 0) || (os.availableParallelism ? os.availableParallelism() : os.cpus().length)));
+function listHtml(d, out) {
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) { listHtml(p, out); continue; }
+    if (e.name.endsWith('.html')) out.push(p);
+  }
+  return out;
+}
+// egy nyelv oldalainak egy része: [{ i, p }] → számlálók
+function translateFiles(job) {
+  const { l, base, rtSrc, img, items } = job;
+  const translate = makeTranslator(loadRt(rtSrc, l), l, new Set(img));
+  const r = { changed: 0, errs: 0, rtFirst: 0, dbg: null, img: 0 };
+  for (const { i, p } of items) {
+    try {
+      const h = fs.readFileSync(p, 'utf8'); const n = translate(h, '/' + path.relative(base, path.dirname(p)).split(path.sep).join('/').replace(/^\/?/, '').replace(/([^/])$/, '$1/'));
+      if (n !== h) { fs.writeFileSync(p, n); r.changed++; }
+      const ri = n.indexOf('/i18n/rt-' + l + '.js'), hi = n.search(/<\/head>/i);
+      if (ri >= 0 && hi >= 0) { if (ri < hi) r.rtFirst++; else if (!r.dbg) r.dbg = [i, p + ' rt@' + ri + ' head@' + hi]; }
+    } catch (x) { r.errs++; }
+  }
+  r.img = translate.imgCount();
+  return r;
+}
+function inWorker(job) {
+  return new Promise((resolve) => {
+    let done = false;
+    const w = new Worker(new URL(import.meta.url), { workerData: { skczText: job } });
+    w.once('message', (r) => { done = true; resolve(r); });
+    const fb = (e) => { if (done) return; done = true; console.log('[skcz-text] szál hiba, egy szálon folytatja: ' + (e && e.message)); resolve(translateFiles(job)); };
+    w.once('error', fb); w.once('exit', () => fb(new Error('kilépett')));
+  });
+}
+export async function run(DIST = 'dist') {
   const out = [];
+  const prep = [];
   for (const l of ['sk', 'cs']) {
     const base = path.join(DIST, l);
-    if (!fs.existsSync(path.join(base, 'index.html'))) continue;
+    if (!fs.existsSync(path.join(base, 'index.html'))) { prep.push(null); continue; }
     // 1. runtime
-    let X = null; let rtn = 0;
+    let rtSrc = null; let rtn = 0;
     for (const d of [path.join(DIST, 'i18n'), path.join(DIST, '_np', 'i18n')]) {
       const f = path.join(d, 'rt-' + l + '.js');
       if (!fs.existsSync(f)) continue;
       const s = fs.readFileSync(f, 'utf8');
       const n = patchRt(s, l);
       if (n !== s) { fs.writeFileSync(f, n); rtn++; }
-      if (!X) X = loadRt(n, l);
+      if (rtSrc == null) rtSrc = n;
     }
-    if (!X) { out.push(l + ': nincs rt'); continue; }
+    if (rtSrc == null) { prep.push({ l, none: true }); continue; }
+    loadRt(rtSrc, l); // hiba esetén itt dobjon, mint eddig
     let map = {};
     try { map = JSON.parse(fs.readFileSync(path.join(base, '_slugs.json'), 'utf8')); } catch (e) { /* nincs */ }
     // 3. blog főoldal
@@ -501,37 +541,45 @@ export function run(DIST = 'dist') {
       const h = fs.readFileSync(bi, 'utf8'); const n = fixBlogIndex(h, l, base, map);
       if (n !== h) { fs.writeFileSync(bi, n); blog++; }
     }
-    // 2. HTML-oldalak
-    const IMG = new Set();
+    // 2. HTML-oldalak (képlista + fájllista)
+    const IMG = [];
     (function li(d, rel) {
       if (!fs.existsSync(d)) return;
       for (const e of fs.readdirSync(d, { withFileTypes: true })) {
         if (e.isDirectory()) li(path.join(d, e.name), rel + '/' + e.name);
-        else if (/\.(webp|avif|jpe?g|png|gif|svg)$/i.test(e.name)) IMG.add(rel + '/' + e.name);
+        else if (/\.(webp|avif|jpe?g|png|gif|svg)$/i.test(e.name)) IMG.push(rel + '/' + e.name);
       }
     })(path.join(DIST, 'l10n', l), '');
-    const translate = makeTranslator(X, l, IMG);
-    let files = 0, changed = 0, errs = 0, rtFirst = 0, dbg = '';
-    (function walk(d) {
-      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-        const p = path.join(d, e.name);
-        if (e.isDirectory()) { walk(p); continue; }
-        if (!e.name.endsWith('.html')) continue;
-        files++;
-        try {
-          const h = fs.readFileSync(p, 'utf8'); const n = translate(h, '/' + path.relative(base, path.dirname(p)).split(path.sep).join('/').replace(/^\/?/, '').replace(/([^/])$/, '$1/'));
-          if (n !== h) { fs.writeFileSync(p, n); changed++; }
-          const ri = n.indexOf('/i18n/rt-' + l + '.js'), hi = n.search(/<\/head>/i);
-          if (ri >= 0 && hi >= 0) { if (ri < hi) rtFirst++; else if (!dbg) dbg = p + ' rt@' + ri + ' head@' + hi; }
-        } catch (x) { errs++; }
-      }
-    })(base);
+    const files = listHtml(base, []).map((p, i) => ({ i, p }));
+    prep.push({ l, base, map, rtn, blog, rtSrc, img: IMG, files });
+  }
+  // fordítás: nyelvenként TXT_NW részre bontva, minden rész külön szálon
+  const jobs = [];
+  for (const P of prep) {
+    if (!P || P.none) continue;
+    const k = TXT_NW < 2 || P.files.length < 40 ? 1 : TXT_NW;
+    const parts = Array.from({ length: k }, () => []);
+    P.files.forEach((x, j) => parts[j % k].push(x));
+    for (const items of parts) if (items.length) jobs.push({ P, job: { l: P.l, base: P.base, rtSrc: P.rtSrc, img: P.img, items } });
+  }
+  const res = TXT_NW < 2 ? jobs.map((j) => translateFiles(j.job)) : await Promise.all(jobs.map((j) => inWorker(j.job)));
+  jobs.forEach((j, n) => { (j.P.res = j.P.res || []).push(res[n]); });
+  for (const P of prep) {
+    if (!P) continue;
+    if (P.none) { out.push(P.l + ': nincs rt'); continue; }
+    const { l, base, map } = P;
+    const rs = P.res || [];
+    const sum = (k) => rs.reduce((a, r) => a + r[k], 0);
+    const changed = sum('changed'), errs = sum('errs'), rtFirst = sum('rtFirst'), imgN = sum('img');
+    const d = rs.map((r) => r.dbg).filter(Boolean).sort((a, b) => a[0] - b[0])[0];
+    const dbg = d ? d[1] : '';
     // Szlovákia és Csehország: saját illetékkalkulátorok (a magyar honosítás / átírás helyett)
     let calc = 0; try { calc = l === 'sk' ? calcSk(base, map) : l === 'cs' ? calcCs(base, map) : 0; } catch (x) { calc = 'hiba: ' + x.message; }
-    out.push(`${l}: képek ${IMG.size}/${translate.imgCount()} csere, kalkulátor ${calc}, rt ${rtn} fájl, HTML ${changed}/${files} módosítva${errs ? ', hiba: ' + errs : ''}, blog-főoldal: ${blog}, fordító a <head>-ben: ${rtFirst}${dbg ? ' — ' + dbg : ''}`);
+    out.push(`${l}: képek ${P.img.length}/${imgN} csere, kalkulátor ${calc}, rt ${P.rtn} fájl, HTML ${changed}/${P.files.length} módosítva${errs ? ', hiba: ' + errs : ''}, blog-főoldal: ${P.blog}, fordító a <head>-ben: ${rtFirst}${dbg ? ' — ' + dbg : ''}`);
   }
   return '[skcz-text] ' + (out.join(' | ') || 'nincs sk/cs');
 }
+if (!isMainThread && workerData && workerData.skczText) parentPort.postMessage(translateFiles(workerData.skczText));
 
 // tesztekhez
 export { patchRt, loadRt, makeTranslator, parse, ser, fixBlogIndex };
