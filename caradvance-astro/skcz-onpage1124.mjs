@@ -45,7 +45,7 @@ const C2 = 'data-astro-cid-2zgg5vxy=""';
 // ---------- P1  SK /prenajom/ ----------
 edit('sk/prenajom', (c) => {
   meta(c, 'Operatívny leasing od 6 mesiacov, bez akontácie | CarAdvance',
-    'Dlhodobý prenájom ako flexibilnejší operatívny leasing: 48 nových prémiových áut od 6 mesiacov, bez akontácie, so servisom, daňou a poistením v cene.');
+    'Dlhodobý prenájom auta ako flexibilnejší operatívny leasing: 48 nových prémiových áut od 6 mesiacov, bez akontácie, so servisom, daňou a poistením v cene.');
   rep(c, 'H1', `<h1 ${C2}>Dlhodobý prenájom —<br ${C2}><span class="accent" ${C2}>nové prémiové auto od 6 mesiacov</span></h1>`,
     `<h1 ${C2}>Operatívny leasing od 6 mesiacov —<br ${C2}><span class="accent" ${C2}>dlhodobý prenájom nového prémiového auta</span></h1>`, 'Operatívny leasing od 6 mesiacov —');
   rep(c, 'bevezető', `<p class="sub sub-wide" ${C2}>Jeden fixný mesačný poplatok, ktorý`,
@@ -58,7 +58,7 @@ edit('sk/prenajom', (c) => {
 // ---------- P2  CZ /pronajem/ ----------
 edit('cs/pronajem', (c) => {
   meta(c, 'Operativní leasing od 6 měsíců, bez akontace | CarAdvance',
-    'Dlouhodobý pronájem jako flexibilnější operativní leasing: 48 nových prémiových vozů od 6 měsíců, bez akontace, se servisem, daní a pojištěním v ceně.');
+    'Dlouhodobý pronájem auta jako flexibilnější operativní leasing: 48 nových prémiových vozů od 6 měsíců, bez akontace, se servisem, daní a pojištěním v ceně.');
   rep(c, 'H1', `<h1 ${C2}>Dlouhodobý pronájem —<br ${C2}><span class="accent" ${C2}>nový prémiový vůz od 6 měsíců</span></h1>`,
     `<h1 ${C2}>Operativní leasing od 6 měsíců —<br ${C2}><span class="accent" ${C2}>dlouhodobý pronájem nového prémiového vozu</span></h1>`, 'Operativní leasing od 6 měsíců —');
   rep(c, 'bevezető', `<p class="sub sub-wide" ${C2}>Jedno pevné měsíční nájemné, které`,
@@ -72,7 +72,7 @@ edit('cs/pronajem', (c) => {
 // ---------- P3  SK /dovoz/kalkulacka-prepisu/ ----------
 edit('sk/dovoz/kalkulacka-prepisu', (c) => {
   meta(c, 'Prepis auta 2026: cena a kalkulačka poplatku | CarAdvance',
-    'Koľko stojí prepis auta v roku 2026? Kalkulačka vypočíta správny poplatok podľa výkonu motora a emisnej normy. Tabuľka sadzieb, zľavy a postup prepisu.');
+    'Prepis auta 2026: cena a poplatok za prepis auta na Slovensku. Kalkulačka podľa výkonu motora a emisnej normy, tabuľka sadzieb, zľavy a postup prepisu.');
   rep(c, 'H1', '<h1 class="lk-title">Kalkulačka poplatku za prepis vozidla</h1>', '<h1 class="lk-title">Prepis auta 2026 – cena a kalkulačka poplatku</h1>', 'Prepis auta 2026 – cena a kalkulačka poplatku</h1>');
   rep(c, 'bevezető', '<p class="lk-lead">Zadajte výkon motora,',
     '<p class="lk-lead">Cena za prepis auta je správny poplatok: sadzba podľa výkonu motora × ekologický koeficient, najmenej 33 €. Zadajte výkon motora,', 'Cena za prepis auta je správny poplatok');
