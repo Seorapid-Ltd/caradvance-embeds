@@ -223,8 +223,8 @@ edit('cs/prodej/vuz-na-miru', (c) => {
 
 // ---------- SK /predaj/financovanie-lizing/ — nincs kalkulátor az oldalon, ezért a „kalkulačka” ígéret kikerül ----------
 edit('sk/predaj/financovanie-lizing', (c) => {
-  meta2(c, 'Lízing auta a financovanie kúpy z Nemecka | CarAdvance',
-    'Lízing auta alebo úver na kúpu auta z Nemecka cez partnerskú lízingovú spoločnosť: nové aj ojazdené autá, zmluvu uzatvárate priamo s lízingovou spoločnosťou.');
+  meta2(c, 'Lízingová kalkulačka a lízing auta z Nemecka | CarAdvance',
+    'Lízingová kalkulačka: orientačná mesačná splátka podľa ceny auta, akontácie, doby a úrokovej sadzby. Lízing auta z Nemecka cez partnerskú lízingovú spoločnosť.');
   rep(c, 'H1', `<h1 ${RZ}>Lízing a financovanie áut —`, `<h1 ${RZ}>Lízing auta a financovanie —`, 'Lízing auta a financovanie —');
 });
 
@@ -297,6 +297,69 @@ function models(root, L) {
 }
 models('sk/predaj/auto-na-mieru', 'sk');
 models('cs/prodej/vuz-na-miru', 'cs');
+
+// ---------- készletlista H2 (H1 → H3 ugrás helyett) ----------
+for (const [rel, txt] of [['sk/auta', 'Ojazdené autá z Nemecka na predaj'], ['cs/vozy', 'Ojeté vozy a auta z dovozu na prodej']]) {
+  edit(rel, (c) => rep(c, 'listaoldal H2', '<div class="autok-head" id="autok"',
+    `<h2 class="autok-h2" style="font-size:clamp(20px,2.4vw,26px);font-weight:800;letter-spacing:-.02em;margin:8px 0 14px">${txt}</h2> <div class="autok-head" id="autok"`, `<h2 class="autok-h2"`));
+}
+
+// ---------- lízing-/leasingkalkulátor (annuitás, a kamatot a látogató adja meg — nincs kitalált kamat) ----------
+function leaseCalc(L) {
+  const sk = L === 'sk';
+  const T = sk ? {
+    eb: 'Kalkulačka', h2: 'Lízingová kalkulačka – orientačná mesačná splátka',
+    intro: 'Zadajte cenu auta, akontáciu, dobu splácania a úrokovú sadzbu z ponuky lízingovej spoločnosti. Kalkulačka vypočíta orientačnú mesačnú splátku (anuitná splátka, rovnaká každý mesiac).',
+    price: 'Cena auta (€)', down: 'Akontácia (%)', term: 'Doba splácania (mesiace)', rate: 'Ročná úroková sadzba (%)', ratePh: 'napr. z ponuky lízingovky',
+    fin: 'Financovaná suma', pay: 'Mesačná splátka', tot: 'Spolu zaplatíte', cost: 'Náklady financovania', need: 'Zadajte úrokovú sadzbu z ponuky lízingovej spoločnosti.',
+    note: 'Orientačný výpočet, nie ponuka. Nezahŕňa poplatky za spracovanie, poistenie ani RPMN; skutočnú splátku a podmienky určí lízingová spoločnosť po posúdení bonity.',
+    h3: 'Ako kalkulačka počíta?', how: 'Financovaná suma = cena auta − akontácia. Mesačná splátka sa počíta anuitne: suma × (i / (1 − (1 + i)<sup>−n</sup>)), kde i je mesačná úroková sadzba (ročná ÷ 12) a n počet mesiacov.',
+    cur: '€', dp: 30000, loc: 'sk-SK', mon: 'mes.'
+  } : {
+    eb: 'Kalkulačka', h2: 'Leasingová kalkulačka – orientační měsíční splátka',
+    intro: 'Zadejte cenu vozu, akontaci, dobu splácení a úrokovou sazbu z nabídky leasingové společnosti. Kalkulačka spočítá orientační měsíční splátku (anuitní splátka, každý měsíc stejná).',
+    price: 'Cena vozu (Kč)', down: 'Akontace (%)', term: 'Doba splácení (měsíce)', rate: 'Roční úroková sazba (%)', ratePh: 'např. z nabídky leasingovky',
+    fin: 'Financovaná částka', pay: 'Měsíční splátka', tot: 'Celkem zaplatíte', cost: 'Náklady financování', need: 'Zadejte úrokovou sazbu z nabídky leasingové společnosti.',
+    note: 'Orientační výpočet, ne nabídka. Nezahrnuje poplatky za zpracování, pojištění ani RPSN; skutečnou splátku a podmínky stanoví leasingová společnost po posouzení bonity.',
+    h3: 'Jak kalkulačka počítá?', how: 'Financovaná částka = cena vozu − akontace. Měsíční splátka se počítá anuitně: částka × (i / (1 − (1 + i)<sup>−n</sup>)), kde i je měsíční úroková sazba (roční ÷ 12) a n počet měsíců.',
+    cur: 'Kč', dp: 750000, loc: 'cs-CZ', mon: 'měs.'
+  };
+  const inp = (id, lbl, attrs) => `<label class="flc-f"><span>${lbl}</span><input class="flc-in" id="${id}" type="number" inputmode="decimal" ${attrs}></label>`;
+  return `<section class="section flc-sec" id="kalkulacka"><div class="wrap"><style>
+.flc-sec .flc{max-width:960px;margin:0 auto}.flc-eb{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red,#E2001A)}
+.flc h2{font-size:clamp(22px,2.8vw,30px);font-weight:800;letter-spacing:-.02em;color:var(--ink,#141519);margin:6px 0 8px;line-height:1.15}
+.flc-lead{color:var(--muted,#5A6B82);margin:0 0 20px;max-width:70ch}.flc-g{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+.flc-f{display:block;margin-bottom:14px}.flc-f span{display:block;font-size:13px;font-weight:700;color:var(--ink,#141519);margin-bottom:6px}
+.flc-in{width:100%;box-sizing:border-box;border:1px solid var(--line,#E6EAF1);border-radius:12px;padding:12px 14px;font-size:17px;font-weight:800;color:var(--ink,#141519);font-family:inherit;background:#fbfcfe}
+.flc-out{border:1px solid var(--line,#E6EAF1);border-radius:16px;padding:20px;background:#fff}.flc-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line,#E6EAF1);font-size:14.5px;color:var(--muted,#5A6B82)}
+.flc-row b{color:var(--ink,#141519)}.flc-pay{font-size:30px;font-weight:800;color:var(--red,#E2001A);margin:2px 0 10px;line-height:1.1}.flc-need{font-size:14px;color:var(--muted,#5A6B82);margin:0 0 8px}
+.flc-note{font-size:12.5px;color:var(--muted,#5A6B82);margin-top:12px}.flc h3{font-size:18px;font-weight:800;margin:26px 0 6px;color:var(--ink,#141519)}.flc-how{color:var(--muted,#5A6B82);max-width:75ch}
+@media(max-width:760px){.flc-g{grid-template-columns:1fr}}</style>
+<div class="flc"><span class="flc-eb">${T.eb}</span><h2>${T.h2}</h2><p class="flc-lead">${T.intro}</p>
+<div class="flc-g"><div>${inp('flcP', T.price, `min="0" step="100" value="${T.dp}"`)}${inp('flcD', T.down, 'min="0" max="90" step="1" value="20"')}${inp('flcN', T.term, 'min="6" max="120" step="6" value="60"')}${inp('flcR', T.rate, `min="0" max="40" step="0.01" placeholder="${T.ratePh}"`)}</div>
+<div class="flc-out" aria-live="polite"><div style="font-size:13px;font-weight:700;color:var(--muted,#5A6B82)">${T.pay}</div><div class="flc-pay" id="flcPay">—</div><p class="flc-need" id="flcNeed">${T.need}</p>
+<div class="flc-row"><span>${T.fin}</span><b id="flcFin">—</b></div><div class="flc-row"><span>${T.tot}</span><b id="flcTot">—</b></div><div class="flc-row" style="border:0"><span>${T.cost}</span><b id="flcCost">—</b></div>
+<p class="flc-note">${T.note}</p></div></div>
+<h3>${T.h3}</h3><p class="flc-how">${T.how}</p></div>
+<script>(function(){var $=function(i){return document.getElementById(i)};var f=function(v){return Math.round(v).toLocaleString('${T.loc}')+' ${T.cur}'};
+function c(){var P=+$('flcP').value||0,d=Math.min(Math.max(+$('flcD').value||0,0),90),n=Math.max(Math.round(+$('flcN').value||0),1),rs=$('flcR').value,F=P*(1-d/100);
+$('flcFin').textContent=f(F);if(rs===''||isNaN(+rs)){$('flcPay').textContent='—';$('flcTot').textContent='—';$('flcCost').textContent='—';$('flcNeed').style.display='';return}
+var i=(+rs)/1200,m=i>0?F*i/(1-Math.pow(1+i,-n)):F/n,t=P-F+m*n;$('flcNeed').style.display='none';$('flcPay').textContent=f(m)+' / ${T.mon}';$('flcTot').textContent=f(t);$('flcCost').textContent=f(t-P)}
+['flcP','flcD','flcN','flcR'].forEach(function(k){$(k).addEventListener('input',c)});c()})();</script></div></section>`;
+}
+const RZQ = `<div class="cta-row" style="justify-content:center;margin-top:22px" ${RZ}><a class="btn btn-primary" href="/sk/kontakt/" ${RZ}>Mám záujem o financovanie</a></div></div></section>`;
+edit('sk/predaj/financovanie-lizing', (c) => {
+  rep(c, 'lízingkalkulátor', RZQ, RZQ + ' ' + leaseCalc('sk'), 'id="flcP"');
+  rep(c, 'hero CTA → kalkulačka', `<a class="btn btn-white" href="/sk/kontakt/" ${RZ}>Požiadať o ponuku</a>`, `<a class="btn btn-white" href="#kalkulacka" ${RZ}>Lízingová kalkulačka</a>`, 'href="#kalkulacka"');
+});
+const RZC = `<div class="cta-row" style="justify-content:center;margin-top:22px" ${RZ}><a class="btn btn-primary" href="/cs/kontakt/" ${RZ}>Mám zájem o financování</a></div></div></section>`;
+edit('cs/prodej/financovani-leasing', (c) => {
+  meta2(c, 'Leasingová kalkulačka a leasing auta z Německa | CarAdvance',
+    'Leasingová kalkulačka: orientační měsíční splátka podle ceny vozu, akontace, doby a úrokové sazby. Leasing z Německa přes partnerskou leasingovou společnost.');
+  rep(c, 'H1', `<h1 ${RZ}>Leasing a financování aut —`, `<h1 ${RZ}>Leasing auta a financování —`, 'Leasing auta a financování —');
+  rep(c, 'leasingkalkulátor', RZC, RZC + ' ' + leaseCalc('cs'), 'id="flcP"');
+  rep(c, 'hero CTA → kalkulačka', `<a class="btn btn-white" href="/cs/kontakt/" ${RZ}>Chci nabídku</a>`, `<a class="btn btn-white" href="#kalkulacka" ${RZ}>Leasingová kalkulačka</a>`, 'href="#kalkulacka"');
+});
 
 // hossz-ellenőrzés (címkék 50–60, meta 140–160) — csak figyelmeztet
 for (const [r, t, d] of LEN) {
