@@ -25,7 +25,7 @@ const walk = (d, out = []) => { for (const e of fs.readdirSync(d, { withFileType
 let n = { date: 0, byline: 0, author: 0, dealer: 0, wa: 0 };
 // E4  Ahrefs Web Analytics: a .hu projekt kulcsa a .sk/.cz oldalon nem rögzít adatot (2026-11-24: 0 esemény 56 nap alatt).
 //     Saját projekt kulcsa ide kerül; üresen hagyva nem változtat semmit. BEÉPÍTÉSRE VÁR: kulcs a megrendelőtől / Ahrefs-projektből.
-const WA_KEY = { sk: '', cs: '' };
+const WA_KEY = { sk: '6bqEqzh14zCI5saCSeRsQg', cs: 'UFbtm0CgWRWnwhfJWPmmeA' };   // Ahrefs projekt 10760316 (SK), 10760332 (CZ), 2026-11-24
 const HU_WA_KEY = 'hc0fbnlxNtmpnGbelDApVQ';
 
 for (const [L, M] of Object.entries(MKT)) {
@@ -42,7 +42,10 @@ for (const [L, M] of Object.entries(MKT)) {
 
   for (const f of walk(root)) {
     const rel = path.relative(root, f);
-    if (/^(en|de|hu|pl|uk|fr|zh)\//.test(rel)) continue;          // más nyelvű tükörlapok: nem érintjük
+    if (/^(en|de|hu|pl|uk|fr|zh)\//.test(rel)) {                  // más nyelvű tükörlapok: csak a WA-kulcs (ugyanaz a domain)
+      if (WA_KEY[L]) { const x = fs.readFileSync(f, 'utf8'); if (x.includes(HU_WA_KEY)) { fs.writeFileSync(f, x.split(`data-key="${HU_WA_KEY}"`).join(`data-key="${WA_KEY[L]}"`)); n.wa++; } }
+      continue;
+    }
     let h = fs.readFileSync(f, 'utf8'); const before = h;
 
     // E1
