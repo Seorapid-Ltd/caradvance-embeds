@@ -1330,7 +1330,7 @@ function CA_boot(){
     if(results[3])allUsers=results[3].users||[];
     renderAll();
     var nx=new URLSearchParams(location.search).get('next');
-    if(nx&&/^\/belso\/(ugyfel\/\?id=\d+|ajanlatmotor\/[a-z0-9\/_-]*)$/.test(nx)){location.replace(nx);return;}
+    if(nx&&(/^\/belso\/(ugyfel\/\?id=\d+|ajanlatmotor\/[a-z0-9\/_-]*)$/.test(nx)||/^\/sales\/[a-z0-9\/_-]*$/.test(nx))){location.replace(nx);return;}
     var hv=(location.hash||'').slice(1);if(hv&&document.getElementById('v-'+hv))go(hv);
     LINES.forEach(renderCrm);loadCrm();
     if(currentUser.role==='admin'){loadIntegrations();loadMail();loadCalendar();}

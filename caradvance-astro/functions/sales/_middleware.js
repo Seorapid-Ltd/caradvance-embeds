@@ -1,5 +1,5 @@
-// CarAdvance Sales Desk (/admin/desk/) — staff only. Not signed in → the staff login, then back here.
-import { whoAmI } from '../../../lib/desk-api.js';
+// CarAdvance Sales Desk (/sales/) — staff only. Not signed in → the staff login (/admin/), then back here.
+import { whoAmI } from '../../lib/desk-api.js';
 export async function onRequest({ request, env, next }) {
   try { await whoAmI(request, env); } catch (e) {
     const url = new URL(request.url);
