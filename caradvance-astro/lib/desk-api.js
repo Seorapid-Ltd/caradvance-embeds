@@ -1,5 +1,5 @@
 // CarAdvance Sales Desk — API between the desk page and Notion (the master copy).
-// Runs as a Cloudflare Pages Function: functions/api/desk/[[path]].js. The page is /admin/desk/.
+// Runs as a Cloudflare Pages Function: functions/api/desk/[[path]].js. The page is /sales/ (functions/sales/_middleware.js).
 // Sign-in: the existing staff login (/admin/, ca_session cookie, D1 "DB" sessions + users) — any staff role.
 //
 // Environment:
