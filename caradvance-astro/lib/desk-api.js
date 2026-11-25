@@ -305,7 +305,7 @@ async function makeOffer(request, env, ctx) {
     `OFFER: ${eurs(price)} — ${type === 'b2b' ? 'dealer / B2B' : 'private buyer / B2C'}`,
     `Car: ${car.id} · ${car.model || ''}`, `Listed: ${listed}`,
     `Name: ${name}`, company && `Company: ${company}`, email && `Email: ${email}`, phone && `Phone: ${phone}`,
-    msg && `Message: ${msg}`, countryOf(url.hostname, b.lang) && `Country: ${countryOf(url.hostname, b.lang)}`, `Sent from: ${url.hostname} (${str(b.lang, 5) || '—'})`,
+    msg && `Message: ${msg}`, countryOf(url.hostname, b.lang) && `Country: ${countryOf(url.hostname, b.lang)}`, request.cf && request.cf.country && `Location: ${request.cf.country}`, `Sent from: ${url.hostname} (${str(b.lang, 5) || '—'})`,
   ].filter(Boolean).join('\n');
   const today = new Date().toISOString().slice(0, 10);
   const props = {
@@ -341,7 +341,7 @@ export function parseOffer(o) {
   const sent = f('Sent from'); const sm = sent.match(/^(\S+)\s*\((\w*)\)/) || [];
   const country = (f('Country') || countryOf(sm[1], sm[2]) || '').toUpperCase();
   const car = (String(o && o.cars || '').match(/\b(?:P1|P2|S26|V)-\d{1,2}\b/i) || [''])[0].toUpperCase();
-  return { price, type, net: price == null ? null : type === 'b2c' ? Math.round(price / VAT_F) : price, name: f('Name'), company: f('Company'), email: f('Email'), phone: f('Phone'), message: f('Message'), country, car };
+  return { price, type, net: price == null ? null : type === 'b2c' ? Math.round(price / VAT_F) : price, name: f('Name'), company: f('Company'), email: f('Email'), phone: f('Phone'), message: f('Message'), country, location: f('Location').toUpperCase(), car };
 }
 const isOffer = o => o && (/^OFFER:/m.test(o.notes || '') || (o.direction === 'Incoming' && o.channel === 'Website'));
 function rankFor(all, offer) {
@@ -542,6 +542,7 @@ export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
+  if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
     try {
