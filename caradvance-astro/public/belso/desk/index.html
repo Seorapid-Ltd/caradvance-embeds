@@ -451,6 +451,13 @@ header .herobottom .brands{margin:0;padding:0}
 @media(max-width:1100px){.herobottom{flex-wrap:wrap}.herobottom .ctas{flex-wrap:wrap}.herobottom .herostats{margin-left:0;width:100%}.herobottom .herostats .stat:first-child{padding-left:0}}
 
 #dkpis.kpis{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+
+/* price columns: fixed width, header and figures on the same right edge, room before Status */
+th.pcol,td.pcol{text-align:right;width:128px;min-width:112px;padding-left:12px;padding-right:24px;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.pcol{font-size:16px;font-weight:700;color:var(--ink)}
+td.pcol.b2c{font-weight:600}
+td.pcol .sub{display:block;margin-top:2px;font-size:13px;font-weight:500;color:var(--muted)}
+th.stcol,td.stcol{padding-left:8px}
 </style>
 </head>
 <body>
@@ -507,7 +514,7 @@ Ready when you are.</h1>
       <span class="count" id="sCount"></span>
     </div>
     <div class="tbl"><table>
-      <thead><tr><th>#</th><th data-i18n="th_car">Car</th><th class="hide-s" data-i18n="th_reg">Registration · km</th><th class="num" data-i18n="th_net">B2B</th><th class="num">B2C</th><th data-i18n="th_status">Status</th></tr></thead>
+      <thead><tr><th>#</th><th data-i18n="th_car">Car</th><th class="hide-s" data-i18n="th_reg">Registration · km</th><th class="pcol" data-i18n="th_net">B2B</th><th class="pcol">B2C</th><th class="stcol" data-i18n="th_status">Status</th></tr></thead>
       <tbody id="sRows"><tr><td colspan="6" class="empty">Loading stock…</td></tr></tbody>
     </table></div>
     <p class="foot">B2B prices exclude 19% VAT; B2C prices include it. Sources: Dealer Package 1 (16 Nov 2026), Dealer Package 2 (17 Nov 2026), 2026 stock list (18 Nov 2026), sales exposés (11 Nov 2026). Click a row for full details and photos.</p>
@@ -778,9 +785,9 @@ function renderStock(){
     let h=`<tr class="row" data-id="${esc(c.id)}"><td class="sub idc">${esc(c.id)}</td>
     <td><div class="carcell">${pics(c).length?`<img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt="">`:'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span>${soon||flags?'<span class="chips">':''}${soon?`<span class="chip warn">Ending soon · ${dl} d</span>`:''}${flags?`<span class="chip warn" title="${esc(c.flags.join('; '))}">${flags} data gap${flags>1?'s':''}</span>`:''}${soon||flags?'</span>':''}</div></div></td>
     <td class="hide-s"><span class="mono">${esc(c.vin||c.plate||'no plate yet')}</span><br><span class="sub">${esc(c.first_reg||'')} · ${c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':esc(c.km_text||'km on request')}</span></td>
-    <td class="num pricec">${eur(c.dealer_net)}${c.asking_price!=null&&c.asking_price!==''?`<br><span class="sub">${esc(t('th_ask').replace(/\s*€$/,''))}: ${eur(c.asking_price)}</span>`:''}</td>
-    <td class="num pricec">${eur(c.dealer_gross)}</td>
-    <td><select class="st ${esc(c.status||'Available')}" data-f="status" data-id="${esc(c.id)}" aria-label="Status">${['Available','Reserved','Sold'].map(s=>`<option${(c.status||'Available')===s?' selected':''}>${s}</option>`).join('')}</select></td></tr>`;
+    <td class="pcol">${eur(c.dealer_net)}${c.asking_price!=null&&c.asking_price!==''?`<span class="sub">${esc(t('th_ask').replace(/\s*€$/,''))}: ${eur(c.asking_price)}</span>`:''}</td>
+    <td class="pcol b2c">${eur(c.dealer_gross)}</td>
+    <td class="stcol"><select class="st ${esc(c.status||'Available')}" data-f="status" data-id="${esc(c.id)}" aria-label="Status">${['Available','Reserved','Sold'].map(s=>`<option${(c.status||'Available')===s?' selected':''}>${s}</option>`).join('')}</select></td></tr>`;
     if(S.open===c.id){
       const dd=(l,v)=>v!=null&&v!==''?`<dt>${l}</dt><dd>${esc(v)}</dd>`:'';
       h+=`<tr class="det"><td colspan="6">${pics(c).length?`<div class="gal">${pics(c).map((p,i)=>`<button type="button" data-lb="${esc(c.id)}" data-i="${i}" aria-label="Open photo ${i+1}"><img loading="lazy" src="img/t/${esc(p)}" alt=""></button>`).join('')}</div>`:''}<div class="dgrid">
