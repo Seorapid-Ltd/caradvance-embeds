@@ -565,7 +565,7 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
   header .eyebrow{margin-top:4px;font-size:11.5px}
   header h1{font-size:30px;line-height:1.08;margin:8px 0 8px;text-shadow:0 2px 16px rgba(0,0,0,.55)}
   header .lead{font-size:14.5px;line-height:1.45;margin:0 0 14px;text-shadow:0 1px 10px rgba(0,0,0,.6)}
-  #ctaPk{display:none!important}
+  #ctaRent,#ctaSale{flex:1 1 0;justify-content:center;height:44px}
   .herobottom{gap:14px}
   .herobottom .ctas{width:100%}
   #ctaAll{width:100%;justify-content:center;height:48px}
@@ -673,9 +673,9 @@ tr.det ul.eq.xnew li{border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
 /* Nyilvános, csak megtekintés (bejelentkezés nélkül) */
 .loginbtn{display:none;text-decoration:none}
 .public .loginbtn{display:inline-flex}
-.public #tabs,.public #tabs a[data-v=enq],.public #tabs a[data-v=leads],.public #msgBtn,.public #v-dealers,.public #v-outreach,.public #v-leads{display:none!important}
+.public #tabs,.public #tabs a[data-v=contact],.public #v-contact,.public #tabs a[data-v=enq],.public #tabs a[data-v=leads],.public #msgBtn,.public #v-dealers,.public #v-outreach,.public #v-leads{display:none!important}
 .public .topbar .tools{grid-column:-2/-1;justify-self:end;margin-left:auto}
-#tabs .nLeads:empty{display:none}#tabs .nLeads{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--red);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:18px;text-align:center}
+#tabs .nLeads:empty,#tabs .nMsg:empty{display:none}#tabs .nMsg{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--red);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:18px;text-align:center}#tabs .nLeads{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--red);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:18px;text-align:center}
 #lRows .lofr{font-weight:800;white-space:nowrap}#lRows .lcar{font-weight:700}#lRows .sub{display:block}
 #lRows tr.row{cursor:pointer}
 .public td.stcol select{pointer-events:none;-webkit-appearance:none;appearance:none;background-image:none!important;text-align:center;text-align-last:center;padding:0 10px!important;opacity:1;font-weight:700}
@@ -781,6 +781,49 @@ tr.det ul.eq.xnew li{border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
 #ofDlg .note{background:#fef3c7;color:#92400e;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:10px}
 @media(max-width:900px){.ofrow{grid-template-columns:56px 1fr 1fr}.ofrow .ofact{grid-column:1/-1;justify-content:flex-start}.ofrow .ofwho{grid-column:2/-1}.ofhead{grid-template-columns:110px 1fr}.ofhead img,.ofhead .noimg{width:110px;height:72px}.ofhead .ofp{grid-column:1/-1;text-align:left}}
 @media(max-width:560px){.ofrow{grid-template-columns:48px 1fr}.ofrow .ofwho,.ofrow details{grid-column:1/-1}.ofact button{flex:1 1 auto}}
+
+/* Kapcsolat — belső üzenetek */
+.msgwrap{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start;width:100%}
+.msgside,.msgmain{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.msgside{padding:14px;display:flex;flex-direction:column;gap:8px}.msgside h3{margin:2px 4px 4px;font-size:14px;font-weight:800}
+.mperson{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer;text-align:left;font:inherit}
+.mperson.on{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.mperson .av{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--red);color:#fff;font-size:14px}
+.mperson b{display:block;font-size:14px}.mperson small{display:block;color:var(--muted);font-size:11.5px}
+.mperson .un{margin-left:auto;min-width:20px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:800;line-height:20px;text-align:center}
+.mperson .ed{margin-left:auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px}
+.mperson .un+.ed{margin-left:6px}
+.ghostbtn{margin-top:6px;min-height:40px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);font-weight:700;cursor:pointer}
+.msgmain{display:flex;flex-direction:column;min-height:420px}
+.msgthread{flex:1;padding:16px;display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto}
+.mbub{max-width:78%;padding:10px 13px;border-radius:16px;background:var(--soft);border:1px solid var(--line);font-size:14px;line-height:1.45}
+.mbub.me{align-self:flex-end;background:color-mix(in srgb,var(--red) 16%,var(--card));border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
+.mbub .mh{display:flex;gap:8px;font-size:11.5px;color:var(--muted);margin-bottom:3px}.mbub .mh b{color:var(--ink)}
+.mbub p{margin:0;white-space:pre-wrap;word-break:break-word}.mbub .mcar{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:var(--red);cursor:pointer}
+.mempty{margin:auto;color:var(--muted);text-align:center;font-size:14px}
+.msgcomp{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.msgto{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--muted)}.msgto span{padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--ink);font-weight:700}
+#msgBody{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;background:var(--soft);color:var(--ink);padding:10px 12px;font:inherit;font-size:14px;resize:vertical}
+.msgbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.msgbar .sp{flex:1}
+.msgbar select{max-width:240px}
+.msgbar button{min-height:40px;padding:0 16px;border-radius:999px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.msgbar .wa{background:#25d366;border:1px solid #25d366;color:#fff}.msgbar .pri{background:var(--red);border:1px solid var(--red);color:#fff}
+@media(max-width:800px){.msgwrap{grid-template-columns:1fr}.msgside{flex-direction:row;flex-wrap:wrap}.msgside h3{width:100%}.mperson{width:auto;flex:1 1 140px}.msgthread{max-height:46vh}.msgbar select{max-width:100%;flex:1 1 100%}}
+
+/* B2B / B2C szűrés: csak a releváns ár látszik mindenhol */
+.pm-b2b th.pcol.b2c,.pm-b2b td.pcol.b2c,.pm-b2c th.pcol.b2b,.pm-b2c td.pcol:not(.b2c){display:none!important}
+.pm-b2b .hc-price>div:nth-child(2),.pm-b2c .hc-price>div:nth-child(1){display:none!important}
+.pm-b2b .hc-price,.pm-b2c .hc-price{grid-template-columns:1fr!important}
+.pm-b2b .p-b2c,.pm-b2c .p-b2b{display:none!important}
+
+/* Eladott autó: áthúzott kép */
+.soldw{position:relative;display:inline-block;overflow:hidden;line-height:0;border-radius:inherit}
+.soldw img{filter:grayscale(1) brightness(.75)}
+.soldw::before{content:'';position:absolute;inset:0;background:linear-gradient(to top right,transparent calc(50% - 2px),rgba(227,6,19,.9) calc(50% - 2px),rgba(227,6,19,.9) calc(50% + 2px),transparent calc(50% + 2px)),linear-gradient(to top left,transparent calc(50% - 2px),rgba(227,6,19,.9) calc(50% - 2px),rgba(227,6,19,.9) calc(50% + 2px),transparent calc(50% + 2px));z-index:1;pointer-events:none}
+.soldw::after{content:attr(data-sold);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-12deg);background:var(--red);color:#fff;font-weight:900;letter-spacing:.08em;font-size:12px;line-height:1;padding:5px 9px;border-radius:6px;z-index:2;white-space:nowrap;pointer-events:none}
+.soldw.big::after{font-size:22px;padding:9px 16px;border-radius:10px}
+tr.row.sold .car b{text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px}
+#carSheet.sold .cs-gal img,.hcard.sold .hc-img{filter:grayscale(1) brightness(.75)}
 </style>
 </head>
 <body>
@@ -791,6 +834,7 @@ tr.det ul.eq.xnew li{border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
       <nav id="tabs">
         <a href="#stock" data-v="stock"><i data-i18n="nav_veh">Vehicles</i></a>
         <a href="#leads" data-v="leads"><i data-i18n="nav_leads">Enquiries</i> <span class="nLeads"></span></a>
+        <a href="#contact" data-v="contact"><i data-i18n="nav_contact">Contact</i> <span class="nMsg"></span></a>
         <a href="#dealers" data-v="enq"><i data-i18n="nav_enq">B2B List</i></a>
       </nav>
       <div class="tools">
@@ -804,7 +848,7 @@ tr.det ul.eq.xnew li{border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
   <h1 data-i18n="h1">Premium cars.
 Ready when you are.</h1>
   <p class="lead" data-i18n="lead">Low-mileage BMW, MINI and Mercedes-Benz stock, every car sold individually at B2B or B2C prices.</p>
-  <div class="herobottom"><div class="ctas"><a class="cta pri" href="#stock" id="ctaAll"><span data-i18n="cta_all">Browse all cars</span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="cta ghost" href="#fordealers" id="ctaPk"><span data-i18n="cta_pk">View B2B prices</span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div><div class="herostats" id="heroStats"></div></div>
+  <div class="herobottom"><div class="ctas"><a class="cta pri" href="#stock" id="ctaAll"><span data-i18n="cta_all">Browse all cars</span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="cta ghost" href="/tartos-berlet/" id="ctaRent"><span data-i18n="cta_rent">Rental</span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="cta ghost" href="#stock" id="ctaSale"><span data-i18n="cta_sale">Sale</span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div><div class="herostats" id="heroStats"></div></div>
 
 </header>
 <dialog id="msgDlg"><form method="dialog" id="msgForm">
@@ -836,7 +880,7 @@ Ready when you are.</h1>
       <span class="count" id="sCount"></span>
     </div>
     <div class="tbl"><table>
-      <thead><tr><th>#</th><th data-i18n="th_car">Car</th><th class="hide-s" data-i18n="th_reg">Registration · km</th><th class="pcol"><span>Business to</span><span>Business</span></th><th class="pcol"><span>Business to</span><span>Customer</span></th><th class="stcol" data-i18n="th_status">Status</th></tr></thead>
+      <thead><tr><th>#</th><th data-i18n="th_car">Car</th><th class="hide-s" data-i18n="th_reg">Registration · km</th><th class="pcol b2b"><span>Business to</span><span>Business</span></th><th class="pcol b2c"><span>Business to</span><span>Customer</span></th><th class="stcol" data-i18n="th_status">Status</th></tr></thead>
       <tbody id="sRows"><tr><td colspan="6" class="empty">Loading stock…</td></tr></tbody>
     </table></div>
     <p class="foot">B2B prices exclude VAT; B2C prices include 19% German VAT. Sources: dealer lists (16–17 Nov 2026), 2026 stock list (18 Nov 2026), sales exposés (11 Nov 2026). Click a row for full details and photos.</p>
@@ -860,6 +904,27 @@ Ready when you are.</h1>
       <tbody id="dRows"><tr><td colspan="7" class="empty">Loading dealers…</td></tr></tbody>
     </table></div>
     <div id="rulesNote" class="foot"></div>
+  </section>
+
+  <section class="view" id="v-contact">
+    <div class="msgwrap">
+      <aside class="msgside">
+        <h3 data-i18n="c_people">Team</h3>
+        <div id="msgPeople"></div>
+        <button type="button" class="ghostbtn" id="msgDealer" data-i18n="c_dealer">Write to a dealer</button>
+      </aside>
+      <div class="msgmain">
+        <div class="msgthread" id="msgThread"></div>
+        <div class="msgcomp">
+          <div class="msgto" id="msgTo"></div>
+          <textarea id="msgBody" rows="3" data-i18n-ph="c_ph" placeholder="Write a message…"></textarea>
+          <div class="msgbar"><select id="msgCar" aria-label="Car"></select><span class="sp"></span>
+            <button type="button" class="wa" id="msgWa"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12.04 2a9.9 9.9 0 0 0-8.5 14.98L2 22l5.17-1.5A9.9 9.9 0 1 0 12.04 2m5.8 14.1c-.25.7-1.45 1.33-2 1.38-.53.06-1.03.25-3.47-.72-2.93-1.16-4.8-4.16-4.95-4.36s-1.18-1.57-1.18-3 .75-2.13 1.02-2.42a1.07 1.07 0 0 1 .78-.36h.56c.18 0 .42-.07.66.5.25.6.84 2.07.92 2.22s.12.33.02.53-.15.32-.3.5-.31.4-.45.53c-.15.15-.3.31-.13.6a8.9 8.9 0 0 0 1.64 2.04 8 8 0 0 0 2.37 1.46c.3.15.47.12.64-.07s.74-.86.94-1.16.4-.25.66-.15 1.73.82 2.03.97.5.22.57.35a2.5 2.5 0 0 1-.17 1.42"/></svg>WhatsApp</button>
+            <button type="button" class="pri" id="msgSend" data-i18n="c_send">Send</button></div>
+          <p class="sub msgerr" id="msgErr" hidden></p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="view" id="v-leads">
@@ -912,9 +977,9 @@ const daysLeft=d=>d?Math.round((new Date(d+'T12:00:00')-todayMs)/864e5):null;
 const status=t=>{const m=$('#status');m.hidden=!t;m.textContent=t||''};
 
 /* tabs */
-const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach',leads:'leads'};const ok=map[v]||'stock';
+const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach',leads:'leads',contact:'contact'};const ok=map[v]||'stock';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+ok));
-  const navv=ok==='stock'?'stock':ok==='leads'?'leads':'enq';
+  const navv=ok==='stock'?'stock':ok==='leads'?'leads':ok==='contact'?'contact':'enq';if(ok==='contact'&&window.__msgOpen)window.__msgOpen();
   document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v===navv));
   document.querySelectorAll('.subnav a').forEach(a=>a.classList.toggle('on',a.dataset.s===ok));
   if(ok==='stock'&&typeof renderStock==='function'&&S.cars){const want={fordealers:'b2b',private:'priv'}[v]||(S.audSet?'':null);if(want!=null){$('#sCat').value=want;S.audSet=!!want;if(S.raw.length)renderStock();}}};
@@ -961,6 +1026,7 @@ const PLF={veh:{en:['vehicle','vehicles'],hu:['jármű','jármű'],sk:['vozidlo'
 for(const[l,o]of Object.entries({"en": {"a_dl_s": "Packages & wholesale", "a_pv_s": "Individual cars & retail", "w_pk": "Dealer packages", "w_pk_d": "Curated multi-car bundles with competitive pricing and flexible volumes.", "w_ex": "Ex-rental cars", "w_ex_d": "Low-mileage, well-maintained cars from our rental fleet.", "w_pf": "Performance & luxury", "w_pf_d": "Premium models from leading brands, ready to drive away.", "b_pk": "View packages", "b_ex": "View ex-rental stock", "b_pf": "View premium stock", "s_allmake": "All makes", "more_mk": "More makes"}, "hu": {"a_dl_s": "Csomagok, nagyker", "a_pv_s": "Egyedi autók", "w_pk": "Kereskedői csomagok", "w_pk_d": "Összeállított, több autós csomagok versenyképes áron, rugalmas mennyiségben.", "w_ex": "Bérflotta autók", "w_ex_d": "Alacsony futású, gondozott autók a bérflottánkból.", "w_pf": "Sport és luxus", "w_pf_d": "Vezető márkák prémium modelljei, azonnal elvihetők.", "b_pk": "Csomagok megtekintése", "b_ex": "Bérflotta készlet", "b_pf": "Prémium készlet", "s_allmake": "Összes márka", "more_mk": "További márkák"}, "sk": {"a_dl_s": "Balíky a veľkoobchod", "a_pv_s": "Jednotlivé autá", "w_pk": "Dílerské balíky", "w_pk_d": "Zostavené balíky viacerých áut za konkurenčné ceny a vo flexibilných objemoch.", "w_ex": "Autá z prenájmu", "w_ex_d": "Udržiavané autá s nízkym nájazdom z našej flotily.", "w_pf": "Výkon a luxus", "w_pf_d": "Prémiové modely popredných značiek, pripravené na odovzdanie.", "b_pk": "Zobraziť balíky", "b_ex": "Autá z prenájmu", "b_pf": "Prémiová ponuka", "s_allmake": "Všetky značky", "more_mk": "Ďalšie značky"}, "cs": {"a_dl_s": "Balíčky a velkoobchod", "a_pv_s": "Jednotlivé vozy", "w_pk": "Dealerské balíčky", "w_pk_d": "Sestavené balíčky více vozů za konkurenční ceny a v flexibilních objemech.", "w_ex": "Vozy z pronájmu", "w_ex_d": "Udržované vozy s nízkým nájezdem z naší flotily.", "w_pf": "Výkon a luxus", "w_pf_d": "Prémiové modely předních značek, připravené k předání.", "b_pk": "Zobrazit balíčky", "b_ex": "Vozy z pronájmu", "b_pf": "Prémiová nabídka", "s_allmake": "Všechny značky", "more_mk": "Další značky"}, "de": {"a_dl_s": "Pakete & Großhandel", "a_pv_s": "Einzelfahrzeuge & Endkunden", "w_pk": "Händlerpakete", "w_pk_d": "Fahrzeugpakete zu Top-Preisen, in flexiblen Mengen.", "w_ex": "Ex-Mietwagen", "w_ex_d": "Gepflegte Fahrzeuge mit wenig Kilometern aus unserer Mietflotte.", "w_pf": "Performance & Luxus", "w_pf_d": "Premium-Modelle führender Marken, sofort fahrbereit.", "b_pk": "Pakete ansehen", "b_ex": "Ex-Mietwagen ansehen", "b_pf": "Premium-Bestand ansehen", "s_allmake": "Alle Marken", "more_mk": "Weitere Marken"}, "pl": {"a_dl_s": "Pakiety i hurt", "a_pv_s": "Pojedyncze auta i detal", "w_pk": "Pakiety dla dealerów", "w_pk_d": "Gotowe pakiety kilku aut w konkurencyjnych cenach i elastycznych ilościach.", "w_ex": "Auta z wynajmu", "w_ex_d": "Zadbane auta z niskim przebiegiem z naszej floty.", "w_pf": "Osiągi i luksus", "w_pf_d": "Modele premium czołowych marek, gotowe do odbioru.", "b_pk": "Zobacz pakiety", "b_ex": "Zobacz auta z wynajmu", "b_pf": "Zobacz ofertę premium", "s_allmake": "Wszystkie marki", "more_mk": "Więcej marek"}}))Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"nav_leads": "Enquiries", "l_date": "Date", "l_car": "Car", "l_offer": "Offer", "l_from": "From", "l_contact": "Contact", "l_status": "Status", "l_follow": "Follow-up", "l_open": "open", "l_none": "No offers yet. Offers sent from the car pages appear here.", "l_foot": "Offers and enquiries sent from the car pages. Click an offer to open it, add notes or change its status."}, "hu": {"nav_leads": "Érdeklődések", "l_date": "Dátum", "l_car": "Autó", "l_offer": "Ajánlat", "l_from": "Feladó", "l_contact": "Elérhetőség", "l_status": "Állapot", "l_follow": "Visszahívás", "l_open": "nyitott", "l_none": "Még nincs ajánlat. Az autóoldalakról küldött ajánlatok itt jelennek meg.", "l_foot": "Az autóoldalakról küldött ajánlatok és megkeresések. Kattintson egy ajánlatra a megnyitáshoz, jegyzethez vagy az állapot módosításához."}, "sk": {"nav_leads": "Dopyty", "l_date": "Dátum", "l_car": "Auto", "l_offer": "Ponuka", "l_from": "Od", "l_contact": "Kontakt", "l_status": "Stav", "l_follow": "Ďalší krok", "l_open": "otvorené", "l_none": "Zatiaľ žiadne ponuky. Ponuky odoslané zo stránok áut sa zobrazia tu.", "l_foot": "Ponuky a dopyty odoslané zo stránok áut. Kliknutím otvoríte ponuku, pridáte poznámku alebo zmeníte stav."}, "cs": {"nav_leads": "Poptávky", "l_date": "Datum", "l_car": "Vůz", "l_offer": "Nabídka", "l_from": "Od", "l_contact": "Kontakt", "l_status": "Stav", "l_follow": "Další krok", "l_open": "otevřené", "l_none": "Zatím žádné nabídky. Nabídky odeslané ze stránek vozů se zobrazí zde.", "l_foot": "Nabídky a poptávky odeslané ze stránek vozů. Kliknutím otevřete nabídku, přidáte poznámku nebo změníte stav."}, "de": {"nav_leads": "Anfragen", "l_date": "Datum", "l_car": "Fahrzeug", "l_offer": "Angebot", "l_from": "Von", "l_contact": "Kontakt", "l_status": "Status", "l_follow": "Wiedervorlage", "l_open": "offen", "l_none": "Noch keine Angebote. Angebote von den Fahrzeugseiten erscheinen hier.", "l_foot": "Angebote und Anfragen von den Fahrzeugseiten. Angebot anklicken, um ihn zu öffnen, Notizen zu ergänzen oder den Status zu ändern."}, "pl": {"nav_leads": "Zapytania", "l_date": "Data", "l_car": "Auto", "l_offer": "Oferta", "l_from": "Od", "l_contact": "Kontakt", "l_status": "Status", "l_follow": "Kontakt zwrotny", "l_open": "otwarte", "l_none": "Brak ofert. Oferty wysłane ze stron aut pojawią się tutaj.", "l_foot": "Oferty i zapytania wysłane ze stron aut. Kliknij ofertę, aby go otworzyć, dodać notatkę lub zmienić status."}}))if(I18N[l])Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"l_foot": "Offers sent from the car pages, grouped by car — highest offer first (B2C offers compared without VAT).", "l_allc": "All countries", "l_f_open": "Open offers", "l_f_all": "All offers", "l_st_new": "New", "l_st_chk": "Sent for check", "l_st_acc": "Accepted", "l_st_dec": "Declined", "l_st_ctr": "Counter offer", "l_listed": "Our price", "l_offers": "offer(s)", "l_net": "excl. VAT", "l_gross": "incl. VAT", "l_vs": "vs our price", "l_acc": "Accept", "l_dec": "Decline", "l_chk": "Send for check (DE)", "l_chk2": "Send again", "l_det": "Details", "l_nomatch": "No offers match the filters.", "l_acc_q": "Accept this offer?", "l_dec_q": "Decline this offer?", "l_conf": "The status is saved in Notion and the team sees it straight away.", "l_cancel": "Cancel", "l_chk_t": "Ask Caradvance GmbH (German email)", "l_loading": "Preparing the message…", "l_nomail": "Email sending from the desk is not set up yet — use “Open in my email” for now.", "l_to": "Send to", "l_ownmail": "Open in my email", "l_send": "Send email", "l_sent": "Sent to"}, "hu": {"l_foot": "Az autóoldalakról küldött ajánlatok autónként, a legmagasabb elöl (a B2C ajánlatokat ÁFA nélkül hasonlítjuk össze).", "l_allc": "Minden ország", "l_f_open": "Nyitott ajánlatok", "l_f_all": "Összes ajánlat", "l_st_new": "Új", "l_st_chk": "Ellenőrzésre elküldve", "l_st_acc": "Elfogadva", "l_st_dec": "Elutasítva", "l_st_ctr": "Ellenajánlat", "l_listed": "Saját ár", "l_offers": "ajánlat", "l_net": "ÁFA nélkül", "l_gross": "ÁFÁ-val", "l_vs": "a saját árhoz képest", "l_acc": "Elfogadom", "l_dec": "Elutasítom", "l_chk": "Ellenőrzésre (DE)", "l_chk2": "Újraküldés", "l_det": "Részletek", "l_nomatch": "Nincs a szűrésnek megfelelő ajánlat.", "l_acc_q": "Elfogadja az ajánlatot?", "l_dec_q": "Elutasítja az ajánlatot?", "l_conf": "Az állapot a Notionbe kerül, a csapat azonnal látja.", "l_cancel": "Mégse", "l_chk_t": "Kérdés a Caradvance GmbH-nak (német e-mail)", "l_loading": "Az üzenet készül…", "l_nomail": "Az e-mail küldés a deskből még nincs beállítva — addig használja a „Megnyitás a saját levelezőmben” gombot.", "l_to": "Címzett", "l_ownmail": "Megnyitás a saját levelezőmben", "l_send": "E-mail küldése", "l_sent": "Elküldve:"}, "sk": {"l_foot": "Ponuky zo stránok áut podľa auta — najvyššia ponuka prvá (B2C porovnané bez DPH).", "l_allc": "Všetky krajiny", "l_f_open": "Otvorené ponuky", "l_f_all": "Všetky ponuky", "l_st_new": "Nová", "l_st_chk": "Odoslané na kontrolu", "l_st_acc": "Prijatá", "l_st_dec": "Zamietnutá", "l_st_ctr": "Protiponuka", "l_listed": "Naša cena", "l_offers": "ponúk", "l_net": "bez DPH", "l_gross": "s DPH", "l_vs": "oproti našej cene", "l_acc": "Prijať", "l_dec": "Zamietnuť", "l_chk": "Na kontrolu (DE)", "l_chk2": "Poslať znova", "l_det": "Detaily", "l_nomatch": "Žiadne ponuky pre tento filter.", "l_acc_q": "Prijať ponuku?", "l_dec_q": "Zamietnuť ponuku?", "l_conf": "Stav sa uloží do Notionu a tím ho hneď uvidí.", "l_cancel": "Zrušiť", "l_chk_t": "Otázka pre Caradvance GmbH (nemecký e-mail)", "l_loading": "Pripravujem správu…", "l_nomail": "Odosielanie e-mailov ešte nie je nastavené — zatiaľ použite „Otvoriť v mojom e-maile“.", "l_to": "Komu", "l_ownmail": "Otvoriť v mojom e-maile", "l_send": "Odoslať e-mail", "l_sent": "Odoslané:"}, "cs": {"l_foot": "Nabídky ze stránek vozů podle vozu — nejvyšší nabídka první (B2C porovnáno bez DPH).", "l_allc": "Všechny země", "l_f_open": "Otevřené nabídky", "l_f_all": "Všechny nabídky", "l_st_new": "Nová", "l_st_chk": "Odesláno ke kontrole", "l_st_acc": "Přijata", "l_st_dec": "Zamítnuta", "l_st_ctr": "Protinabídka", "l_listed": "Naše cena", "l_offers": "nabídek", "l_net": "bez DPH", "l_gross": "s DPH", "l_vs": "oproti naší ceně", "l_acc": "Přijmout", "l_dec": "Zamítnout", "l_chk": "Ke kontrole (DE)", "l_chk2": "Poslat znovu", "l_det": "Detaily", "l_nomatch": "Žádné nabídky pro tento filtr.", "l_acc_q": "Přijmout nabídku?", "l_dec_q": "Zamítnout nabídku?", "l_conf": "Stav se uloží do Notionu a tým ho hned uvidí.", "l_cancel": "Zrušit", "l_chk_t": "Dotaz pro Caradvance GmbH (německý e-mail)", "l_loading": "Připravuji zprávu…", "l_nomail": "Odesílání e-mailů ještě není nastaveno — zatím použijte „Otevřít v mém e-mailu“.", "l_to": "Komu", "l_ownmail": "Otevřít v mém e-mailu", "l_send": "Odeslat e-mail", "l_sent": "Odesláno:"}, "de": {"l_foot": "Angebote von den Fahrzeugseiten, nach Fahrzeug gruppiert — höchstes Angebot zuerst (B2C netto verglichen).", "l_allc": "Alle Länder", "l_f_open": "Offene Angebote", "l_f_all": "Alle Angebote", "l_st_new": "Neu", "l_st_chk": "Zur Prüfung gesendet", "l_st_acc": "Angenommen", "l_st_dec": "Abgelehnt", "l_st_ctr": "Gegenangebot", "l_listed": "Unser Preis", "l_offers": "Angebot(e)", "l_net": "netto", "l_gross": "brutto", "l_vs": "ggü. unserem Preis", "l_acc": "Annehmen", "l_dec": "Ablehnen", "l_chk": "Zur Prüfung (DE)", "l_chk2": "Erneut senden", "l_det": "Details", "l_nomatch": "Keine Angebote für diesen Filter.", "l_acc_q": "Angebot annehmen?", "l_dec_q": "Angebot ablehnen?", "l_conf": "Der Status wird in Notion gespeichert und ist sofort für das Team sichtbar.", "l_cancel": "Abbrechen", "l_chk_t": "Anfrage an Caradvance GmbH (E-Mail auf Deutsch)", "l_loading": "Nachricht wird vorbereitet…", "l_nomail": "E-Mail-Versand ist noch nicht eingerichtet — bitte vorerst „In meinem E-Mail-Programm öffnen“ verwenden.", "l_to": "An", "l_ownmail": "In meinem E-Mail-Programm öffnen", "l_send": "E-Mail senden", "l_sent": "Gesendet an"}, "pl": {"l_foot": "Oferty ze stron aut według auta — najwyższa oferta pierwsza (B2C porównane bez VAT).", "l_allc": "Wszystkie kraje", "l_f_open": "Otwarte oferty", "l_f_all": "Wszystkie oferty", "l_st_new": "Nowa", "l_st_chk": "Wysłano do sprawdzenia", "l_st_acc": "Przyjęta", "l_st_dec": "Odrzucona", "l_st_ctr": "Kontroferta", "l_listed": "Nasza cena", "l_offers": "ofert(y)", "l_net": "bez VAT", "l_gross": "z VAT", "l_vs": "wobec naszej ceny", "l_acc": "Przyjmij", "l_dec": "Odrzuć", "l_chk": "Do sprawdzenia (DE)", "l_chk2": "Wyślij ponownie", "l_det": "Szczegóły", "l_nomatch": "Brak ofert dla tego filtra.", "l_acc_q": "Przyjąć ofertę?", "l_dec_q": "Odrzucić ofertę?", "l_conf": "Status zapisze się w Notion i zespół od razu go zobaczy.", "l_cancel": "Anuluj", "l_chk_t": "Zapytanie do Caradvance GmbH (e-mail po niemiecku)", "l_loading": "Przygotowuję wiadomość…", "l_nomail": "Wysyłka e-maili nie jest jeszcze skonfigurowana — na razie użyj „Otwórz w mojej poczcie”.", "l_to": "Do", "l_ownmail": "Otwórz w mojej poczcie", "l_send": "Wyślij e-mail", "l_sent": "Wysłano do"}}))if(I18N[l])Object.assign(I18N[l],o);
+for(const[l,o]of Object.entries({"en": {"nav_contact": "Contact", "cta_rent": "Rental", "cta_sale": "Sale", "sold_x": "SOLD", "c_people": "Team", "c_dealer": "Write to a dealer", "c_send": "Send", "c_ph": "Write a message… (Ctrl+Enter sends)", "c_to": "To", "c_multi": "Ctrl/⌘-click to add more people", "c_you": "You", "c_empty": "No messages yet. Write the first one below.", "c_nocar": "No car attached", "c_needtext": "Write a message first.", "c_needto": "Choose who the message is for.", "c_waempty": "Hello,", "c_noinfo": "no email / phone yet", "c_edit": "Edit contact", "c_name": "Name", "c_save": "Save", "c_edithelp": "With an email the person gets the message by email too and can sign in to answer; with a phone number WhatsApp opens their chat directly."}, "hu": {"nav_contact": "Kapcsolat", "cta_rent": "Bérlés", "cta_sale": "Eladás", "sold_x": "ELADVA", "c_people": "Csapat", "c_dealer": "Kereskedőnek írok", "c_send": "Küldés", "c_ph": "Üzenet… (Ctrl+Enter küldi)", "c_to": "Címzett", "c_multi": "Ctrl/⌘ + kattintással több címzett", "c_you": "Ön", "c_empty": "Még nincs üzenet. Írja meg az elsőt lent.", "c_nocar": "Autó nélkül", "c_needtext": "Előbb írjon üzenetet.", "c_needto": "Válassza ki a címzettet.", "c_waempty": "Szia,", "c_noinfo": "még nincs e-mail / telefon", "c_edit": "Kapcsolat szerkesztése", "c_name": "Név", "c_save": "Mentés", "c_edithelp": "E-mail címmel e-mailben is megkapja az üzenetet és be tud lépni válaszolni; telefonszámmal a WhatsApp közvetlenül az ő csevegését nyitja."}, "sk": {"nav_contact": "Kontakt", "cta_rent": "Prenájom", "cta_sale": "Predaj", "sold_x": "PREDANÉ", "c_people": "Tím", "c_dealer": "Napísať predajcovi", "c_send": "Odoslať", "c_ph": "Správa… (Ctrl+Enter odošle)", "c_to": "Komu", "c_multi": "Ctrl/⌘ + klik pre viac ľudí", "c_you": "Vy", "c_empty": "Zatiaľ žiadne správy.", "c_nocar": "Bez auta", "c_needtext": "Najprv napíšte správu.", "c_needto": "Vyberte príjemcu.", "c_waempty": "Dobrý deň,", "c_noinfo": "zatiaľ bez e-mailu / telefónu", "c_edit": "Upraviť kontakt", "c_name": "Meno", "c_save": "Uložiť", "c_edithelp": "S e-mailom dostane správu aj e-mailom; s telefónom otvorí WhatsApp priamo jeho chat."}, "cs": {"nav_contact": "Kontakt", "cta_rent": "Pronájem", "cta_sale": "Prodej", "sold_x": "PRODÁNO", "c_people": "Tým", "c_dealer": "Napsat prodejci", "c_send": "Odeslat", "c_ph": "Zpráva… (Ctrl+Enter odešle)", "c_to": "Komu", "c_multi": "Ctrl/⌘ + klik pro více lidí", "c_you": "Vy", "c_empty": "Zatím žádné zprávy.", "c_nocar": "Bez vozu", "c_needtext": "Nejprve napište zprávu.", "c_needto": "Vyberte příjemce.", "c_waempty": "Dobrý den,", "c_noinfo": "zatím bez e-mailu / telefonu", "c_edit": "Upravit kontakt", "c_name": "Jméno", "c_save": "Uložit", "c_edithelp": "S e-mailem dostane zprávu i e-mailem; s telefonem otevře WhatsApp přímo jeho chat."}, "de": {"nav_contact": "Kontakt", "cta_rent": "Miete", "cta_sale": "Verkauf", "sold_x": "VERKAUFT", "c_people": "Team", "c_dealer": "Einem Händler schreiben", "c_send": "Senden", "c_ph": "Nachricht… (Strg+Enter sendet)", "c_to": "An", "c_multi": "Strg/⌘-Klick für weitere Personen", "c_you": "Sie", "c_empty": "Noch keine Nachrichten.", "c_nocar": "Ohne Fahrzeug", "c_needtext": "Bitte zuerst eine Nachricht schreiben.", "c_needto": "Bitte Empfänger wählen.", "c_waempty": "Hallo,", "c_noinfo": "noch keine E-Mail / Telefon", "c_edit": "Kontakt bearbeiten", "c_name": "Name", "c_save": "Speichern", "c_edithelp": "Mit E-Mail erhält die Person die Nachricht auch per E-Mail; mit Telefonnummer öffnet WhatsApp direkt den Chat."}, "pl": {"nav_contact": "Kontakt", "cta_rent": "Wynajem", "cta_sale": "Sprzedaż", "sold_x": "SPRZEDANY", "c_people": "Zespół", "c_dealer": "Napisz do dealera", "c_send": "Wyślij", "c_ph": "Wiadomość… (Ctrl+Enter wysyła)", "c_to": "Do", "c_multi": "Ctrl/⌘ + klik, aby dodać osoby", "c_you": "Ty", "c_empty": "Brak wiadomości.", "c_nocar": "Bez auta", "c_needtext": "Najpierw napisz wiadomość.", "c_needto": "Wybierz odbiorcę.", "c_waempty": "Dzień dobry,", "c_noinfo": "brak e-maila / telefonu", "c_edit": "Edytuj kontakt", "c_name": "Imię", "c_save": "Zapisz", "c_edithelp": "Z e-mailem osoba dostanie wiadomość także e-mailem; z numerem WhatsApp otworzy jej czat."}}))if(I18N[l])Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"a_dl": "For dealers", "a_pv": "For private buyers"}, "hu": {"a_dl": "Kereskedőknek", "a_pv": "Magánvevőknek"}, "sk": {"a_dl": "Pre predajcov", "a_pv": "Súkromní kupujúci"}, "cs": {"a_dl": "Pro prodejce", "a_pv": "Soukromí kupci"}, "de": {"a_dl": "Für Händler", "a_pv": "Für Privatkunden"}, "pl": {"a_dl": "Dla dealerów", "a_pv": "Klienci prywatni"}}))Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"w_pk_d": "Multi-car bundles with competitive pricing."}, "hu": {"w_pk_d": "Több autós csomagok versenyképes áron."}, "sk": {"w_pk_d": "Balíky viacerých áut za výhodné ceny pre autosalóny."}, "cs": {"w_pk_d": "Balíčky více vozů za výhodné ceny pro autosalony."}, "de": {"w_pk_d": "Fahrzeugpakete zu Top-Preisen für Autohäuser."}, "pl": {"w_pk_d": "Pakiety kilku aut w korzystnych cenach."}}))Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"w_pk": "B2B", "w_pk_d": "Trade prices excl. VAT for dealers and fleet buyers — the whole stock.", "b_pk": "View B2B prices", "w_ex": "B2C", "w_ex_d": "Retail prices incl. VAT for private buyers — one car at a time.", "b_ex": "View B2C cars"}, "hu": {"w_pk": "B2B", "w_pk_d": "Nettó kereskedői árak kereskedőknek és flottáknak — a teljes készlet.", "b_pk": "B2B árak", "w_ex": "B2C", "w_ex_d": "Bruttó árak magánvásárlóknak — autónként, egyenként.", "b_ex": "B2C autók"}, "sk": {"w_pk": "B2B", "w_pk_d": "Veľkoobchodné ceny bez DPH pre predajcov a flotily — celý sklad.", "b_pk": "Ceny B2B", "w_ex": "B2C", "w_ex_d": "Maloobchodné ceny s DPH pre súkromných kupujúcich — po jednom aute.", "b_ex": "Autá B2C"}, "cs": {"w_pk": "B2B", "w_pk_d": "Velkoobchodní ceny bez DPH pro dealery a flotily — celý sklad.", "b_pk": "Ceny B2B", "w_ex": "B2C", "w_ex_d": "Maloobchodní ceny s DPH pro soukromé kupce — po jednom voze.", "b_ex": "Vozy B2C"}, "de": {"w_pk": "B2B", "w_pk_d": "Händlerpreise ohne MwSt. für Händler und Flotten — der gesamte Bestand.", "b_pk": "B2B-Preise", "w_ex": "B2C", "w_ex_d": "Endkundenpreise inkl. MwSt. für Privatkäufer — einzeln erhältlich.", "b_ex": "B2C-Fahrzeuge"}, "pl": {"w_pk": "B2B", "w_pk_d": "Ceny hurtowe bez VAT dla dealerów i flot — cały stan magazynowy.", "b_pk": "Ceny B2B", "w_ex": "B2C", "w_ex_d": "Ceny detaliczne z VAT dla klientów prywatnych — pojedyncze auta.", "b_ex": "Auta B2C"}}))if(I18N[l])Object.assign(I18N[l],o);
@@ -1012,7 +1078,7 @@ function openMsg(dealerId){const D=[...S.dealers].sort((a,b)=>(b.score||0)-(a.sc
   $('#mOffer').innerHTML=OFFERS.map((o,i)=>`<option value="${i}">${esc(o.n[LANG]||o.n.en)}</option>`).join('');
   if(dealerId)$('#mDealer').value=dealerId;const d=S.dealers.find(x=>x.id===$('#mDealer').value);$('#mLang').value=d?langOf(d):LANG;
   $('#mFrom').value=ls.get('sd_from')||'';fillMsg();$('#msgDlg').showModal();}
-$('#msgBtn').addEventListener('click',()=>openMsg());
+$('#msgBtn').addEventListener('click',()=>{location.hash='#contact'});
 $('#msgX').addEventListener('click',()=>$('#msgDlg').close());
 $('#mDealer').addEventListener('change',()=>{const d=S.dealers.find(x=>x.id===$('#mDealer').value);if(d)$('#mLang').value=langOf(d);fillMsg();});
 ['#mOffer','#mLang'].forEach(s=>$(s).addEventListener('change',fillMsg));
@@ -1089,7 +1155,8 @@ $('#ways').addEventListener('click',e=>{const b=e.target.closest('button.catcard
 $('#audSw').addEventListener('click',e=>{const a=e.target.closest('a.asw');if(!a)return;e.preventDefault();const on=$('#sCat').value===a.dataset.v;history.pushState(null,'',on?'#stock':a.getAttribute('href'));show();$('#sCat').value=on?'':a.dataset.v;S.audSet=!on;renderStock();});
 
 $('#ctaAll').addEventListener('click',e=>{e.preventDefault();$('#sCat').value='';$('#sMake').value='';if(location.hash&&location.hash!=='#stock')history.pushState(null,'','#stock');show();renderStock();document.querySelector('.bar').scrollIntoView({behavior:'smooth',block:'start'});});
-$('#ctaPk').addEventListener('click',e=>{e.preventDefault();history.pushState(null,'','#fordealers');show();$('#sCat').value='b2b';renderStock();document.querySelector('.bar').scrollIntoView({behavior:'smooth',block:'start'});});
+$('#ctaRent').href=/\.hu$/.test(location.hostname)?'/tartos-berlet/':'/';
+$('#ctaSale').addEventListener('click',e=>{e.preventDefault();$('#sCat').value='';$('#sMake').value='';if(location.hash&&location.hash!=='#stock')history.pushState(null,'','#stock');show();renderStock();document.querySelector('.bar').scrollIntoView({behavior:'smooth',block:'start'});});
 /* ---------- MAKE BADGES ---------- */
 const LOGO={bmw:'bmw',mini:'mini',mercedes:'mercedes','mercedes-benz':'mercedes','mercedes-amg':'mercedes',audi:'audi',volkswagen:'vw',vw:'vw',volvo:'volvo',cupra:'cupra',seat:'seat',hyundai:'hyundai',kia:'kia'};
 const logoOf=m=>LOGO[String(m||'').toLowerCase()];
@@ -1130,12 +1197,13 @@ function renderStock(){
   L.sort(k);
   $('#sCount').textContent=L.length+' of '+S.cars.length+' vehicles';
   $('#sRows').dataset.price=cat==='b2b'?'b2b':cat==='priv'?'b2c':'both';
+  document.documentElement.classList.toggle('pm-b2b',cat==='b2b');document.documentElement.classList.toggle('pm-b2c',cat==='priv');
   const dOpts=S.dealers.map(d=>`<option value="${esc(d.id)}">${esc(d.name)} (${esc(d.country)})</option>`).join('');
   $('#sRows').innerHTML=L.length?L.map(c=>{
     const dl=daysLeft(c.available_until),soon=dl!=null&&dl<=28&&(c.status||'Available')==='Available';
     const flags=(c.flags||[]).length;
-    let h=`<tr class="row" data-id="${esc(c.id)}"><td class="sub idc">${esc(c.id)}</td>
-    <td><div class="carcell">${pics(c).length?`<img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt="">`:'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span><span class="sub mmeta">${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||''),c.power].filter(Boolean).join(' · '))}</span>${soon||flags?'<span class="chips">':''}${soon?`<span class="chip warn">Ending soon · ${dl} d</span>`:''}${flags?`<span class="chip warn gap" title="${esc(c.flags.join('; '))}">${flags} data gap${flags>1?'s':''}</span>`:''}${soon||flags?'</span>':''}</div></div></td>
+    let h=`<tr class="row${(c.status||'Available')==='Sold'?' sold':''}" data-id="${esc(c.id)}"><td class="sub idc">${esc(c.id)}</td>
+    <td><div class="carcell">${pics(c).length?((c.status||'Available')==='Sold'?`<span class="soldw" data-sold="${esc(t('sold_x'))}"><img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt=""></span>`:`<img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt="">`):'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span><span class="sub mmeta">${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||''),c.power].filter(Boolean).join(' · '))}</span>${soon||flags?'<span class="chips">':''}${soon?`<span class="chip warn">Ending soon · ${dl} d</span>`:''}${flags?`<span class="chip warn gap" title="${esc(c.flags.join('; '))}">${flags} data gap${flags>1?'s':''}</span>`:''}${soon||flags?'</span>':''}</div></div></td>
     <td class="hide-s"><span class="mono">${esc(c.vin||c.plate||'no plate yet')}</span><br><span class="sub">${esc(c.first_reg||'')} · ${c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':esc(c.km_text||'km on request')}</span></td>
     <td class="pcol">${eur(c.dealer_net)}${c.asking_price!=null&&c.asking_price!==''?`<span class="sub">${esc(t('th_ask').replace(/\s*€$/,''))}: ${eur(c.asking_price)}</span>`:''}</td>
     <td class="pcol b2c">${eur(c.dealer_gross)}</td>
@@ -1144,7 +1212,7 @@ function renderStock(){
       const dd=(l,v)=>v!=null&&v!==''?`<dt>${l}</dt><dd>${esc(v)}</dd>`:'';const xd=(l,v)=>v!=null&&v!==''?`<dt class="xnew">${l}</dt><dd class="xnew">${esc(v)}</dd>`:'';
       h+=`<tr class="det"><td colspan="6">${(c.status||'Available')!=='Sold'?`<div class="offerrow"><button type="button" class="pri offerbtn" data-offer="${esc(c.id)}">${esc(OFR().title)}</button><span class="sub">${esc(OFR().hint)}</span></div>`:''}${pics(c).length?`<div class="gal">${pics(c).map((p,i)=>`<button type="button" data-lb="${esc(c.id)}" data-i="${i}" aria-label="Open photo ${i+1}"><img loading="lazy" src="img/t/${esc(p)}" alt=""></button>`).join('')}</div>`:''}<div class="dgrid">
       <dl>${dd('Make / model',c.model)}${dd('Colour',c.colour)}${dd('Interior',c.interior)}${dd('Wheels',c.wheels)}${dd('VIN',c.vin)}${dd('Plate',c.plate)}${dd('First reg.',c.first_reg)}${dd('Mileage',c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'on request'))}${dd('Power',c.power)}${dd('Fuel',c.fuel)}${dd('Transmission',c.transmission)}${dd('Body',c.body)}${xd('Prev. owners',c.prev_owners)}${xd('Condition',c.condition)}${xd('Trim',c.trim)}${xd('Paint (manufacturer)',c.paint)}${xd('Seats / doors',[c.seats,c.doors].filter(v=>v!=null&&v!=='').join(' / '))}${xd('Engine',c.engine_cc?Number(c.engine_cc).toLocaleString(window.__loc||'en-GB')+' cm³':'')}${xd('Climate',c.climate)}${xd('Parking aids',c.park_assist)}${dd('Available until',c.available_until)}</dl>
-      <dl>${dd('List price gross',c.msrp_gross?eur(c.msrp_gross):'')}${dd('Business to Business (B2B)',c.dealer_net?eur(c.dealer_net):'')}${dd('Business to Customer (B2C)',c.dealer_gross?eur(c.dealer_gross):'')}${dd('vs list',c.pct_vs_list!=null?c.pct_vs_list+'%':'')}${dd('Status changed',c.status_changed)}${dd('Price source',c.price_source||c.source)}${dd('Note',c.match_note)}${c.mde_url?`<dt class="xnew">mobile.de</dt><dd class="xnew"><a href="${esc(c.mde_url)}" target="_blank" rel="noopener">${c.mde_price!=null?eur(c.mde_price):'ad'}${c.mde_km!=null?' · '+Number(c.mde_km).toLocaleString(window.__loc||'en-GB')+' km':''} ↗</a></dd>`:''}
+      <dl>${dd('List price gross',c.msrp_gross?eur(c.msrp_gross):'')}${c.dealer_net?`<dt class="p-b2b">Business to Business (B2B)</dt><dd class="p-b2b">${eur(c.dealer_net)}</dd>`:''}${c.dealer_gross?`<dt class="p-b2c">Business to Customer (B2C)</dt><dd class="p-b2c">${eur(c.dealer_gross)}</dd>`:''}${dd('vs list',c.pct_vs_list!=null?c.pct_vs_list+'%':'')}${dd('Status changed',c.status_changed)}${dd('Price source',c.price_source||c.source)}${dd('Note',c.match_note)}${c.mde_url?`<dt class="xnew">mobile.de</dt><dd class="xnew"><a href="${esc(c.mde_url)}" target="_blank" rel="noopener">${c.mde_price!=null?eur(c.mde_price):'ad'}${c.mde_km!=null?' · '+Number(c.mde_km).toLocaleString(window.__loc||'en-GB')+' km':''} ↗</a></dd>`:''}
         ${(c.flags||[]).length?`<dt class="gapd">Data gaps</dt><dd class="gapd">${c.flags.map(esc).join('<br>')}</dd>`:''}</dl>
       <div><div class="pricebox"><label class="f"><span>Asking price €</span><input class="price" inputmode="decimal" data-f="asking_price" data-id="${esc(c.id)}" value="${esc(c.asking_price??'')}" placeholder="—"></label><label class="f"><span>Minimum price € (internal)</span><input class="price" inputmode="decimal" data-f="min_price" data-id="${esc(c.id)}" value="${esc(c.min_price??'')}" placeholder="—"></label></div><label class="f">Reserved for / offered to<select data-f="reserved_for" data-id="${esc(c.id)}"><option value="">—</option>${dOpts}</select></label>
       <label class="f">Notes<textarea data-f="notes" data-id="${esc(c.id)}">${esc(c.notes||'')}</textarea></label></div>
@@ -1300,6 +1368,54 @@ $('#ofList').addEventListener('click',async e=>{
     }catch(err){$('#ofDlgB').innerHTML=`<p class="note">${esc(err.message)}</p>`}
   }
 });
+/* ---------- KAPCSOLAT: belső üzenetek a csapat között + WhatsApp ---------- */
+(()=>{
+  const M={data:null,sel:[],busy:false};
+  const api=async(path,body)=>{const r=await fetch('/api/desk/'+path,{method:body?'POST':'GET',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j};
+  const ini=n=>String(n||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
+  const when=s=>{const d=new Date(s*1000);return d.toLocaleString(window.__loc||'en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})};
+  const keyOf=c=>c.email?c.email.toLowerCase():c.key;
+  const withP=(m,c)=>m.mine?(m.to===c.key||m.to===String(c.email||'').toLowerCase()):(String(m.fromEmail).toLowerCase()===String(c.email||'').toLowerCase()||String(m.fromEmail).toLowerCase()===c.key);
+  async function load(){if(document.documentElement.classList.contains('public')||M.busy)return;M.busy=true;
+    try{M.data=await api('msg/list');const n=M.data.unread||0;document.querySelectorAll('.nMsg').forEach(e=>e.textContent=n||'');if(location.hash==='#contact')render()}catch(e){}finally{M.busy=false}}
+  function render(){
+    const d=M.data;if(!d)return;
+    if(!M.sel.length&&d.contacts[0])M.sel=[d.contacts[0].key];
+    $('#msgPeople').innerHTML=d.contacts.map(c=>{const un=d.msgs.filter(m=>m.unread&&withP(m,c)).length;
+      return `<div class="mperson${M.sel.includes(c.key)?' on':''}" data-k="${esc(c.key)}" role="button" tabindex="0"><span class="av">${esc(ini(c.name))}</span><span><b>${esc(c.name)}</b><small>${esc(c.phone||c.email||t('c_noinfo'))}</small></span>${un?`<span class="un">${un}</span>`:''}${d.me.role==='admin'?`<button type="button" class="ed" data-ed="${esc(c.key)}" title="${esc(t('c_edit'))}">✎</button>`:''}</div>`}).join('');
+    const sel=d.contacts.filter(c=>M.sel.includes(c.key));
+    const L=d.msgs.filter(m=>sel.some(c=>withP(m,c))).sort((a,b)=>a.at-b.at);
+    $('#msgThread').innerHTML=L.length?L.map(m=>`<div class="mbub${m.mine?' me':''}"><div class="mh"><b>${esc(m.mine?t('c_you'):m.from)}</b><span>${esc(when(m.at))}</span>${m.mine&&sel.length>1?`<span>→ ${esc((d.contacts.find(c=>keyOf(c)===m.to||c.key===m.to)||{}).name||m.to)}</span>`:''}</div><p>${esc(m.body)}</p>${m.car?`<span class="mcar" data-car="${esc(m.car)}">🚗 ${esc(m.car)}</span>`:''}</div>`).join(''):`<p class="mempty">${esc(t('c_empty'))}</p>`;
+    const th=$('#msgThread');th.scrollTop=th.scrollHeight;
+    $('#msgTo').innerHTML=`${esc(t('c_to'))}: `+(sel.length?sel.map(c=>`<span>${esc(c.name)}</span>`).join(''):'—')+` <em style="font-style:normal">· ${esc(t('c_multi'))}</em>`;
+    $('#msgBody').placeholder=t('c_ph');
+    const cars=(S.cars||[]).filter(c=>(c.status||'Available')!=='Sold');const cv=$('#msgCar').value;
+    $('#msgCar').innerHTML=`<option value="">${esc(t('c_nocar'))}</option>`+cars.map(c=>`<option value="${esc(c.id)}"${c.id===cv?' selected':''}>${esc(c.id+' · '+(c.model||''))}</option>`).join('');
+    const unread=L.filter(m=>m.unread).map(m=>m.id);
+    if(unread.length&&location.hash==='#contact'){api('msg/read',{ids:unread}).then(()=>{d.msgs.forEach(m=>{if(unread.includes(m.id))m.unread=false});d.unread=d.msgs.filter(m=>m.unread).length;document.querySelectorAll('.nMsg').forEach(e=>e.textContent=d.unread||'');}).catch(()=>{})}
+  }
+  window.__msgOpen=()=>{if(M.data)render();load()};
+  $('#msgPeople').addEventListener('click',e=>{const ed=e.target.closest('[data-ed]');if(ed){edit(ed.dataset.ed);return}
+    const p=e.target.closest('.mperson');if(!p)return;const k=p.dataset.k;
+    if(e.ctrlKey||e.metaKey||e.shiftKey){M.sel=M.sel.includes(k)?(M.sel.length>1?M.sel.filter(x=>x!==k):M.sel):[...M.sel,k]}else M.sel=[k];
+    render()});
+  $('#msgThread').addEventListener('click',e=>{const c=e.target.closest('.mcar');if(!c)return;const car=(S.cars||[]).find(x=>x.id===c.dataset.car);if(car&&window.__openCarSheet)window.__openCarSheet(car)});
+  $('#msgDealer').addEventListener('click',()=>openMsg());
+  const carLine=()=>{const id=$('#msgCar').value;if(!id)return'';const c=(S.cars||[]).find(x=>x.id===id)||{};return `\n\n🚗 ${c.model||''} · ${id}\n🔗 ${location.origin}/sales/#car=${encodeURIComponent(id)}`};
+  $('#msgSend').addEventListener('click',async()=>{const body=$('#msgBody').value.trim();const err=$('#msgErr');err.hidden=true;
+    if(!body){err.textContent=t('c_needtext');err.hidden=false;return}if(!M.sel.length){err.textContent=t('c_needto');err.hidden=false;return}
+    $('#msgSend').disabled=true;try{await api('msg/send',{to:M.sel,body,car:$('#msgCar').value});$('#msgBody').value='';await load();render()}catch(e){err.textContent=e.message;err.hidden=false}finally{$('#msgSend').disabled=false}});
+  $('#msgBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))$('#msgSend').click()});
+  $('#msgWa').addEventListener('click',()=>{const d=M.data||{contacts:[]};const sel=d.contacts.filter(c=>M.sel.includes(c.key));
+    const text=($('#msgBody').value.trim()||t('c_waempty'))+carLine();const ph=sel.length===1?String(sel[0].phone||'').replace(/[^\d]/g,''):'';
+    window.open(`https://wa.me/${ph}?text=${encodeURIComponent(text)}`,'_blank','noopener')});
+  function edit(k){const c=(M.data.contacts||[]).find(x=>x.key===k)||{key:k,name:k};
+    ofDialog(t('c_edit')+' · '+c.name,`<label class="f"><span>${esc(t('c_name'))}</span><input id="ceN" value="${esc(c.name)}"></label><label class="f"><span>E-mail</span><input id="ceE" type="email" value="${esc(c.email||'')}"></label><label class="f"><span>WhatsApp (+36…)</span><input id="ceP" inputmode="tel" value="${esc(c.phone||'')}"></label><p class="sub">${esc(t('c_edithelp'))}</p>`,
+      `<button type="button" onclick="this.closest('dialog').close()">${esc(t('l_cancel'))}</button><button type="button" class="pri" id="ceGo">${esc(t('c_save'))}</button>`);
+    $('#ceGo').onclick=async()=>{try{await api('msg/contact',{key:k,name:$('#ceN').value,email:$('#ceE').value,phone:$('#ceP').value});$('#ofDlg').close();await load();render()}catch(e){$('#ofDlgB').insertAdjacentHTML('beforeend',`<p class="note">${esc(e.message)}</p>`)}}}
+  setTimeout(load,1500);setInterval(()=>{if(document.visibilityState==='visible')load()},30000);
+})();
+
 function renderLogs(){try{renderLeads()}catch(e){}
   const L=[...S.logs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   $('#oCount').textContent=L.length+' entries';$('#nOut').textContent=L.length||'';document.querySelectorAll('.nOut2').forEach(e=>e.textContent=L.length||'');
@@ -1413,7 +1529,7 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
     const cell=(k,v)=>v?`<div><span>${esc(k)}</span>${esc(v)}</div>`:'';
     const hl=(c.highlights||[]).slice(0,4).map(h=>`<span class="chip">${esc(h)}</span>`).join('');
     const st=c.status||'Available';
-    return `${p?`<img class="hc-img" src="img/${esc(p)}" alt="">`:`<div class="hc-noimg">${esc(tx[12])}</div>`}
+    return `${p?((c.status||'Available')==='Sold'?`<div class="soldw big" style="display:block" data-sold="${esc(t('sold_x'))}"><img class="hc-img" src="img/${esc(p)}" alt=""></div>`:`<img class="hc-img" src="img/${esc(p)}" alt="">`):`<div class="hc-noimg">${esc(tx[12])}</div>`}
     <div class="hc-body"><i class="cc-bar"></i><div class="hc-top"><span>${esc(c.id)}</span><span>${esc(c.category||'')}</span><span class="hc-st ${esc(st)}">${esc(st)}</span></div>
     <b class="hc-name">${esc(c.model||'')}</b><div class="hc-col">${esc([c.colour,c.interior].filter(Boolean).join(' · '))}</div>
     <div class="hc-grid">${cell(tx[4],c.first_reg)}${cell(tx[5],km).replace('<div>','<div class="hc-km">')}${cell(tx[6],c.power)}${cell(tx[7],c.fuel)}${cell(tx[8],c.transmission)}${cell(tx[9],c.drive)}${c.available_until?cell(tx[11],c.available_until):''}</div>
@@ -1467,7 +1583,8 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
     if(kmCell){kmCell.classList.add('hc-km');const wrap=document.createElement('div');wrap.className='hc-kmv';while(kmCell.firstChild)wrap.appendChild(kmCell.firstChild);kmCell.appendChild(wrap);kmCell.insertAdjacentHTML('beforeend',fb);}
     else dlg.querySelector('.hcard .hc-body').insertAdjacentHTML('afterbegin',fb);
     dlg.querySelector('.cs-scroll').insertAdjacentHTML('beforeend',fullHtml(c));
-    dlg.classList.remove('full');
+    dlg.classList.remove('full');dlg.classList.toggle('sold',(c.status||'Available')==='Sold');
+    if((c.status||'Available')==='Sold'){const gb=dlg.querySelector('.cs-gal');if(gb){const w=document.createElement('div');w.className='soldw big';w.style.display='block';w.dataset.sold=t('sold_x');gb.parentNode.insertBefore(w,gb);w.appendChild(gb);}}
     const g=dlg.querySelector('.cs-gal'),n=dlg.querySelector('.cs-n');
     if(g&&n)g.addEventListener('scroll',()=>{n.textContent=(Math.round(g.scrollLeft/g.clientWidth)+1)+' / '+ps.length},{passive:true});
     dlg.dataset.price=document.getElementById('sRows').dataset.price||'both';
@@ -1493,14 +1610,15 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
       <h3>${esc(c.model||'')}</h3><p class="sub">${esc(f.ref)} ${esc(c.id)} · <b class="hc-st ${esc(st)}">${esc(t(st)!==st?t(st):st)}</b></p>${hasX?`<p class="xlegend"><i></i>${esc(f.xnew)}</p>`:''}
       <dl>${row(f.model,[c.make,c.model].filter(Boolean).join(' · '))}${row(f.cat,c.category)}${row(f.colour,c.colour)}${row(f.interior,c.interior)}${row(f.body,c.body)}${row(f.wheels,c.wheels)}
       ${row(f.reg,c.first_reg)}${row(f.km,km)}${row(f.power,c.power)}${row(f.fuel,c.fuel)}${row(f.gear,c.transmission)}${row(f.drive,c.drive)}${nrow(f.owners,c.prev_owners)}${nrow(f.cond,c.condition)}${nrow(f.trim,c.trim)}${nrow(f.paint,c.paint)}${nrow(f.seats,[c.seats,c.doors].filter(v=>v!=null&&v!=='').join(' / '))}${nrow(f.cc,c.engine_cc?Number(c.engine_cc).toLocaleString(window.__loc||'en-GB')+' cm³':'')}${nrow(f.clim,c.climate)}${nrow(f.park,c.park_assist)}${row(f.vin,c.vin)}${row(f.until,c.available_until)}</dl>
-      <dl class="cs-prices">${row(f.b2b,c.dealer_net!=null&&c.dealer_net!==''?eur(c.dealer_net):'')}${row(f.b2c,c.dealer_gross!=null&&c.dealer_gross!==''?eur(c.dealer_gross):'')}${row(f.msrp,c.msrp_gross?eur(c.msrp_gross):'')}${row(f.vs,c.pct_vs_list!=null&&c.pct_vs_list!==''?c.pct_vs_list+'%':'')}</dl>
+      <dl class="cs-prices">${c.dealer_net!=null&&c.dealer_net!==''?`<dt class="p-b2b">${esc(f.b2b)}</dt><dd class="p-b2b">${eur(c.dealer_net)}</dd>`:''}${c.dealer_gross!=null&&c.dealer_gross!==''?`<dt class="p-b2c">${esc(f.b2c)}</dt><dd class="p-b2c">${eur(c.dealer_gross)}</dd>`:''}${row(f.msrp,c.msrp_gross?eur(c.msrp_gross):'')}${row(f.vs,c.pct_vs_list!=null&&c.pct_vs_list!==''?c.pct_vs_list+'%':'')}</dl>
       <h4>${esc(f.eq)}</h4>${hl.length?`<ul class="cs-eq">${hl.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>`:(eqa.length?'':`<p class="sub">${esc(f.none)}</p>`)}
       ${eqa.length?`<h4 class="xnew-h">${esc(f.eqall)} <span class="sub">(${eqa.length})</span></h4><ul class="cs-eqall xnew">${eqa.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>`:''}
       ${c.mde_url||c.mde_price!=null?`<div class="cs-team"><h4>${esc(f.team)}</h4><dl>${row(f.mprice,c.mde_price!=null&&c.mde_price!==''?eur(c.mde_price):'')}${row(f.mkm,c.mde_km!=null&&c.mde_km!==''?Number(c.mde_km).toLocaleString(window.__loc||'en-GB')+' km':'')}${row(f.mchk,c.mde_checked)}</dl>${c.mde_url?`<p><a href="${esc(c.mde_url)}" target="_blank" rel="noopener">${esc(f.mlink)} ↗</a></p>`:''}${c.mde_desc?`<details><summary>${esc(f.mdesc)}</summary><pre>${esc(c.mde_desc)}</pre></details>`:''}</div>`:''}</section>`;
   }
   function text(c){
     const km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'');
-    const price=`Business to Business: ${eur(c.dealer_net)} (${w(5)})\n💶 Business to Customer: ${eur(c.dealer_gross)} (${w(6)})`;
+    const pm=document.documentElement.classList.contains('pm-b2b')?'b2b':document.documentElement.classList.contains('pm-b2c')?'b2c':'';
+    const price=pm==='b2b'?`Business to Business: ${eur(c.dealer_net)} (${w(5)})`:pm==='b2c'?`Business to Customer: ${eur(c.dealer_gross)} (${w(6)})`:`Business to Business: ${eur(c.dealer_net)} (${w(5)})\n💶 Business to Customer: ${eur(c.dealer_gross)} (${w(6)})`;
     return [`🚗 ${c.model||''}`,[c.colour,c.interior].filter(Boolean).join(' · '),[c.first_reg,km,c.power,c.fuel,c.transmission].filter(Boolean).join(' · '),
       (c.highlights||[]).slice(0,4).join(' · '),'',`💶 ${price}`,'',`🔗 ${location.origin}/sales/#car=${encodeURIComponent(c.id)}`,'',`CarAdvance · ${site()} · ${w(7)} ${c.id}`].filter((l,i,a)=>l!==''||(a[i-1]&&a[i-1]!=='')).join('\n').trim();
   }
