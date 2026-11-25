@@ -528,8 +528,8 @@ async function msgRoute(route, request, env, me) {
 }
 
 /* ---------------- Stock list (master list + mobile.de comparison) — D1, signed-in users only ----------------
- * Purchase prices (EK), planned VK and fleet-system fields are returned to admins only. */
-const STOCK_IMPORT_SHA256 = '496d82930e7910dbdd5802cbe14932c4e3461ddbd1e4422e14daf9ed4993b61e'; // one-off upload key (hash only); the upload route is removed after use
+ * Purchase prices (EK), planned VK and fleet-system fields are returned to admins only.
+ * Data loaded once into D1 (desk_stocklist) from the vehicle master list of 25 Nov 2026. */
 async function ensureStock(env) {
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_stocklist (id TEXT PRIMARY KEY, sort INTEGER, data TEXT NOT NULL, updated INTEGER)').run();
 }
@@ -541,20 +541,6 @@ async function stockList(env, me) {
   const admin = me.role === 'admin';
   const cars = rows.map(r => { const d = JSON.parse(r.data); if (!admin) for (const k of STOCK_ADMIN_ONLY) delete d[k]; return d; });
   return { cars, admin, updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
-}
-async function stockImport(request, env) {
-  const key = request.headers.get('X-Import-Key') || '';
-  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key)))].map(b => b.toString(16).padStart(2, '0')).join('');
-  if (hash !== STOCK_IMPORT_SHA256) return json({ error: 'Forbidden' }, 403);
-  if (!env.DB) return json({ error: 'No database' }, 503);
-  const list = await request.json();
-  if (!Array.isArray(list) || !list.length) return json({ error: 'Empty' }, 400);
-  await ensureStock(env);
-  await env.DB.prepare('DELETE FROM desk_stocklist').run();
-  const now = Math.floor(Date.now() / 1000);
-  const stmts = list.map((c, i) => env.DB.prepare('INSERT INTO desk_stocklist (id, sort, data, updated) VALUES (?, ?, ?, ?)').bind(String(c.id), i, JSON.stringify(c), now));
-  for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
-  return json({ ok: true, n: list.length });
 }
 
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
@@ -572,7 +558,6 @@ export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
-  if (request.method === 'POST' && route === 'stocklist-import') return stockImport(request, env); // one-off, removed after use
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
