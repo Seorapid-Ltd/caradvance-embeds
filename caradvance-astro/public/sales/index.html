@@ -597,6 +597,31 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 }
 /* Telefonon a hiányzó adatok jelzése nem látszik (PC-n igen) */
 @media(max-width:700px){#sRows .chip.gap,#sRows .gapd{display:none!important}#sRows .chips:not(:has(.chip:not(.gap))){display:none}}
+/* Autó-kártya: nyilak a fotókon, Teljes adatlap */
+#carSheet .cs-arr{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:999px;border:2px solid #fff;background:rgba(226,0,26,.92);color:#fff;display:flex;align-items:center;justify-content:center;z-index:2;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.45)}
+#carSheet .cs-arr.prev{left:10px}#carSheet .cs-arr.next{right:10px}
+#carSheet .cs-arr:active{transform:translateY(-50%) scale(.94)}
+#carSheet .hcard .hc-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)}
+#carSheet .hc-km{display:flex!important;align-items:center;justify-content:space-between;gap:8px;overflow:visible!important;white-space:nowrap!important}
+#carSheet .hc-km .hc-kmv{min-width:0}
+#carSheet .cs-fullbtn{flex:none;display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:0 11px 0 9px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font-weight:700;font-size:12px;white-space:nowrap;cursor:pointer}
+#carSheet .hcard .hc-grid .cs-fullbtn span{display:inline;text-transform:none;letter-spacing:0;font-size:12px;font-weight:700;color:var(--ink)}
+#carSheet .cs-fullbtn svg{color:var(--red)}
+#carSheet .cs-full{display:none;padding:14px 18px 18px}
+#carSheet.full .cs-full{display:block}
+#carSheet.full .hcard{display:none!important}
+#carSheet .cs-back{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px 0 10px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font-weight:700;font-size:13.5px;margin-bottom:12px;cursor:pointer}
+#carSheet .cs-full h3{margin:0 0 2px;font-size:18px;font-weight:800;line-height:1.25}
+#carSheet .cs-full h4{margin:16px 0 8px;font-size:14px;font-weight:800}
+#carSheet .cs-full p.sub{margin:0 0 12px;font-size:12.5px}
+#carSheet .cs-full dl{display:grid;grid-template-columns:minmax(120px,42%) 1fr;gap:7px 12px;margin:0;font-size:13.5px}
+#carSheet .cs-full dt{color:var(--muted)}#carSheet .cs-full dd{margin:0;font-weight:600;word-break:break-word}
+#carSheet .cs-full dl.cs-prices{margin-top:14px;padding:12px;border-radius:14px;background:var(--soft);border:1px solid var(--line)}
+#carSheet .cs-full dl.cs-prices dd{font-weight:800}
+#carSheet .cs-eq{margin:0;padding-left:18px;columns:2;column-gap:20px;font-size:13px;line-height:1.5}
+@media(max-width:480px){#carSheet .cs-eq{columns:1}}
+/* Szűrők: a doboz a felirathoz igazodik */
+.bar select.fitw{flex:0 0 auto!important;min-width:0!important;max-width:100%}
 /* Ajánlattétel */
 .offerrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
 .offerbtn{min-height:44px;padding:0 22px;border-radius:999px;font-weight:800}
@@ -855,7 +880,7 @@ const t=k=>(I18N[LANG]&&I18N[LANG][k])??I18N.en[k]??k;
 function applyLang(){window.__loc={en:'en-GB',hu:'hu-HU',sk:'sk-SK',cs:'cs-CZ',de:'de-DE',pl:'pl-PL'}[LANG]||'en-GB';document.documentElement.lang=LANG;$('#lang').value=LANG;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n)});
   document.querySelectorAll('[data-i18n-ph]').forEach(e=>{e.placeholder=t(e.dataset.i18nPh)});
-  brandSig='';if(S.cars&&S.cars.length)renderStock();try{renderDealers();renderLogs()}catch(e){}if(typeof renderLangPicker==='function'){renderLangPicker();trAll();}}
+  brandSig='';if(S.cars&&S.cars.length)renderStock();try{renderDealers();renderLogs()}catch(e){}if(typeof renderLangPicker==='function'){renderLangPicker();trAll();}if(window.__fitSelects)setTimeout(window.__fitSelects,0);}
 $('#lang').addEventListener('change',e=>{LANG=e.target.value;ls.set('sd_lang',LANG);applyLang();});
 const setTheme=m=>{if(m)document.documentElement.dataset.theme=m;else delete document.documentElement.dataset.theme;};
 setTheme(ls.get('sd_theme'));
@@ -1175,6 +1200,19 @@ function openOffer(id){
 window.__openOffer=openOffer;
 $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]');if(!b)return;e.stopPropagation();openOffer(b.dataset.offer)},true);
 
+/* Szűrő-dobozok: a kiválasztott felirat teljesen látsszon */
+(()=>{
+  const cv=document.createElement('canvas').getContext('2d');
+  function fit(sel){const cs=getComputedStyle(sel);if(cs.display==='none')return;cv.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const txt=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:'';
+    const w=Math.ceil(cv.measureText(txt).width+parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight)+parseFloat(cs.borderLeftWidth)+parseFloat(cs.borderRightWidth)+4);
+    sel.classList.add('fitw');sel.style.width=w+'px';}
+  const all=()=>document.querySelectorAll('.bar select').forEach(fit);
+  document.querySelectorAll('.bar select').forEach(sel=>{sel.addEventListener('change',()=>fit(sel));new MutationObserver(()=>fit(sel)).observe(sel,{childList:true,subtree:true,characterData:true});});
+  addEventListener('resize',all);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(all);setTimeout(all,300);setTimeout(all,1500);
+  window.__fitSelects=all;
+})();
+
 /* ---------- HOVER CARD (car list) ---------- */
 (()=>{
   const hc=document.createElement('div');hc.className='hcard';hc.setAttribute('aria-hidden','true');document.body.appendChild(hc);
@@ -1194,7 +1232,7 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
     return `${p?`<img class="hc-img" src="img/${esc(p)}" alt="">`:`<div class="hc-noimg">${esc(tx[12])}</div>`}
     <div class="hc-body"><i class="cc-bar"></i><div class="hc-top"><span>${esc(c.id)}</span><span>${esc(c.category||'')}</span><span class="hc-st ${esc(st)}">${esc(st)}</span></div>
     <b class="hc-name">${esc(c.model||'')}</b><div class="hc-col">${esc([c.colour,c.interior].filter(Boolean).join(' · '))}</div>
-    <div class="hc-grid">${cell(tx[4],c.first_reg)}${cell(tx[5],km)}${cell(tx[6],c.power)}${cell(tx[7],c.fuel)}${cell(tx[8],c.transmission)}${cell(tx[9],c.drive)}${c.available_until?cell(tx[11],c.available_until):''}</div>
+    <div class="hc-grid">${cell(tx[4],c.first_reg)}${cell(tx[5],km).replace('<div>','<div class="hc-km">')}${cell(tx[6],c.power)}${cell(tx[7],c.fuel)}${cell(tx[8],c.transmission)}${cell(tx[9],c.drive)}${c.available_until?cell(tx[11],c.available_until):''}</div>
     <div class="hc-price"><div><small>${esc(tx[0])}</small><b>${eur(c.dealer_net)}</b><small>${esc(tx[1])}</small></div><div><small>${esc(tx[2])}</small><b>${eur(c.dealer_gross)}</b><small>${esc(tx[3])}</small></div></div>
     ${c.asking_price!=null&&c.asking_price!==''?`<div class="hc-ask">${esc(tx[10])}: <b>${eur(c.asking_price)}</b></div>`:''}
     ${hl?`<div class="hc-hl">${hl}</div>`:''}</div>`;
@@ -1236,11 +1274,40 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
       <div class="hcard">${window.__carCardHtml(c)}</div></div>
       <div class="cs-act">${(c.status||'Available')!=='Sold'?`<button type="button" class="offer" data-a="offer">${esc(OFR().title)}</button>`:''}<button type="button" class="wa${(c.status||'Available')==='Sold'?' wide':''}" data-a="share"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15s-.77.96-.94 1.16s-.35.22-.64.07a8.1 8.1 0 0 1-2.38-1.47a9 9 0 0 1-1.65-2.05c-.17-.3 0-.46.13-.6c.13-.14.3-.35.45-.52a2 2 0 0 0 .3-.5a.55.55 0 0 0-.03-.52c-.07-.15-.67-1.62-.92-2.22c-.24-.58-.49-.5-.67-.51h-.57a1.1 1.1 0 0 0-.8.37a3.35 3.35 0 0 0-1.04 2.49a5.8 5.8 0 0 0 1.22 3.1a13.3 13.3 0 0 0 5.1 4.5c.71.31 1.27.5 1.7.63a4.1 4.1 0 0 0 1.88.12a3.08 3.08 0 0 0 2.02-1.42a2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.57-.35M12.04 21.5a9.4 9.4 0 0 1-4.8-1.31l-.34-.2l-3.57.93l.95-3.48l-.22-.36a9.43 9.43 0 1 1 7.98 4.42m8.02-17.45A11.3 11.3 0 0 0 2.27 17.66L.67 23.5l5.97-1.57a11.3 11.3 0 0 0 5.4 1.37a11.33 11.33 0 0 0 8.02-19.3"/></svg>WhatsApp</button>
       <button type="button" data-a="det">${esc(w(1))}</button><button type="button" data-a="close">${esc(w(2))}</button></div>`;
+    // Nyilak a fotók között
+    if(ps.length>1){const box=dlg.querySelector('.cs-gal').parentNode;box.insertAdjacentHTML('beforeend',`<button type="button" class="cs-arr prev" aria-label="‹"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="cs-arr next" aria-label="›"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`);}
+    // Teljes adatlap gomb a Futás mellett, és maga az adatlap
+    const kmCell=dlg.querySelector('.hcard .hc-km')||dlg.querySelector('.hcard .hc-grid>div:nth-child(2)');
+    const fb=`<button type="button" class="cs-fullbtn" data-a="full"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v5h5M9 13h7M9 17h7M9 9h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(F().full)}</span></button>`;
+    if(kmCell){kmCell.classList.add('hc-km');const wrap=document.createElement('div');wrap.className='hc-kmv';while(kmCell.firstChild)wrap.appendChild(kmCell.firstChild);kmCell.appendChild(wrap);kmCell.insertAdjacentHTML('beforeend',fb);}
+    else dlg.querySelector('.hcard .hc-body').insertAdjacentHTML('afterbegin',fb);
+    dlg.querySelector('.cs-scroll').insertAdjacentHTML('beforeend',fullHtml(c));
+    dlg.classList.remove('full');
     const g=dlg.querySelector('.cs-gal'),n=dlg.querySelector('.cs-n');
     if(g&&n)g.addEventListener('scroll',()=>{n.textContent=(Math.round(g.scrollLeft/g.clientWidth)+1)+' / '+ps.length},{passive:true});
     dlg.dataset.price=document.getElementById('sRows').dataset.price||'both';
     try{history.replaceState(null,'',location.pathname+location.search+'#car='+encodeURIComponent(c.id))}catch(e){}
     dlg.showModal();dlg.querySelector('.cs-scroll').scrollTop=0;
+  }
+  const FT={
+    en:{full:'Full details',back:'Back',model:'Make / model',cat:'Category',colour:'Colour',interior:'Interior',vin:'VIN',reg:'First registration',km:'Mileage',power:'Power',fuel:'Fuel',gear:'Transmission',drive:'Drive',body:'Body',wheels:'Wheels',owners:'Previous owners',until:'Available until',status:'Status',msrp:'List price new (gross)',b2b:'Business to Business (excl. VAT)',b2c:'Business to Customer (incl. 19% German VAT)',vs:'vs. list price',eq:'Equipment',ref:'Reference',none:'Detailed equipment list on request.'},
+    hu:{full:'Teljes adatlap',back:'Vissza',model:'Márka / modell',cat:'Kategória',colour:'Szín',interior:'Belső tér',vin:'Alvázszám',reg:'Első forgalomba helyezés',km:'Futásteljesítmény',power:'Teljesítmény',fuel:'Üzemanyag',gear:'Váltó',drive:'Hajtás',body:'Karosszéria',wheels:'Kerekek',owners:'Előző tulajdonosok',until:'Elérhető eddig',status:'Állapot',msrp:'Új listaár (bruttó)',b2b:'Business to Business (ÁFA nélkül)',b2c:'Business to Customer (19% német ÁFÁ-val)',vs:'a listaárhoz képest',eq:'Felszereltség',ref:'Azonosító',none:'Részletes felszereltségi lista kérésre.'},
+    sk:{full:'Kompletné údaje',back:'Späť',model:'Značka / model',cat:'Kategória',colour:'Farba',interior:'Interiér',vin:'VIN',reg:'Prvá registrácia',km:'Nájazd',power:'Výkon',fuel:'Palivo',gear:'Prevodovka',drive:'Pohon',body:'Karoséria',wheels:'Kolesá',owners:'Predchádzajúci majitelia',until:'Dostupné do',status:'Stav',msrp:'Cenníková cena nového (s DPH)',b2b:'Business to Business (bez DPH)',b2c:'Business to Customer (s 19 % nem. DPH)',vs:'oproti cenníku',eq:'Výbava',ref:'Ref.',none:'Podrobná výbava na požiadanie.'},
+    cs:{full:'Kompletní údaje',back:'Zpět',model:'Značka / model',cat:'Kategorie',colour:'Barva',interior:'Interiér',vin:'VIN',reg:'První registrace',km:'Nájezd',power:'Výkon',fuel:'Palivo',gear:'Převodovka',drive:'Pohon',body:'Karoserie',wheels:'Kola',owners:'Předchozí majitelé',until:'K dispozici do',status:'Stav',msrp:'Ceníková cena nového (s DPH)',b2b:'Business to Business (bez DPH)',b2c:'Business to Customer (s 19% něm. DPH)',vs:'oproti ceníku',eq:'Výbava',ref:'Ref.',none:'Podrobná výbava na vyžádání.'},
+    de:{full:'Alle Details',back:'Zurück',model:'Marke / Modell',cat:'Kategorie',colour:'Farbe',interior:'Innenausstattung',vin:'FIN',reg:'Erstzulassung',km:'Kilometerstand',power:'Leistung',fuel:'Kraftstoff',gear:'Getriebe',drive:'Antrieb',body:'Karosserie',wheels:'Räder',owners:'Vorbesitzer',until:'Verfügbar bis',status:'Status',msrp:'Neupreis laut Liste (brutto)',b2b:'Business to Business (ohne MwSt.)',b2c:'Business to Customer (inkl. 19 % dt. MwSt.)',vs:'ggü. Listenpreis',eq:'Ausstattung',ref:'Ref.',none:'Detaillierte Ausstattungsliste auf Anfrage.'},
+    pl:{full:'Pełne dane',back:'Wstecz',model:'Marka / model',cat:'Kategoria',colour:'Kolor',interior:'Wnętrze',vin:'VIN',reg:'Pierwsza rejestracja',km:'Przebieg',power:'Moc',fuel:'Paliwo',gear:'Skrzynia biegów',drive:'Napęd',body:'Nadwozie',wheels:'Koła',owners:'Poprzedni właściciele',until:'Dostępny do',status:'Status',msrp:'Cena katalogowa nowego (brutto)',b2b:'Business to Business (bez VAT)',b2c:'Business to Customer (z 19% niem. VAT)',vs:'wobec cennika',eq:'Wyposażenie',ref:'Ref.',none:'Szczegółowe wyposażenie na życzenie.'}};
+  const F=()=>FT[LANG]||FT.en;
+  function fullHtml(c){
+    const f=F(),km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'');
+    const row=(k,v)=>v!=null&&v!==''?`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`:'';
+    const st=c.status||'Available';
+    const hl=(c.highlights||[]);
+    return `<section class="cs-full"><button type="button" class="cs-back" data-a="back"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>${esc(f.back)}</button>
+      <h3>${esc(c.model||'')}</h3><p class="sub">${esc(f.ref)} ${esc(c.id)} · <b class="hc-st ${esc(st)}">${esc(t(st)!==st?t(st):st)}</b></p>
+      <dl>${row(f.model,[c.make,c.model].filter(Boolean).join(' · '))}${row(f.cat,c.category)}${row(f.colour,c.colour)}${row(f.interior,c.interior)}${row(f.body,c.body)}${row(f.wheels,c.wheels)}
+      ${row(f.reg,c.first_reg)}${row(f.km,km)}${row(f.power,c.power)}${row(f.fuel,c.fuel)}${row(f.gear,c.transmission)}${row(f.drive,c.drive)}${row(f.owners,c.prev_owners)}${row(f.vin,c.vin)}${row(f.until,c.available_until)}</dl>
+      <dl class="cs-prices">${row(f.b2b,c.dealer_net!=null&&c.dealer_net!==''?eur(c.dealer_net):'')}${row(f.b2c,c.dealer_gross!=null&&c.dealer_gross!==''?eur(c.dealer_gross):'')}${row(f.msrp,c.msrp_gross?eur(c.msrp_gross):'')}${row(f.vs,c.pct_vs_list!=null&&c.pct_vs_list!==''?c.pct_vs_list+'%':'')}</dl>
+      <h4>${esc(f.eq)}</h4>${hl.length?`<ul class="cs-eq">${hl.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>`:`<p class="sub">${esc(f.none)}</p>`}</section>`;
   }
   function text(c){
     const km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'');
@@ -1264,7 +1331,10 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
   }
   dlg.addEventListener('click',e=>{
     if(e.target===dlg){dlg.close();return}
+    const ar=e.target.closest('.cs-arr');if(ar){const g=dlg.querySelector('.cs-gal');g.scrollBy({left:(ar.classList.contains('next')?1:-1)*g.clientWidth,behavior:'smooth'});return}
     const b=e.target.closest('[data-a],.cs-x');if(!b||!cur)return;
+    if(b.dataset.a==='full'){dlg.classList.add('full');dlg.querySelector('.cs-scroll').scrollTop=0;return}
+    if(b.dataset.a==='back'){dlg.classList.remove('full');dlg.querySelector('.cs-scroll').scrollTop=0;return}
     const a=b.classList.contains('cs-x')?'close':b.dataset.a;
     if(a==='close')dlg.close();
     else if(a==='share')share(cur);
