@@ -661,7 +661,10 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 /* Nyilvános, csak megtekintés (bejelentkezés nélkül) */
 .loginbtn{display:none;text-decoration:none}
 .public .loginbtn{display:inline-flex}
-.public #tabs a[data-v=enq],.public #msgBtn,.public #v-dealers,.public #v-outreach{display:none!important}
+.public #tabs a[data-v=enq],.public #tabs a[data-v=leads],.public #msgBtn,.public #v-dealers,.public #v-outreach,.public #v-leads{display:none!important}
+#tabs .nLeads:empty{display:none}#tabs .nLeads{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--red);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:18px;text-align:center}
+#lRows .lofr{font-weight:800;white-space:nowrap}#lRows .lcar{font-weight:700}#lRows .sub{display:block}
+#lRows tr.row{cursor:pointer}
 .public td.stcol select{pointer-events:none;-webkit-appearance:none;appearance:none;background-image:none!important;text-align:center;text-align-last:center;padding:0 10px!important;opacity:1;font-weight:700}
 .public #sRows .pricebox,.public #sRows label.f,.public #sRows .gapd,.public #sRows .chip.gap{display:none!important}
 .public #carSheet [data-a=det]{display:none}
@@ -692,13 +695,13 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
   #v-dealers .tbl,#v-outreach .tbl{background:transparent;border:0;box-shadow:none;overflow:visible;border-radius:0}
   #v-dealers thead,#v-outreach thead{display:none}
   #v-dealers table,#v-dealers tbody,#v-outreach table,#v-outreach tbody{display:block;width:100%}
-  #dRows tr.row,#oRows tr.row{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px;margin:0 0 12px}
-  #dRows tr.row>td,#oRows tr.row>td{display:block;padding:0!important;border:0!important;text-align:left!important;min-width:0}
-  #dRows tr.row>td:first-child,#oRows tr.row>td:nth-child(2){grid-column:1/-1}
-  #dRows tr.row>td.hide-s,#oRows tr.row>td.hide-s{display:block}
-  #dRows tr.row>td[data-label]::before,#oRows tr.row>td[data-label]::before{content:attr(data-label);display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px}
+  #dRows tr.row,#oRows tr.row,#lRows tr.row{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px;margin:0 0 12px}
+  #dRows tr.row>td,#oRows tr.row>td,#lRows tr.row>td{display:block;padding:0!important;border:0!important;text-align:left!important;min-width:0}
+  #dRows tr.row>td:first-child,#oRows tr.row>td:nth-child(2),#lRows tr.row>td:nth-child(2){grid-column:1/-1}
+  #dRows tr.row>td.hide-s,#oRows tr.row>td.hide-s,#lRows tr.row>td.hide-s{display:block}
+  #dRows tr.row>td[data-label]::before,#oRows tr.row>td[data-label]::before,#lRows tr.row>td[data-label]::before{content:attr(data-label);display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px}
   #dRows tr.row>td:first-child::before,#oRows tr.row>td:nth-child(2)::before{display:none}
-  #dRows td.empty,#oRows td.empty{display:block;background:var(--card);border-radius:20px;padding:24px!important;text-align:center}
+  #dRows td.empty,#oRows td.empty,#lRows td.empty{display:block;background:var(--card);border-radius:20px;padding:24px!important;text-align:center}
   /* Szűrők: teljes szélesség, kényelmes érintési méret */
   .bar input[type=search]{flex:1 1 100%;min-height:44px}
   .bar select,.bar button{min-height:44px}
@@ -735,8 +738,7 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
     <div class="topright">
       <nav id="tabs">
         <a href="#stock" data-v="stock"><i data-i18n="nav_veh">Vehicles</i></a>
-        <a href="#fordealers" data-v="fordealers"><i data-i18n="nav_dl">For dealers</i></a>
-        <a href="#private" data-v="private"><i data-i18n="nav_pv">For private buyers</i></a>
+        <a href="#leads" data-v="leads"><i data-i18n="nav_leads">Leads</i> <span class="nLeads"></span></a>
         <a href="#dealers" data-v="enq"><i data-i18n="nav_enq">Enquiries</i></a>
       </nav>
       <div class="tools">
@@ -808,6 +810,15 @@ Ready when you are.</h1>
     <div id="rulesNote" class="foot"></div>
   </section>
 
+  <section class="view" id="v-leads">
+    <div class="bar"><span class="count" id="lCount"></span></div>
+    <div class="tbl"><table>
+      <thead><tr><th data-i18n="l_date">Date</th><th data-i18n="l_car">Car</th><th class="num" data-i18n="l_offer">Offer</th><th data-i18n="l_from">From</th><th class="hide-s" data-i18n="l_contact">Contact</th><th data-i18n="l_status">Status</th><th class="hide-s" data-i18n="l_follow">Follow-up</th></tr></thead>
+      <tbody id="lRows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+    </table></div>
+    <p class="foot" data-i18n="l_foot">Offers and enquiries sent from the car pages. Click a lead to open it, add notes or change its status.</p>
+  </section>
+
   <section class="view" id="v-outreach">
     <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
     <div class="bar"><button class="pri" id="addLog">Log a call or email</button><span class="count" id="oCount"></span></div>
@@ -846,9 +857,9 @@ const daysLeft=d=>d?Math.round((new Date(d+'T12:00:00')-todayMs)/864e5):null;
 const status=t=>{const m=$('#status');m.hidden=!t;m.textContent=t||''};
 
 /* tabs */
-const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach'};const ok=map[v]||'stock';
+const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach',leads:'leads'};const ok=map[v]||'stock';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+ok));
-  const navv=ok==='stock'?(v in map?v:'stock'):'enq';
+  const navv=ok==='stock'?'stock':ok==='leads'?'leads':'enq';
   document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v===navv));
   document.querySelectorAll('.subnav a').forEach(a=>a.classList.toggle('on',a.dataset.s===ok));
   if(ok==='stock'&&typeof renderStock==='function'&&S.cars){const want={fordealers:'b2b',private:'priv'}[v]||(S.audSet?'':null);if(want!=null){$('#sCat').value=want;S.audSet=!!want;if(S.raw.length)renderStock();}}};
@@ -893,6 +904,7 @@ const PLF={veh:{en:['vehicle','vehicles'],hu:['jármű','jármű'],sk:['vozidlo'
  photos:{en:['photo','photos'],hu:['fotó','fotó'],sk:['fotka','fotky','fotiek'],cs:['fotka','fotky','fotek'],de:['Foto','Fotos'],pl:['zdjęcie','zdjęcia','zdjęć']},
  gaps:{en:['data gap','data gaps'],hu:['hiányzó adat','hiányzó adat'],sk:['chýbajúci údaj','chýbajúce údaje','chýbajúcich údajov'],cs:['chybějící údaj','chybějící údaje','chybějících údajů'],de:['Datenlücke','Datenlücken'],pl:['brak danych','braki danych','braków danych']}};
 for(const[l,o]of Object.entries({"en": {"a_dl_s": "Packages & wholesale", "a_pv_s": "Individual cars & retail", "w_pk": "Dealer packages", "w_pk_d": "Curated multi-car bundles with competitive pricing and flexible volumes.", "w_ex": "Ex-rental cars", "w_ex_d": "Low-mileage, well-maintained cars from our rental fleet.", "w_pf": "Performance & luxury", "w_pf_d": "Premium models from leading brands, ready to drive away.", "b_pk": "View packages", "b_ex": "View ex-rental stock", "b_pf": "View premium stock", "s_allmake": "All makes", "more_mk": "More makes"}, "hu": {"a_dl_s": "Csomagok, nagyker", "a_pv_s": "Egyedi autók", "w_pk": "Kereskedői csomagok", "w_pk_d": "Összeállított, több autós csomagok versenyképes áron, rugalmas mennyiségben.", "w_ex": "Bérflotta autók", "w_ex_d": "Alacsony futású, gondozott autók a bérflottánkból.", "w_pf": "Sport és luxus", "w_pf_d": "Vezető márkák prémium modelljei, azonnal elvihetők.", "b_pk": "Csomagok megtekintése", "b_ex": "Bérflotta készlet", "b_pf": "Prémium készlet", "s_allmake": "Összes márka", "more_mk": "További márkák"}, "sk": {"a_dl_s": "Balíky a veľkoobchod", "a_pv_s": "Jednotlivé autá", "w_pk": "Dílerské balíky", "w_pk_d": "Zostavené balíky viacerých áut za konkurenčné ceny a vo flexibilných objemoch.", "w_ex": "Autá z prenájmu", "w_ex_d": "Udržiavané autá s nízkym nájazdom z našej flotily.", "w_pf": "Výkon a luxus", "w_pf_d": "Prémiové modely popredných značiek, pripravené na odovzdanie.", "b_pk": "Zobraziť balíky", "b_ex": "Autá z prenájmu", "b_pf": "Prémiová ponuka", "s_allmake": "Všetky značky", "more_mk": "Ďalšie značky"}, "cs": {"a_dl_s": "Balíčky a velkoobchod", "a_pv_s": "Jednotlivé vozy", "w_pk": "Dealerské balíčky", "w_pk_d": "Sestavené balíčky více vozů za konkurenční ceny a v flexibilních objemech.", "w_ex": "Vozy z pronájmu", "w_ex_d": "Udržované vozy s nízkým nájezdem z naší flotily.", "w_pf": "Výkon a luxus", "w_pf_d": "Prémiové modely předních značek, připravené k předání.", "b_pk": "Zobrazit balíčky", "b_ex": "Vozy z pronájmu", "b_pf": "Prémiová nabídka", "s_allmake": "Všechny značky", "more_mk": "Další značky"}, "de": {"a_dl_s": "Pakete & Großhandel", "a_pv_s": "Einzelfahrzeuge & Endkunden", "w_pk": "Händlerpakete", "w_pk_d": "Fahrzeugpakete zu Top-Preisen, in flexiblen Mengen.", "w_ex": "Ex-Mietwagen", "w_ex_d": "Gepflegte Fahrzeuge mit wenig Kilometern aus unserer Mietflotte.", "w_pf": "Performance & Luxus", "w_pf_d": "Premium-Modelle führender Marken, sofort fahrbereit.", "b_pk": "Pakete ansehen", "b_ex": "Ex-Mietwagen ansehen", "b_pf": "Premium-Bestand ansehen", "s_allmake": "Alle Marken", "more_mk": "Weitere Marken"}, "pl": {"a_dl_s": "Pakiety i hurt", "a_pv_s": "Pojedyncze auta i detal", "w_pk": "Pakiety dla dealerów", "w_pk_d": "Gotowe pakiety kilku aut w konkurencyjnych cenach i elastycznych ilościach.", "w_ex": "Auta z wynajmu", "w_ex_d": "Zadbane auta z niskim przebiegiem z naszej floty.", "w_pf": "Osiągi i luksus", "w_pf_d": "Modele premium czołowych marek, gotowe do odbioru.", "b_pk": "Zobacz pakiety", "b_ex": "Zobacz auta z wynajmu", "b_pf": "Zobacz ofertę premium", "s_allmake": "Wszystkie marki", "more_mk": "Więcej marek"}}))Object.assign(I18N[l],o);
+for(const[l,o]of Object.entries({"en": {"nav_leads": "Leads", "l_date": "Date", "l_car": "Car", "l_offer": "Offer", "l_from": "From", "l_contact": "Contact", "l_status": "Status", "l_follow": "Follow-up", "l_open": "open", "l_none": "No leads yet. Offers sent from the car pages appear here.", "l_foot": "Offers and enquiries sent from the car pages. Click a lead to open it, add notes or change its status."}, "hu": {"nav_leads": "Leadek", "l_date": "Dátum", "l_car": "Autó", "l_offer": "Ajánlat", "l_from": "Feladó", "l_contact": "Elérhetőség", "l_status": "Állapot", "l_follow": "Visszahívás", "l_open": "nyitott", "l_none": "Még nincs lead. Az autóoldalakról küldött ajánlatok itt jelennek meg.", "l_foot": "Az autóoldalakról küldött ajánlatok és megkeresések. Kattintson egy leadre a megnyitáshoz, jegyzethez vagy az állapot módosításához."}, "sk": {"nav_leads": "Leady", "l_date": "Dátum", "l_car": "Auto", "l_offer": "Ponuka", "l_from": "Od", "l_contact": "Kontakt", "l_status": "Stav", "l_follow": "Ďalší krok", "l_open": "otvorené", "l_none": "Zatiaľ žiadne leady. Ponuky odoslané zo stránok áut sa zobrazia tu.", "l_foot": "Ponuky a dopyty odoslané zo stránok áut. Kliknutím otvoríte lead, pridáte poznámku alebo zmeníte stav."}, "cs": {"nav_leads": "Leady", "l_date": "Datum", "l_car": "Vůz", "l_offer": "Nabídka", "l_from": "Od", "l_contact": "Kontakt", "l_status": "Stav", "l_follow": "Další krok", "l_open": "otevřené", "l_none": "Zatím žádné leady. Nabídky odeslané ze stránek vozů se zobrazí zde.", "l_foot": "Nabídky a poptávky odeslané ze stránek vozů. Kliknutím otevřete lead, přidáte poznámku nebo změníte stav."}, "de": {"nav_leads": "Leads", "l_date": "Datum", "l_car": "Fahrzeug", "l_offer": "Angebot", "l_from": "Von", "l_contact": "Kontakt", "l_status": "Status", "l_follow": "Wiedervorlage", "l_open": "offen", "l_none": "Noch keine Leads. Angebote von den Fahrzeugseiten erscheinen hier.", "l_foot": "Angebote und Anfragen von den Fahrzeugseiten. Lead anklicken, um ihn zu öffnen, Notizen zu ergänzen oder den Status zu ändern."}, "pl": {"nav_leads": "Leady", "l_date": "Data", "l_car": "Auto", "l_offer": "Oferta", "l_from": "Od", "l_contact": "Kontakt", "l_status": "Status", "l_follow": "Kontakt zwrotny", "l_open": "otwarte", "l_none": "Brak leadów. Oferty wysłane ze stron aut pojawią się tutaj.", "l_foot": "Oferty i zapytania wysłane ze stron aut. Kliknij lead, aby go otworzyć, dodać notatkę lub zmienić status."}}))if(I18N[l])Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"a_dl": "For dealers", "a_pv": "For private buyers"}, "hu": {"a_dl": "Kereskedőknek", "a_pv": "Magánvevőknek"}, "sk": {"a_dl": "Pre predajcov", "a_pv": "Súkromní kupujúci"}, "cs": {"a_dl": "Pro prodejce", "a_pv": "Soukromí kupci"}, "de": {"a_dl": "Für Händler", "a_pv": "Für Privatkunden"}, "pl": {"a_dl": "Dla dealerów", "a_pv": "Klienci prywatni"}}))Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"w_pk_d": "Multi-car bundles with competitive pricing."}, "hu": {"w_pk_d": "Több autós csomagok versenyképes áron."}, "sk": {"w_pk_d": "Balíky viacerých áut za výhodné ceny pre autosalóny."}, "cs": {"w_pk_d": "Balíčky více vozů za výhodné ceny pro autosalony."}, "de": {"w_pk_d": "Fahrzeugpakete zu Top-Preisen für Autohäuser."}, "pl": {"w_pk_d": "Pakiety kilku aut w korzystnych cenach."}}))Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"w_pk": "B2B", "w_pk_d": "Trade prices excl. VAT for dealers and fleet buyers — the whole stock.", "b_pk": "View B2B prices", "w_ex": "B2C", "w_ex_d": "Retail prices incl. VAT for private buyers — one car at a time.", "b_ex": "View B2C cars"}, "hu": {"w_pk": "B2B", "w_pk_d": "Nettó kereskedői árak kereskedőknek és flottáknak — a teljes készlet.", "b_pk": "B2B árak", "w_ex": "B2C", "w_ex_d": "Bruttó árak magánvásárlóknak — autónként, egyenként.", "b_ex": "B2C autók"}, "sk": {"w_pk": "B2B", "w_pk_d": "Veľkoobchodné ceny bez DPH pre predajcov a flotily — celý sklad.", "b_pk": "Ceny B2B", "w_ex": "B2C", "w_ex_d": "Maloobchodné ceny s DPH pre súkromných kupujúcich — po jednom aute.", "b_ex": "Autá B2C"}, "cs": {"w_pk": "B2B", "w_pk_d": "Velkoobchodní ceny bez DPH pro dealery a flotily — celý sklad.", "b_pk": "Ceny B2B", "w_ex": "B2C", "w_ex_d": "Maloobchodní ceny s DPH pro soukromé kupce — po jednom voze.", "b_ex": "Vozy B2C"}, "de": {"w_pk": "B2B", "w_pk_d": "Händlerpreise ohne MwSt. für Händler und Flotten — der gesamte Bestand.", "b_pk": "B2B-Preise", "w_ex": "B2C", "w_ex_d": "Endkundenpreise inkl. MwSt. für Privatkäufer — einzeln erhältlich.", "b_ex": "B2C-Fahrzeuge"}, "pl": {"w_pk": "B2B", "w_pk_d": "Ceny hurtowe bez VAT dla dealerów i flot — cały stan magazynowy.", "b_pk": "Ceny B2B", "w_ex": "B2C", "w_ex_d": "Ceny detaliczne z VAT dla klientów prywatnych — pojedyncze auta.", "b_ex": "Auta B2C"}}))if(I18N[l])Object.assign(I18N[l],o);
@@ -1165,7 +1177,20 @@ $('#csv').addEventListener('click',async()=>{
 });
 
 /* ---------- OUTREACH ---------- */
-function renderLogs(){
+function renderLeads(){
+  const tb=$('#lRows');if(!tb)return;
+  const isLead=o=>o&&(o.direction==='Incoming'||o.channel==='Website'||/^OFFER:/m.test(o.notes||''));
+  const f=(n,k)=>{const m=(n||'').match(new RegExp('^'+k+':\\s*(.+)$','m'));return m?m[1].trim():''};
+  const L=(S.logs||[]).filter(isLead).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||String(b.log_no||0).localeCompare(String(a.log_no||0)));
+  const open=L.filter(o=>!o.outcome||o.outcome==='Offer received').length;
+  document.querySelectorAll('.nLeads').forEach(e=>e.textContent=open||'');
+  $('#lCount').textContent=L.length?`${L.length} · ${open} ${t('l_open')}`:'';
+  tb.innerHTML=L.length?L.map(o=>{const n=o.notes||'';const ofr=(n.match(/^OFFER:\s*([^—\n]+)/m)||[])[1]||'';const typ=/B2B/.test((n.match(/^OFFER:.*$/m)||[''])[0])?'B2B':/B2C/.test((n.match(/^OFFER:.*$/m)||[''])[0])?'B2C':'';
+    const car=(S.raw||[]).find(c=>c.id===(o.cars||'').split(/[,\s]/)[0]);const dd=(S.dealers||[]).find(x=>x.id===o.dealer);const nm=f(n,'Name')||(dd?dd.name:o.dealer)||'';const co=f(n,'Company');
+    return `<tr class="row" data-id="${esc(o.id)}"><td data-label="${esc(t('l_date'))}">${esc(o.date||'')}</td><td data-label="${esc(t('l_car'))}"><span class="lcar">${esc(o.cars||'')}</span>${car?`<span class="sub">${esc(car.model||'')}</span>`:''}</td><td class="num" data-label="${esc(t('l_offer'))}"><span class="lofr">${esc(ofr.trim())}</span>${typ?`<span class="sub">${typ}</span>`:''}</td><td data-label="${esc(t('l_from'))}"><b>${esc(nm)}</b>${co?`<span class="sub">${esc(co)}</span>`:''}</td><td class="hide-s" data-label="${esc(t('l_contact'))}"><span class="sub">${esc([f(n,'Email'),f(n,'Phone')].filter(Boolean).join(' · '))}</span></td><td data-label="${esc(t('l_status'))}">${esc(o.outcome||'')}</td><td class="hide-s" data-label="${esc(t('l_follow'))}">${esc(o.follow_up||'')}</td></tr>`}).join('')
+    :`<tr><td colspan="7" class="empty">${esc(t('l_none'))}</td></tr>`;
+}
+function renderLogs(){try{renderLeads()}catch(e){}
   const L=[...S.logs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   $('#oCount').textContent=L.length+' entries';$('#nOut').textContent=L.length||'';document.querySelectorAll('.nOut2').forEach(e=>e.textContent=L.length||'');
   const dn=id=>{const d=S.dealers.find(x=>x.id===id);return d?d.name+' ('+d.country+')':id};
@@ -1184,6 +1209,7 @@ function openLog(o){
 }
 $('#addLog').addEventListener('click',()=>S.dealers.length?openLog(null):status('Add a dealer first, then log contact with them.'));
 $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r)openLog(S.logs.find(o=>o.id===r.dataset.id))});
+$('#lRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r)openLog(S.logs.find(o=>o.id===r.dataset.id))});
 
 
 /* ---------- AJÁNLATTÉTEL (mindenkinek, PC és telefon) ---------- */
