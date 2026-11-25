@@ -284,7 +284,9 @@ async function makeOffer(request, env, ctx) {
   if (!b || typeof b !== 'object') return json({ error: 'bad_request' }, 400);
   if (b.website) return json({ ok: true }); // bot trap
   const str = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000b-\u001f]/g, '').trim().slice(0, n);
-  const name = str(b.name, 100), company = str(b.company, 120), email = str(b.email, 160).toLowerCase(), phone = str(b.phone, 40), msg = str(b.message, 1500);
+  const name = str(b.name, 100), company = str(b.company, 120), email = str(b.email, 160).toLowerCase(), msg = str(b.message, 1500);
+  let phone = str(b.phone, 40); const dial = str(b.dial, 6).replace(/[^\d+]/g, '');
+  if (phone && !/^(\+|00)/.test(phone) && /^\+\d{1,4}$/.test(dial)) phone = dial + ' ' + phone.replace(/^0+/, '');
   const type = b.type === 'b2c' ? 'b2c' : b.type === 'b2b' ? 'b2b' : '';
   const price = Math.round(Number(String(b.price ?? '').replace(/[^\d.,]/g, '').replace(',', '.')));
   if (name.length < 2) return json({ error: 'name' }, 400);
@@ -402,6 +404,17 @@ async function setOutcome(env, offer, outcome, next, line) {
     Outcome: writeProp('select', outcome), 'Next step': writeProp('text', next), 'Follow-up': writeProp('date', todayIso()), Notes: writeProp('text', notes) } });
   memo = null;
 }
+/* Accepting an offer puts the car "Under offer" (reserved for that buyer); declining the accepted offer frees it again. */
+async function carForOffer(env, all, offer, accepted) {
+  const p = parseOffer(offer); const car = all.vehicles.find(v => v.id === p.car); if (!car) return;
+  const who = [p.name, p.company && '(' + p.company + ')', p.country && '· ' + p.country].filter(Boolean).join(' ');
+  if (accepted) {
+    await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { Status: writeProp('select', 'Under offer'), 'Status changed': writeProp('date', todayIso()), 'Reserved for': writeProp('text', who) } });
+  } else if (car.status === 'Under offer' && String(car.reserved_for || '').startsWith(p.name || '\u0000')) {
+    await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { Status: writeProp('select', 'Available'), 'Status changed': writeProp('date', todayIso()), 'Reserved for': writeProp('text', '') } });
+  }
+  memo = null;
+}
 async function offerAction(request, env, ctx, me) {
   const b = await request.json().catch(() => ({}));
   const all = await loadAll(env, ctx, true);
@@ -409,8 +422,8 @@ async function offerAction(request, env, ctx, me) {
   if (!offer || !isOffer(offer)) throw bad('Offer not found.', 404);
   const who = me.name || nameOf(me.email);
   const p = parseOffer(offer);
-  if (b.action === 'accept') { await setOutcome(env, offer, 'Offer accepted', 'Confirm to the buyer', `Accepted by ${who}`); return { ok: true }; }
-  if (b.action === 'decline') { await setOutcome(env, offer, 'Offer declined', 'Tell the buyer', `Declined by ${who}`); return { ok: true }; }
+  if (b.action === 'accept') { await setOutcome(env, offer, 'Offer accepted', 'Confirm to the buyer', `Accepted by ${who}`); await carForOffer(env, all, offer, true); return { ok: true }; }
+  if (b.action === 'decline') { await setOutcome(env, offer, 'Offer declined', 'Tell the buyer', `Declined by ${who}`); await carForOffer(env, all, offer, false); return { ok: true }; }
   if (b.action !== 'check' && b.action !== 'preview') throw bad('Unknown action.');
   const car = all.vehicles.find(v => v.id === p.car);
   if (!car) throw bad('The car of this offer was not found.', 404);
@@ -449,8 +462,8 @@ async function offerDecision(request, env, ctx) {
   if (request.method === 'POST') {
     const f = await request.formData();
     const d = f.get('d'); const cp = String(f.get('price') || '').replace(/[^\d]/g, ''); const cm = String(f.get('comment') || '').slice(0, 800).trim();
-    if (d === 'accept') await setOutcome(env, offer, 'Offer accepted', 'Confirm to the buyer', 'Caradvance GmbH: Angebot angenommen' + (cm ? ' – ' + cm : ''));
-    else if (d === 'decline') await setOutcome(env, offer, 'Offer declined', 'Tell the buyer', 'Caradvance GmbH: Angebot abgelehnt' + (cm ? ' – ' + cm : ''));
+    if (d === 'accept') { await setOutcome(env, offer, 'Offer accepted', 'Confirm to the buyer', 'Caradvance GmbH: Angebot angenommen' + (cm ? ' – ' + cm : '')); await carForOffer(env, all, offer, true); }
+    else if (d === 'decline') { await setOutcome(env, offer, 'Offer declined', 'Tell the buyer', 'Caradvance GmbH: Angebot abgelehnt' + (cm ? ' – ' + cm : '')); await carForOffer(env, all, offer, false); }
     else if (d === 'counter' && cp) await setOutcome(env, offer, 'Counter offer', 'Send the counter offer to the buyer', `Caradvance GmbH: Gegenangebot ${eurDe(cp)}` + (cm ? ' – ' + cm : ''));
     else return page(head + '<p>Bitte einen Betrag für das Gegenangebot eingeben.</p>', 400);
     return page(head.replace(/Aktueller Status:.*<\/p>/, '') + `<p class="ok">Danke – Ihre Entscheidung wurde gespeichert${d === 'counter' ? ` (Gegenangebot ${eurDe(cp)})` : ''}.</p>`);
