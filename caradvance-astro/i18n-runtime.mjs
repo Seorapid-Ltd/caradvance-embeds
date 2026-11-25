@@ -82,10 +82,20 @@ function jsUnitKeys(DIST, langs) {
   try { walk(DIST, true); } catch (e) { console.log('[i18n-runtime] corpus: ' + e.message); }
   let main = {}; try { main = JSON.parse(fs.readFileSync('src/i18n/dict/en.json', 'utf8')); } catch {}
   const out = [];
+  // gyors előszűrés: ha a darab valamelyik 4 betűs részlete sehol sincs a korpuszban, a darab sincs benne
+  // (a ~4000 kulcs × darab teljes korpusz-keresése helyett; az eredmény ugyanaz, mint a sima includes-szal)
+  const G4 = new Set(); for (let i = 0; i + 4 <= corpus.length; i++) G4.add(corpus.substr(i, 4));
+  const memo = new Map();
+  const inCorpus = (x) => {
+    let r = memo.get(x); if (r !== undefined) return r;
+    r = true; for (let i = 0; i + 4 <= x.length; i++) if (!G4.has(x.substr(i, 4))) { r = false; break; }
+    if (r) r = corpus.includes(x);
+    memo.set(x, r); return r;
+  };
   for (const k of Object.keys(main)) {
     if (!/<g\d/.test(k)) continue;
     const pieces = k.split(/<\/?[gx]\d+\/?>|\{\d+\}/).map((x) => x.trim()).filter((x) => x.length >= 4 && /[a-záéíóöőúüű]/i.test(x));
-    if (pieces.length && pieces.every((x) => corpus.includes(x))) out.push(k);
+    if (pieces.length && pieces.every(inCorpus)) out.push(k);
   }
   console.log('[i18n-runtime] JS inline units: ' + out.length);
   return out;
