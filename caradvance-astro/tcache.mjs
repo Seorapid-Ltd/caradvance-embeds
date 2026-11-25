@@ -13,6 +13,7 @@
  * Ha nincs beállítva (pl. helyi build), minden a régi módon, gyorsítótár nélkül fut.
  */
 import fs from 'node:fs';
+import { threadId } from 'node:worker_threads';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import zlib from 'node:zlib';
@@ -25,7 +26,7 @@ const stat = { hit: 0, miss: 0 };
 
 function put(file, json) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  const tmp = file + '.' + process.pid + '.tmp';
+  const tmp = file + '.' + process.pid + '-' + threadId + '.tmp'; // worker szálak: azonos pid
   fs.writeFileSync(tmp, json); fs.renameSync(tmp, file);
 }
 
