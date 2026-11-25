@@ -457,14 +457,14 @@
             <div class="fld"><label>E-mail</label><input id="u-email" placeholder="nev@caradvance.hu"></div>
           </div>
           <div class="row2">
-            <div class="fld"><label>Szerepkör</label><select id="u-role"><option value="sales_desk">Csak Sales Desk</option><option value="sales_manager">Sales manager (CRM)</option><option value="admin">Admin</option></select></div>
+            <div class="fld"><label>Szerepkör</label><select id="u-role"><option value="sales_desk">Csak Sales Desk</option><option value="sales_manager">Sales manager (CRM)</option><option value="admin">Admin</option></select><label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="u-desk" checked style="width:auto"> Sales Desk hozzáférés</label></div>
             <div class="fld"><label>Ideiglenes jelszó</label><input id="u-pw" placeholder="min. 8 karakter"></div>
           </div>
           <div><button class="btn red sm" onclick="createUser()">Létrehozás</button></div>
           <div id="u-err" class="hint" style="color:#c0392b"></div>
         </div>
       </div>
-      <div class="panel"><table><thead><tr><th>Név</th><th>E-mail</th><th>Szerepkör</th><th>Létrehozva</th><th></th></tr></thead><tbody id="userRows"></tbody></table></div>
+      <div class="panel"><table><thead><tr><th>Név</th><th>E-mail</th><th>Szerepkör</th><th>Sales Desk</th><th>Létrehozva</th><th></th></tr></thead><tbody id="userRows"></tbody></table></div>
     </section>
     <section class="view" id="v-email">
       <div class="page-head"><div><h1>E-mail</h1><div class="crumb">Irányítópult <span>/</span> <b>E-mail</b></div></div></div>
@@ -1148,10 +1148,10 @@ function renderUsers(){
   var el=document.getElementById('userRows');if(!el)return;
   el.innerHTML=(allUsers||[]).map(function(u){
     var isSelf=currentUser&&u.id===currentUser.id;
-    return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+esc(u.role==='admin'?'Admin':u.role==='sales_desk'?'Csak Sales Desk':'Sales manager')+'</td><td>'+esc((u.created_at||'').slice(0,10))+'</td>'
+    return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+esc(u.role==='admin'?'Admin':u.role==='sales_desk'?'Csak Sales Desk':'Sales manager')+'</td><td>'+(u.role==='sales_desk'?'<span class="hint">mindig</span>':'<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" '+(Number(u.desk_access)===1?'checked ':'')+'onchange="setDeskAccess('+u.id+',this)"> hozzáfér</label>')+'</td><td>'+esc((u.created_at||'').slice(0,10))+'</td>'
       +'<td style="white-space:nowrap"><button class="btn ghost sm" onclick="resetUserPassword('+u.id+')">Új jelszó</button> '
       +(isSelf?'':'<button class="btn ghost sm" onclick="deleteUser('+u.id+')">Törlés</button>')+'</td></tr>';
-  }).join('')||'<tr><td colspan="5" style="color:#8a93a2">Nincs felhasználó.</td></tr>';
+  }).join('')||'<tr><td colspan="6" style="color:#8a93a2">Nincs felhasználó.</td></tr>';
 }
 function loadUsers(){return apiFetch('/admin/users').then(function(r){allUsers=r.users;renderUsers();}).catch(function(){});}
 function createUser(){
@@ -1162,7 +1162,7 @@ function createUser(){
   var errEl=document.getElementById('u-err');errEl.textContent='';
   if(!email||!name||!pw){errEl.textContent='Minden mező kötelező.';return;}
   if(pw.length<8){errEl.textContent='A jelszó legyen legalább 8 karakter.';return;}
-  apiFetch('/admin/users',{method:'POST',body:{email:email,name:name,role:role,password:pw}}).then(function(){
+  apiFetch('/admin/users',{method:'POST',body:{email:email,name:name,role:role,password:pw,desk_access:document.getElementById('u-desk').checked}}).then(function(){
     ['u-email','u-name','u-pw'].forEach(function(id){document.getElementById(id).value='';});
     return loadUsers();
   }).catch(function(e){errEl.textContent=(e&&e.error)||'Nem sikerült létrehozni.';});
@@ -1172,6 +1172,9 @@ function resetUserPassword(id){
   if(!pw)return;
   if(pw.length<8){alert('A jelszó legyen legalább 8 karakter.');return;}
   apiFetch('/admin/users/'+id+'/reset-password',{method:'POST',body:{password:pw}}).then(function(){alert('Jelszó frissítve.');}).catch(function(){alert('Nem sikerült frissíteni a jelszót.');});
+}
+function setDeskAccess(id,el){
+  apiFetch('/admin/users/'+id+'/desk',{method:'POST',body:{on:el.checked}}).then(function(){var u=(allUsers||[]).find(function(x){return x.id===id;});if(u)u.desk_access=el.checked?1:0;}).catch(function(){el.checked=!el.checked;alert('Nem sikerült menteni.');});
 }
 function deleteUser(id){
   if(!confirm('Biztosan törlöd ezt a felhasználót? A hozzá rendelt ügyek/ügyfelek felszabadulnak.'))return;
