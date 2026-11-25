@@ -301,7 +301,7 @@ async function makeOffer(request, env, ctx) {
     `OFFER: ${eurs(price)} — ${type === 'b2b' ? 'dealer / B2B' : 'private buyer / B2C'}`,
     `Car: ${car.id} · ${car.model || ''}`, `Listed: ${listed}`,
     `Name: ${name}`, company && `Company: ${company}`, email && `Email: ${email}`, phone && `Phone: ${phone}`,
-    msg && `Message: ${msg}`, `Sent from: ${url.hostname} (${str(b.lang, 5) || '—'})`,
+    msg && `Message: ${msg}`, countryOf(url.hostname, b.lang) && `Country: ${countryOf(url.hostname, b.lang)}`, `Sent from: ${url.hostname} (${str(b.lang, 5) || '—'})`,
   ].filter(Boolean).join('\n');
   const today = new Date().toISOString().slice(0, 10);
   const props = {
@@ -314,6 +314,149 @@ async function makeOffer(request, env, ctx) {
   catch (e) { return json({ error: 'unavailable' }, 503); }
   memo = null;
   return json({ ok: true });
+}
+
+/* ---------------- offers: accept / decline / send to Caradvance GmbH for a check (German email) ----------------
+ * Env: DESK_CHECK_EMAIL  — who decides on offers (German email with one-click Annehmen / Ablehnen / Gegenangebot)
+ *      RESEND_API_KEY    — email sending (already used by the CRM); CRM_EMAIL_FROM optional
+ *      DESK_LINK_SECRET  — optional; signs the decision links (falls back to the Notion token) */
+const VAT_F = 1 + VAT;
+const CC_BY_TLD = { hu: 'HU', sk: 'SK', cz: 'CZ', pl: 'PL', ch: 'CH', de: 'DE', at: 'AT', ro: 'RO' };
+const CC_BY_LANG = { hu: 'HU', sk: 'SK', cs: 'CZ', pl: 'PL', de: 'DE', en: '' };
+const COUNTRY_DE = { HU: 'Ungarn', SK: 'Slowakei', CZ: 'Tschechien', PL: 'Polen', CH: 'Schweiz', DE: 'Deutschland', AT: 'Österreich', RO: 'Rumänien' };
+export function countryOf(host, lang) {
+  const tld = String(host || '').split('.').pop().toLowerCase();
+  return CC_BY_TLD[tld] || CC_BY_LANG[String(lang || '').toLowerCase()] || '';
+}
+export function parseOffer(o) {
+  const n = String(o && o.notes || '');
+  const f = k => { const m = n.match(new RegExp('^' + k + ':\\s*(.+)$', 'm')); return m ? m[1].trim() : ''; };
+  const head = (n.match(/^OFFER:.*$/m) || [''])[0];
+  const price = Number((head.match(/€\s*([\d.,]+)/) || [, ''])[1].replace(/[.,](?=\d{3}\b)/g, '').replace(',', '.')) || null;
+  const type = /B2B/.test(head) ? 'b2b' : /B2C/.test(head) ? 'b2c' : '';
+  const sent = f('Sent from'); const sm = sent.match(/^(\S+)\s*\((\w*)\)/) || [];
+  const country = (f('Country') || countryOf(sm[1], sm[2]) || '').toUpperCase();
+  const car = (String(o && o.cars || '').match(/\b(?:P1|P2|S26|V)-\d{1,2}\b/i) || [''])[0].toUpperCase();
+  return { price, type, net: price == null ? null : type === 'b2c' ? Math.round(price / VAT_F) : price, name: f('Name'), company: f('Company'), email: f('Email'), phone: f('Phone'), message: f('Message'), country, car };
+}
+const isOffer = o => o && (/^OFFER:/m.test(o.notes || '') || (o.direction === 'Incoming' && o.channel === 'Website'));
+function rankFor(all, offer) {
+  const p = parseOffer(offer);
+  const same = all.outreach.filter(isOffer).map(o => ({ o, p: parseOffer(o) })).filter(x => x.p.car === p.car && x.p.net != null && !/declined/i.test(x.o.outcome || ''));
+  same.sort((a, b) => b.p.net - a.p.net);
+  const rank = same.findIndex(x => x.o.id === offer.id) + 1;
+  const inCountry = same.filter(x => x.p.country === p.country);
+  return { rank, of: same.length, best: same[0] ? same[0].p.net : null, crank: inCountry.findIndex(x => x.o.id === offer.id) + 1, cof: inCountry.length };
+}
+const eurDe = n => n == null || n === '' ? '—' : Math.round(Number(n)).toLocaleString('de-DE') + ' €';
+const escH = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+async function linkSig(env, id) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.DESK_LINK_SECRET || env.DESK_NOTION_TOKEN || 'x'), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const s = await crypto.subtle.sign('HMAC', k, new TextEncoder().encode('offer-check|' + id));
+  return [...new Uint8Array(s)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
+function germanCheck(offer, car, rk, base, sig) {
+  const p = parseOffer(offer);
+  const land = COUNTRY_DE[p.country] || p.country || '—';
+  const typ = p.type === 'b2b' ? 'Händler (netto, zzgl. 19 % MwSt.)' : 'Privatkunde (brutto, inkl. 19 % MwSt.)';
+  const ours = p.type === 'b2b' ? car.dealer_net : car.dealer_gross;
+  const diff = ours ? Math.round((p.price / ours - 1) * 1000) / 10 : null;
+  const km = car.mileage != null ? Number(car.mileage).toLocaleString('de-DE') + ' km' : (car.km_text || '—');
+  const subject = `Angebot zur Prüfung: ${car.model || ''} (${car.id}) – ${eurDe(p.price)} ${p.type === 'b2b' ? 'netto' : 'brutto'} aus ${land}`;
+  const u = d => `${base}/api/desk/offer-decision?id=${encodeURIComponent(offer.id)}&sig=${sig}&d=${d}`;
+  const lines = [
+    'Guten Tag,', '',
+    `für das folgende Fahrzeug liegt ein Angebot vor. Bitte teilen Sie uns mit, ob das Angebot akzeptabel ist.`, '',
+    `FAHRZEUG: ${car.model || ''} · Ref. ${car.id}`,
+    `Erstzulassung ${car.first_reg || '—'} · ${km} · ${car.power || '—'} · ${car.colour || '—'}`,
+    `FIN: ${car.vin || '—'}`,
+    `Unsere Preise: Händlerpreis ${eurDe(car.dealer_net)} netto · Endkundenpreis ${eurDe(car.dealer_gross)} brutto`, '',
+    `ANGEBOT: ${eurDe(p.price)} – ${typ}`,
+    `Land: ${land}${p.company ? ' · Firma: ' + p.company : ''}`,
+    `Abweichung zu unserem Preis: ${diff == null ? '—' : (diff > 0 ? '+' : '') + diff.toLocaleString('de-DE') + ' %'}`,
+    `Rang: ${rk.rank} von ${rk.of} Angeboten für dieses Fahrzeug${rk.cof ? ` (in ${land}: ${rk.crank} von ${rk.cof})` : ''} · Höchstes Angebot (netto): ${eurDe(rk.best)}`,
+    p.message ? `Nachricht des Interessenten: ${p.message}` : '', '',
+    `Annehmen: ${u('accept')}`, `Ablehnen: ${u('decline')}`, `Gegenangebot: ${u('counter')}`, '',
+    'Mit freundlichen Grüßen', 'CarAdvance Sales Desk',
+  ].filter((l, i, a) => l !== '' || a[i - 1] !== '');
+  const btn = (t, d, bg) => `<a href="${u(d)}" style="display:inline-block;margin:0 8px 8px 0;padding:12px 20px;border-radius:999px;background:${bg};color:#fff;font-weight:bold;text-decoration:none">${t}</a>`;
+  const row = (k, v) => `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;white-space:nowrap">${k}</td><td style="padding:4px 0;font-weight:600">${escH(v)}</td></tr>`;
+  const img = car.photo ? `<img src="${base}/sales/img/t/${encodeURIComponent(car.photo)}" alt="" width="180" style="border-radius:12px;display:block;margin:0 0 12px">` : '';
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#141519;max-width:600px">
+<p>Guten Tag,</p><p>für das folgende Fahrzeug liegt ein Angebot vor. Bitte teilen Sie uns mit, ob das Angebot akzeptabel ist.</p>
+<div style="border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin:16px 0">${img}
+<div style="font-size:18px;font-weight:bold">${escH(car.model || '')}</div><div style="color:#6b7280;margin-bottom:8px">Ref. ${escH(car.id)} · FIN ${escH(car.vin || '—')}</div>
+<table style="border-collapse:collapse;font-size:14px">${row('Erstzulassung', car.first_reg || '—')}${row('Kilometerstand', km)}${row('Leistung', car.power || '—')}${row('Farbe', car.colour || '—')}${row('Händlerpreis netto', eurDe(car.dealer_net))}${row('Endkundenpreis brutto', eurDe(car.dealer_gross))}</table></div>
+<div style="background:#fff4f4;border-radius:16px;padding:16px;margin:16px 0">
+<div style="font-size:13px;color:#e30613;font-weight:bold;letter-spacing:.04em">ANGEBOT</div>
+<div style="font-size:24px;font-weight:bold;margin:4px 0">${eurDe(p.price)}</div><div>${escH(typ)}</div>
+<table style="border-collapse:collapse;font-size:14px;margin-top:8px">${row('Land', land)}${p.company ? row('Firma', p.company) : ''}${row('Abweichung zu unserem Preis', diff == null ? '—' : (diff > 0 ? '+' : '') + diff.toLocaleString('de-DE') + ' %')}${row('Rang', `${rk.rank} von ${rk.of} Angeboten` + (rk.cof ? ` · in ${land}: ${rk.crank} von ${rk.cof}` : ''))}${row('Höchstes Angebot (netto)', eurDe(rk.best))}${p.message ? row('Nachricht', p.message) : ''}</table></div>
+<p>${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}${btn('Gegenangebot', 'counter', '#141519')}</p>
+<p style="color:#6b7280;font-size:13px">Mit freundlichen Grüßen<br>CarAdvance Sales Desk</p></div>`;
+  return { subject, text: lines.join('\n'), html };
+}
+const todayIso = () => new Date().toISOString().slice(0, 10);
+async function setOutcome(env, offer, outcome, next, line) {
+  const notes = [String(offer.notes || '').trim(), `[${todayIso()}] ${line}`].filter(Boolean).join('\n');
+  await notion(env, 'PATCH', `/pages/${offer._pid || offer.id}`, { properties: {
+    Outcome: writeProp('select', outcome), 'Next step': writeProp('text', next), 'Follow-up': writeProp('date', todayIso()), Notes: writeProp('text', notes) } });
+  memo = null;
+}
+async function offerAction(request, env, ctx, me) {
+  const b = await request.json().catch(() => ({}));
+  const all = await loadAll(env, ctx, true);
+  const offer = all.outreach.find(o => o.id === b.id);
+  if (!offer || !isOffer(offer)) throw bad('Offer not found.', 404);
+  const who = me.name || nameOf(me.email);
+  const p = parseOffer(offer);
+  if (b.action === 'accept') { await setOutcome(env, offer, 'Offer accepted', 'Confirm to the buyer', `Accepted by ${who}`); return { ok: true }; }
+  if (b.action === 'decline') { await setOutcome(env, offer, 'Offer declined', 'Tell the buyer', `Declined by ${who}`); return { ok: true }; }
+  if (b.action !== 'check' && b.action !== 'preview') throw bad('Unknown action.');
+  const car = all.vehicles.find(v => v.id === p.car);
+  if (!car) throw bad('The car of this offer was not found.', 404);
+  const cat = await fetch(new URL('/sales/catalogue.json', request.url)).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+  const ex = cat[car.id] || {}; const photo = [...(ex.real_photos || []), ...(ex.photos || [])][0];
+  const base = new URL(request.url).origin;
+  const mail = germanCheck(offer, { ...car, photo }, rankFor(all, offer), base, await linkSig(env, offer.id));
+  const to = String(b.to || env.DESK_CHECK_EMAIL || '').trim();
+  if (b.action === 'preview') return { ok: true, to, subject: mail.subject, text: mail.text, ready: !!(env.RESEND_API_KEY && to) };
+  if (b.manual) { await setOutcome(env, offer, 'Sent for check', 'Waiting for the decision', `Sent for check by ${who} (own email)`); return { ok: true }; }
+  if (!env.RESEND_API_KEY || !to) return { ok: false, manual: true, to, subject: mail.subject, text: mail.text, why: !env.RESEND_API_KEY ? 'RESEND_API_KEY' : 'DESK_CHECK_EMAIL' };
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: env.CRM_EMAIL_FROM || 'CarAdvance <sales@caradvance.hu>', to: to.split(',').map(s => s.trim()).filter(Boolean), reply_to: me.email || undefined, subject: mail.subject, html: mail.html, text: mail.text }) });
+  if (!r.ok) throw bad('The email could not be sent (' + r.status + ').', 502);
+  await setOutcome(env, offer, 'Sent for check', 'Waiting for the decision', `Sent for check to ${to} by ${who}`);
+  return { ok: true, sent: true, to };
+}
+/* One-click decision page for the German contact. GET shows the choice (link scanners never decide), POST records it. */
+async function offerDecision(request, env, ctx) {
+  const url = new URL(request.url);
+  const id = url.searchParams.get('id') || '', sig = url.searchParams.get('sig') || '';
+  const page = (body, st = 200) => new Response(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>CarAdvance – Angebot</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;background:#f4f5f7;color:#141519;margin:0;padding:24px}main{max-width:560px;margin:0 auto;background:#fff;border-radius:20px;padding:24px}h1{font-size:20px;margin:0 0 6px}.s{color:#6b7280}.big{font-size:26px;font-weight:bold;margin:10px 0}button{border:0;border-radius:999px;padding:13px 20px;font-weight:bold;font-size:15px;color:#fff;cursor:pointer;margin:0 8px 8px 0}.a{background:#15803d}.d{background:#b91c1c}.c{background:#141519}input,textarea{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:12px;padding:11px;font-size:15px;margin:6px 0 10px}.ok{background:#ecfdf3;border-radius:14px;padding:14px;font-weight:bold}</style></head><body><main>${body}</main></body></html>`,
+    { status: st, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' } });
+  if (!id || sig !== await linkSig(env, id)) return page('<h1>Link ungültig</h1><p class="s">Dieser Link ist nicht (mehr) gültig.</p>', 403);
+  const all = await loadAll(env, ctx, true);
+  const offer = all.outreach.find(o => o.id === id);
+  if (!offer) return page('<h1>Angebot nicht gefunden</h1>', 404);
+  const p = parseOffer(offer); const car = all.vehicles.find(v => v.id === p.car) || { id: p.car };
+  const head = `<h1>${escH(car.model || '')} · ${escH(car.id)}</h1><div class="s">Händlerpreis ${eurDe(car.dealer_net)} netto · Endkundenpreis ${eurDe(car.dealer_gross)} brutto</div>
+<div class="big">${eurDe(p.price)}</div><div class="s">${p.type === 'b2b' ? 'Händlerangebot (netto)' : 'Privatkunde (brutto)'} · ${escH(COUNTRY_DE[p.country] || p.country || '')}</div>
+<p class="s">Aktueller Status: <b>${escH(offer.outcome || '—')}</b></p>`;
+  if (request.method === 'POST') {
+    const f = await request.formData();
+    const d = f.get('d'); const cp = String(f.get('price') || '').replace(/[^\d]/g, ''); const cm = String(f.get('comment') || '').slice(0, 800).trim();
+    if (d === 'accept') await setOutcome(env, offer, 'Offer accepted', 'Confirm to the buyer', 'Caradvance GmbH: Angebot angenommen' + (cm ? ' – ' + cm : ''));
+    else if (d === 'decline') await setOutcome(env, offer, 'Offer declined', 'Tell the buyer', 'Caradvance GmbH: Angebot abgelehnt' + (cm ? ' – ' + cm : ''));
+    else if (d === 'counter' && cp) await setOutcome(env, offer, 'Counter offer', 'Send the counter offer to the buyer', `Caradvance GmbH: Gegenangebot ${eurDe(cp)}` + (cm ? ' – ' + cm : ''));
+    else return page(head + '<p>Bitte einen Betrag für das Gegenangebot eingeben.</p>', 400);
+    return page(head.replace(/Aktueller Status:.*<\/p>/, '') + `<p class="ok">Danke – Ihre Entscheidung wurde gespeichert${d === 'counter' ? ` (Gegenangebot ${eurDe(cp)})` : ''}.</p>`);
+  }
+  const d = url.searchParams.get('d');
+  const form = (dd, label, cls, extra = '') => `<form method="post"><input type="hidden" name="d" value="${dd}">${extra}<textarea name="comment" rows="2" placeholder="Kommentar (optional)"></textarea><button class="${cls}">${label}</button></form>`;
+  const body = d === 'counter' ? form('counter', 'Gegenangebot senden', 'c', `<label>Gegenangebot (€, ${p.type === 'b2b' ? 'netto' : 'brutto'})<input name="price" inputmode="numeric" required></label>`)
+    : d === 'decline' ? form('decline', 'Angebot ablehnen', 'd') : form('accept', 'Angebot annehmen', 'a');
+  return page(head + body + `<p class="s" style="margin-top:14px">Andere Entscheidung: <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=accept">Annehmen</a> · <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=decline">Ablehnen</a> · <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=counter">Gegenangebot</a></p>`);
 }
 
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
@@ -331,6 +474,7 @@ export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
+  if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
     try {
       const { vehicles } = await loadAll(env, ctx, false);
@@ -342,6 +486,10 @@ export async function handle(request, env, ctx) {
     if (request.method === 'GET' && route === 'data') {
       const { vehicles, dealers, outreach } = await loadAll(env, ctx, url.searchParams.has('fresh'));
       return json({ vehicles, dealers, outreach, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
+    }
+    if (request.method === 'POST' && route === 'offer-action') {
+      if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
+      return json(await offerAction(request, env, ctx, me));
     }
     if (request.method === 'POST' && route === 'write') {
       if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
