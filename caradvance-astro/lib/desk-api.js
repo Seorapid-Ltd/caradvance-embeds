@@ -418,8 +418,11 @@ async function offerAction(request, env, ctx, me) {
   const ex = cat[car.id] || {}; const photo = [...(ex.real_photos || []), ...(ex.photos || [])][0];
   const base = new URL(request.url).origin;
   const mail = germanCheck(offer, { ...car, photo }, rankFor(all, offer), base, await linkSig(env, offer.id));
-  const to = String(b.to || env.DESK_CHECK_EMAIL || '').trim();
-  if (b.action === 'preview') return { ok: true, to, subject: mail.subject, text: mail.text, ready: !!(env.RESEND_API_KEY && to) };
+  // Default decision maker: Alexander (has the authority to accept) — his email from Kapcsolat contacts, else DESK_CHECK_EMAIL
+  let alex = '';
+  if (env.DB) { try { await ensureMsg(env); const r = await env.DB.prepare("SELECT email FROM desk_contacts WHERE k = 'alexander'").first(); alex = (r && r.email) || ''; } catch (e) {} }
+  const to = String(b.to || alex || env.DESK_CHECK_EMAIL || '').trim();
+  if (b.action === 'preview') return { ok: true, to, toName: 'Alexander', subject: mail.subject, text: mail.text, ready: !!(env.RESEND_API_KEY && to) };
   if (b.manual) { await setOutcome(env, offer, 'Sent for check', 'Waiting for the decision', `Sent for check by ${who} (own email)`); return { ok: true }; }
   if (!env.RESEND_API_KEY || !to) return { ok: false, manual: true, to, subject: mail.subject, text: mail.text, why: !env.RESEND_API_KEY ? 'RESEND_API_KEY' : 'DESK_CHECK_EMAIL' };
   const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
