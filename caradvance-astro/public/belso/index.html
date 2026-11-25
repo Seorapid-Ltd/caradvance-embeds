@@ -834,6 +834,8 @@ function assignDeal(sel){
 }
 function loadDesk(id){
   var d=data.find(function(x){return x.id===id;})||data.find(function(x){return x.line==='Eladás';});
+  var wrap=document.getElementById('deskWrap');
+  if(!d){if(wrap)wrap.innerHTML='<div class="hint">Még nincs eladási ügy.</div>';return;}
   var hu=huLink(d.car),mob=mobLink(d.car);
   document.getElementById('deskWrap').innerHTML=
     '<div class="desk"><div class="box"><div style="font-weight:800;margin-bottom:6px">'+esc(d.name)+' — '+esc(d.car)+'</div>'
@@ -1316,6 +1318,10 @@ document.getElementById('nav').addEventListener('click',function(){if(window.inn
 function CA_boot(){
   return apiFetch('/me').then(function(r){
     currentUser=r.user;
+    // Signed in and asked for another page (e.g. the Sales Desk): go straight there, before the CRM loads.
+    var nx0=new URLSearchParams(location.search).get('next');
+    if(nx0==='/sales')nx0='/sales/';
+    if(nx0&&(/^\/belso\/(ugyfel\/\?id=\d+|ajanlatmotor\/[a-z0-9\/_-]*)$/.test(nx0)||/^\/sales\/[a-z0-9\/_-]*$/.test(nx0))){location.replace(nx0);return new Promise(function(){});}
     document.getElementById('curUserLabel').textContent=currentUser.name;
     document.getElementById('curUserRole').textContent=currentUser.role==='admin'?'Admin':'Sales manager';
     document.getElementById('avatarCircle').textContent=(currentUser.name||'?').trim().charAt(0).toUpperCase();
