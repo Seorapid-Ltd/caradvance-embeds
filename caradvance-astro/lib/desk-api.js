@@ -459,6 +459,81 @@ async function offerDecision(request, env, ctx) {
   return page(head + body + `<p class="s" style="margin-top:14px">Andere Entscheidung: <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=accept">Annehmen</a> · <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=decline">Ablehnen</a> · <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=counter">Gegenangebot</a></p>`);
 }
 
+/* ---------------- Kapcsolat: internal messages between the team (D1) ----------------
+ * desk_contacts: the people you can write to (Marc, Karoly, Alexander, Kevin by default; email/phone filled in later).
+ * desk_msgs: one row per message. A message reaches a person by email (if known) or by their contact key. */
+const DEFAULT_CONTACTS = [['marc', 'Marc', '', '', 1], ['karoly', 'Tóth Károly', 'import@caradvance.de', '', 2], ['alexander', 'Alexander', '', '', 3], ['kevin', 'Kevin', '', '', 4]];
+let msgReady = false;
+async function ensureMsg(env) {
+  if (msgReady || !env.DB) return;
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_contacts (k TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT, phone TEXT, sort INTEGER DEFAULT 9)').run();
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, created INTEGER NOT NULL, from_email TEXT NOT NULL, from_name TEXT, to_key TEXT NOT NULL, body TEXT NOT NULL, car TEXT, read_at INTEGER)').run();
+  const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM desk_contacts').first();
+  if (!n || !n.n) for (const c of DEFAULT_CONTACTS) await env.DB.prepare('INSERT OR IGNORE INTO desk_contacts (k, name, email, phone, sort) VALUES (?, ?, ?, ?, ?)').bind(...c).run();
+  msgReady = true;
+}
+const lc = s => String(s || '').trim().toLowerCase();
+async function myKeys(env, me) {
+  const rows = (await env.DB.prepare('SELECT k, email FROM desk_contacts').all()).results || [];
+  const keys = new Set([lc(me.email)]);
+  for (const r of rows) if (r.email && lc(r.email) === lc(me.email)) keys.add(r.k);
+  return [...keys];
+}
+async function msgRoute(route, request, env, me) {
+  if (!env.DB) throw bad('Messages are not available here.', 503);
+  await ensureMsg(env);
+  const mine = await myKeys(env, me);
+  const ph = mine.map(() => '?').join(',');
+  if (route === 'msg/list' && request.method === 'GET') {
+    const contacts = ((await env.DB.prepare('SELECT k, name, email, phone FROM desk_contacts ORDER BY sort, name').all()).results || [])
+      .filter(c => !mine.includes(c.k)).map(c => ({ key: c.k, name: c.name, phone: c.phone || '', email: c.email || '' }));
+    const msgs = (await env.DB.prepare(`SELECT id, created, from_email, from_name, to_key, body, car, read_at FROM desk_msgs WHERE to_key IN (${ph}) OR lower(from_email) = ? ORDER BY created DESC LIMIT 300`).bind(...mine, lc(me.email)).all()).results || [];
+    // people who wrote to me but are not in the list (e.g. an admin) can be answered too
+    for (const m of msgs) if (mine.includes(m.to_key) && !contacts.some(c => lc(c.email) === lc(m.from_email) || c.key === lc(m.from_email)) && lc(m.from_email) !== lc(me.email))
+      contacts.push({ key: lc(m.from_email), name: m.from_name || m.from_email, phone: '', email: m.from_email });
+    const out = msgs.map(m => ({ id: m.id, at: m.created, from: m.from_name || m.from_email, fromEmail: m.from_email, to: m.to_key, body: m.body, car: m.car || '', mine: lc(m.from_email) === lc(me.email), unread: mine.includes(m.to_key) && !m.read_at }));
+    return { me: { email: me.email, name: me.name || nameOf(me.email), role: me.role, keys: mine }, contacts, msgs: out, unread: out.filter(m => m.unread).length };
+  }
+  if (route === 'msg/send' && request.method === 'POST') {
+    const b = await request.json().catch(() => ({}));
+    const body = String(b.body || '').replace(/[\u0000-\u0008\u000b-\u001f]/g, '').trim().slice(0, 4000);
+    const to = [...new Set((Array.isArray(b.to) ? b.to : [b.to]).map(lc).filter(Boolean))].slice(0, 10);
+    if (!body) throw bad('Write a message first.');
+    if (!to.length) throw bad('Choose who the message is for.');
+    const car = String(b.car || '').toUpperCase().match(/^(?:P1|P2|S26|V)-\d{1,2}$/) ? String(b.car).toUpperCase() : '';
+    const now = Math.floor(Date.now() / 1000);
+    const contacts = (await env.DB.prepare('SELECT k, name, email FROM desk_contacts').all()).results || [];
+    for (const k of to) {
+      const c = contacts.find(x => x.k === k);
+      const key = c && c.email ? lc(c.email) : k; // deliver by email when we know it
+      await env.DB.prepare('INSERT INTO desk_msgs (created, from_email, from_name, to_key, body, car) VALUES (?, ?, ?, ?, ?, ?)').bind(now, me.email, me.name || nameOf(me.email), key, body, car || null).run();
+      if (env.RESEND_API_KEY && c && c.email) {
+        const link = new URL('/sales/#contact', request.url).toString();
+        await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: env.CRM_EMAIL_FROM || 'CarAdvance <sales@caradvance.hu>', to: [c.email], reply_to: me.email, subject: `Sales Desk – ${me.name || nameOf(me.email)}${car ? ' · ' + car : ''}`,
+            text: `${body}\n\n${car ? 'Car: ' + car + '\n' : ''}Reply in the Sales Desk: ${link}`,
+            html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px;color:#141519"><p><b>${escH(me.name || nameOf(me.email))}</b>${car ? ' · ' + escH(car) : ''}</p><p style="white-space:pre-wrap">${escH(body)}</p><p><a href="${link}">Reply in the Sales Desk</a></p></div>` }) }).catch(() => {});
+      }
+    }
+    return { ok: true };
+  }
+  if (route === 'msg/read' && request.method === 'POST') {
+    const b = await request.json().catch(() => ({}));
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter(Boolean).slice(0, 300);
+    if (ids.length) await env.DB.prepare(`UPDATE desk_msgs SET read_at = ? WHERE read_at IS NULL AND to_key IN (${ph}) AND id IN (${ids.map(() => '?').join(',')})`).bind(Math.floor(Date.now() / 1000), ...mine, ...ids).run();
+    return { ok: true };
+  }
+  if (route === 'msg/contact' && request.method === 'POST') { // admins fill in email / phone
+    if (me.role !== 'admin') throw bad('Only an admin can change contacts.', 403);
+    const b = await request.json().catch(() => ({}));
+    const k = lc(b.key).replace(/[^a-z0-9._@-]/g, '').slice(0, 60); if (!k) throw bad('Missing contact.');
+    await env.DB.prepare('INSERT INTO desk_contacts (k, name, email, phone, sort) VALUES (?, ?, ?, ?, 9) ON CONFLICT(k) DO UPDATE SET name = excluded.name, email = excluded.email, phone = excluded.phone')
+      .bind(k, String(b.name || k).slice(0, 80), lc(b.email).slice(0, 160) || null, String(b.phone || '').replace(/[^\d+]/g, '').slice(0, 20) || null).run();
+    return { ok: true };
+  }
+  throw bad('Not found', 404);
+}
+
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
  *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
@@ -486,6 +561,10 @@ export async function handle(request, env, ctx) {
     if (request.method === 'GET' && route === 'data') {
       const { vehicles, dealers, outreach } = await loadAll(env, ctx, url.searchParams.has('fresh'));
       return json({ vehicles, dealers, outreach, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
+    }
+    if (route.startsWith('msg/')) {
+      if (request.method === 'POST' && request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
+      return json(await msgRoute(route, request, env, me));
     }
     if (request.method === 'POST' && route === 'offer-action') {
       if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
