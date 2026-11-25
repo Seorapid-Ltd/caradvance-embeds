@@ -2,8 +2,7 @@
 // Mindhárom fülön (Bérelhető, Eladó, Bizományos):
 //  · nagy, lekerekített fotó (4:3, nem vágjuk le az autót), a fotón belül lapozható képek (pöttyök + nyilak), címke balra fent
 //  · alatta kategória, név, jobbra az ár (alatta a megjegyzés), egy sor adat pöttyökkel, alul teljes szélességű „Érdeklődöm” sáv
-//  · témás sorok, mindegyik külön lapozható: Eladó → „Legújabb feltöltések” + „Sportautók és prémium modellek”,
-//    Bérelhető → „Azonnal elérhető” + „Hamarosan érkezik”, Bizományos → egy sor; gépen oldalanként 3 autó, két oldali nyíllal
+//  · fülenként egy sor (Eladó: legújabb feltöltések, Bérelhető: előbb az azonnal elérhetők), gépen oldalanként 3 autó, két oldali nyíllal
 //    (hullámszerű átmenet, parallaxis), a szomszéd oldal autói halványan kilátszanak; telefonon soronként oldalra húzható
 //  · Eladó: a legutóbb feltöltött autók elöl (a táblázat „hozzaadva” dátuma szerint), ugyanaz a modell csak egyszer; az új autók „Új” címkét kapnak
 // A régi körhinta és a „színpad” rejtve marad (adatforrásként szolgál, az ajánlatkérő ablak az eredeti kártyákról nyílik).
@@ -177,12 +176,9 @@ vp.addEventListener("click",function(e){var c=e.target.closest&&e.target.closest
 vp.addEventListener("dragstart",function(e){e.preventDefault()});
 vp.__relayout=function(){side();place(1,true)};side();go(0,true)}
 var RL=0;addEventListener("resize",function(){clearTimeout(RL);RL=setTimeout(function(){[].forEach.call(document.querySelectorAll("#autoink .cg-vp"),function(v){v.__relayout&&v.__relayout()})},80)});
-var SPORT=/\b(Porsche|Ferrari|Lamborghini|McLaren|Aston|Bentley|Maserati)\b|\bAMG\b|\bGT3\b|\bGTS\b|\bRS\s?\d|\bM\d{1,3}[a-z]?\b|\bM\s?Competition\b|\bTurbo\b/i;
-function groups(pid,L,br){var mx=innerWidth<=720?10:12;if(br)return[{t:"Találatok",l:L.slice(0,mx)}];
-if(pid==="panel-elado"){var seen={},D=[];L.forEach(function(o){var mk=o.title.split(/\s+/).slice(0,3).join(" ").toLowerCase();if(!seen[mk]){seen[mk]=1;D.push(o)}});var mk3=function(o){return o.title.split(/\s+/).slice(0,3).join(" ").toLowerCase()},top=D.slice(0,mx),inTop={};top.forEach(function(o){inTop[o.href]=1;inTop[mk3(o)]=1});
-var S=L.filter(function(o){return !inTop[o.href]&&!inTop[mk3(o)]&&SPORT.test(o.full||o.title)}),sk={};S=S.filter(function(o){var mk=o.title.split(/\s+/).slice(0,3).join(" ").toLowerCase();if(sk[mk])return false;sk[mk]=1;return true});
-var G2=S.length>=3?{t:"Sportautók és prémium modellek",l:S.slice(0,mx)}:{t:"További ajánlataink",l:D.slice(mx,mx*2)};return [{t:"Legújabb feltöltések",l:top}].concat(G2.l.length?[G2]:[])}
-if(pid==="panel-berelheto"){var now=L.filter(function(o){return o.now}),soon=L.filter(function(o){return !o.now});if(now.length&&soon.length)return[{t:"Azonnal elérhető",l:now.slice(0,mx)},{t:"Hamarosan érkezik",l:soon.slice(0,mx)}];return[{t:now.length?"Azonnal elérhető":"Bérelhető autóink",l:L.slice(0,mx)}]}
+function groups(pid,L,br){var mx=innerWidth<=720?12:18;if(br)return[{t:"Találatok",l:L.slice(0,mx)}];
+if(pid==="panel-elado"){var seen={},D=[];L.forEach(function(o){var mk=o.title.split(/\s+/).slice(0,3).join(" ").toLowerCase();if(!seen[mk]){seen[mk]=1;D.push(o)}});return[{t:"Legújabb feltöltések",l:D.slice(0,mx)}]}
+if(pid==="panel-berelheto"){var now=L.filter(function(o){return o.now}),soon=L.filter(function(o){return !o.now});return[{t:"Bérelhető autóink",l:now.concat(soon).slice(0,mx)}]}
 return[{t:"Bizományos autóink",l:L.slice(0,mx)}]}
 function rowEl(){var R=el("section","cg-row",'<div class="cg-rh"><h3 class="cg-rt"></h3><span class="cg-rc"></span><div class="cg-seg"></div><span class="cg-cn"></span></div><div class="cg-vp"><div class="cg-grid"></div></div><div class="cg-sw"></div>');
 var sp=el("button","cg-side cg-sp",ARR),sn=el("button","cg-side cg-sn",ARR);sp.type=sn.type="button";sp.setAttribute("aria-label","Előző autók");sn.setAttribute("aria-label","Következő autók");R.appendChild(sp);R.appendChild(sn);
