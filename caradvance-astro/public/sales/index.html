@@ -609,10 +609,6 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 #carSheet .cs-act button{min-height:46px;border-radius:14px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink)}
 #carSheet .cs-act .wa{background:#25D366;border-color:#25D366;color:#fff}
 #carSheet .cs-act .wide{grid-column:1/-1}
-#carSheet .cs-choose{display:none;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:8px}
-#carSheet .cs-choose.on{display:grid}
-#carSheet .cs-choose button{background:var(--card);flex-direction:column;gap:0;line-height:1.2;padding:6px}
-#carSheet .cs-choose small{font-weight:500;font-size:11px;color:var(--muted)}
 @media(max-width:700px){#carSheet[open]{width:100vw;margin:auto 0 0!important;border-radius:24px 24px 0 0;max-height:94dvh}}
   /* Kereskedők és napló: soronként kártya, a mezők neve a cella előtt */
   #v-dealers .tbl,#v-outreach .tbl{background:transparent;border:0;box-shadow:none;overflow:visible;border-radius:0}
@@ -1155,20 +1151,19 @@ $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r
       <button type="button" class="cs-x" aria-label="${esc(w(2))}">✕</button></div>
       <div class="hcard">${window.__carCardHtml(c)}</div></div>
       <div class="cs-act"><button type="button" class="wa wide" data-a="share"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15s-.77.96-.94 1.16s-.35.22-.64.07a8.1 8.1 0 0 1-2.38-1.47a9 9 0 0 1-1.65-2.05c-.17-.3 0-.46.13-.6c.13-.14.3-.35.45-.52a2 2 0 0 0 .3-.5a.55.55 0 0 0-.03-.52c-.07-.15-.67-1.62-.92-2.22c-.24-.58-.49-.5-.67-.51h-.57a1.1 1.1 0 0 0-.8.37a3.35 3.35 0 0 0-1.04 2.49a5.8 5.8 0 0 0 1.22 3.1a13.3 13.3 0 0 0 5.1 4.5c.71.31 1.27.5 1.7.63a4.1 4.1 0 0 0 1.88.12a3.08 3.08 0 0 0 2.02-1.42a2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.57-.35M12.04 21.5a9.4 9.4 0 0 1-4.8-1.31l-.34-.2l-3.57.93l.95-3.48l-.22-.36a9.43 9.43 0 1 1 7.98 4.42m8.02-17.45A11.3 11.3 0 0 0 2.27 17.66L.67 23.5l5.97-1.57a11.3 11.3 0 0 0 5.4 1.37a11.33 11.33 0 0 0 8.02-19.3"/></svg>${esc(w(0))}</button>
-      <div class="cs-choose"><button type="button" data-a="b2b"><span>${esc(w(3))}</span><small>Business to Business</small></button><button type="button" data-a="b2c"><span>${esc(w(4))}</span><small>Business to Customer</small></button></div>
       <button type="button" data-a="det">${esc(w(1))}</button><button type="button" data-a="close">${esc(w(2))}</button></div>`;
     const g=dlg.querySelector('.cs-gal'),n=dlg.querySelector('.cs-n');
     if(g&&n)g.addEventListener('scroll',()=>{n.textContent=(Math.round(g.scrollLeft/g.clientWidth)+1)+' / '+ps.length},{passive:true});
     dlg.showModal();dlg.querySelector('.cs-scroll').scrollTop=0;
   }
-  function text(c,kind){
+  function text(c){
     const km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'');
-    const price=kind==='b2b'?`${eur(c.dealer_net)} (${w(5)})`:`${eur(c.dealer_gross)} (${w(6)})`;
+    const price=`Business to Business: ${eur(c.dealer_net)} (${w(5)})\n💶 Business to Customer: ${eur(c.dealer_gross)} (${w(6)})`;
     return [`🚗 ${c.model||''}`,[c.colour,c.interior].filter(Boolean).join(' · '),[c.first_reg,km,c.power,c.fuel,c.transmission].filter(Boolean).join(' · '),
       (c.highlights||[]).slice(0,4).join(' · '),'',`💶 ${price}`,'',`CarAdvance · ${site()} · ${w(7)} ${c.id}`].filter((l,i,a)=>l!==''||(a[i-1]&&a[i-1]!=='')).join('\n').trim();
   }
-  async function share(c,kind){
-    const msg=text(c,kind);const p=pics(c)[0];
+  async function share(c){
+    const msg=text(c);const p=pics(c)[0];
     try{
       if(p&&navigator.canShare){
         const r=await fetch('img/'+p,{credentials:'same-origin'});const bl=await r.blob();
@@ -1186,8 +1181,7 @@ $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r
     const b=e.target.closest('[data-a],.cs-x');if(!b||!cur)return;
     const a=b.classList.contains('cs-x')?'close':b.dataset.a;
     if(a==='close')dlg.close();
-    else if(a==='share')dlg.querySelector('.cs-choose').classList.toggle('on');
-    else if(a==='b2b'||a==='b2c')share(cur,a);
+    else if(a==='share')share(cur);
     else if(a==='det'){const id=cur.id;dlg.close();S.open=id;renderStock();const r=document.querySelector(`#sRows tr.row[data-id="${CSS.escape(id)}"]`);if(r)r.scrollIntoView({behavior:'smooth',block:'start'});}
   });
   // Érintőképernyőn és keskeny kijelzőn a sorra koppintás a kártyát nyitja (a lenyíló részletek helyett).
