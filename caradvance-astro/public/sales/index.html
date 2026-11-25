@@ -574,8 +574,8 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
   .herostats .stat{flex:0 1 auto!important;padding:0!important;border:0!important;gap:8px}
   .herobottom{display:flex!important;flex-direction:column;align-items:stretch}
   .herobottom .herostats{order:-1}
-  .herostats .stats{justify-content:flex-start!important}
-  .herostats .stat:first-child{text-align:left;flex-direction:row}
+  .herostats .stats{justify-content:flex-end!important}
+  .herostats .stat:first-child{text-align:left;flex-direction:row;margin-left:auto}
   .herostats .stat b{font-size:24px}
   .herostats .stat span{font-size:12.5px;max-width:none;white-space:nowrap}
   .herostats .stat svg{width:22px;height:22px}
@@ -600,7 +600,9 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 /* Ajánlattétel */
 .offerrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
 .offerbtn{min-height:44px;padding:0 22px;border-radius:999px;font-weight:800}
-#carSheet .cs-act .offer{background:var(--red);border-color:var(--red);color:#fff}
+#carSheet .cs-act .offer{background:var(--red);border-color:var(--red);color:#fff;font-size:15px;font-weight:800;min-height:52px}
+#carSheet .cs-act .wa{min-height:52px;font-size:15px}
+#carSheet .cs-act [data-a=det],#carSheet .cs-act [data-a=close]{min-height:42px;font-size:13.5px}
 .offhead{grid-column:1/-1;display:flex;gap:12px;align-items:center;padding:4px 0 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .offhead img{width:96px;height:64px;object-fit:cover;border-radius:10px;flex:0 0 auto}
 .offhead div{min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -627,19 +629,19 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 @media(max-width:640px){.public .loginbtn b{display:none}.public .loginbtn{padding:0 11px}}
 /* Autó-kártya (érintőképernyőn koppintásra) */
 #carSheet{width:min(520px,100vw);max-width:100vw;max-height:94dvh;padding:0;border:0;border-radius:24px;overflow:hidden;background:var(--card);color:var(--ink)}
-#carSheet[open]{display:block;height:fit-content!important;min-height:0;margin:auto!important}
+#carSheet[open]{display:flex;flex-direction:column;height:fit-content!important;min-height:0;margin:auto!important}
 #carSheet::backdrop{background:rgba(8,8,10,.55)}
 #carSheet .cs-gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;background:var(--soft);scrollbar-width:none}
 #carSheet .cs-gal::-webkit-scrollbar{display:none}
 #carSheet .cs-gal img{flex:0 0 100%;width:100%;height:min(62vw,300px);object-fit:cover;scroll-snap-align:center}
 #carSheet .cs-n{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px}
 #carSheet .cs-x{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center}
-#carSheet .cs-scroll{max-height:calc(94dvh - 76px);overflow:auto;position:relative}
+#carSheet .cs-scroll{flex:1 1 auto;min-height:0;overflow:auto;position:relative;-webkit-overflow-scrolling:touch}
 #carSheet .hcard{position:static;display:block!important;width:auto;opacity:1;transform:none;border:0;border-radius:0;box-shadow:none;pointer-events:auto}
 #carSheet .hcard .hc-img,#carSheet .hcard .hc-noimg{display:none}
 #carSheet .hcard .hc-grid div{white-space:normal}
 #carSheet .hcard .hc-hl .chip{font-size:12px}
-#carSheet .cs-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card)}
+#carSheet .cs-act{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card);box-shadow:0 -8px 20px rgba(0,0,0,.08)}
 #carSheet .cs-act button{min-height:46px;border-radius:14px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink)}
 #carSheet .cs-act .wa{background:#25D366;border-color:#25D366;color:#fff}
 #carSheet .cs-act .wide{grid-column:1/-1}
@@ -1231,19 +1233,19 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
     dlg.innerHTML=`<div class="cs-scroll"><div style="position:relative">${ps.length?`<div class="cs-gal">${ps.map(p=>`<img loading="lazy" src="img/${esc(p)}" alt="">`).join('')}</div>${ps.length>1?`<span class="cs-n">1 / ${ps.length}</span>`:''}`:''}
       <button type="button" class="cs-x" aria-label="${esc(w(2))}">✕</button></div>
       <div class="hcard">${window.__carCardHtml(c)}</div></div>
-      <div class="cs-act"><button type="button" class="wa wide" data-a="share"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15s-.77.96-.94 1.16s-.35.22-.64.07a8.1 8.1 0 0 1-2.38-1.47a9 9 0 0 1-1.65-2.05c-.17-.3 0-.46.13-.6c.13-.14.3-.35.45-.52a2 2 0 0 0 .3-.5a.55.55 0 0 0-.03-.52c-.07-.15-.67-1.62-.92-2.22c-.24-.58-.49-.5-.67-.51h-.57a1.1 1.1 0 0 0-.8.37a3.35 3.35 0 0 0-1.04 2.49a5.8 5.8 0 0 0 1.22 3.1a13.3 13.3 0 0 0 5.1 4.5c.71.31 1.27.5 1.7.63a4.1 4.1 0 0 0 1.88.12a3.08 3.08 0 0 0 2.02-1.42a2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.57-.35M12.04 21.5a9.4 9.4 0 0 1-4.8-1.31l-.34-.2l-3.57.93l.95-3.48l-.22-.36a9.43 9.43 0 1 1 7.98 4.42m8.02-17.45A11.3 11.3 0 0 0 2.27 17.66L.67 23.5l5.97-1.57a11.3 11.3 0 0 0 5.4 1.37a11.33 11.33 0 0 0 8.02-19.3"/></svg>${esc(w(0))}</button>
-      ${(c.status||'Available')!=='Sold'?`<button type="button" class="offer wide" data-a="offer">${esc(OFR().title)}</button>`:''}
+      <div class="cs-act">${(c.status||'Available')!=='Sold'?`<button type="button" class="offer" data-a="offer">${esc(OFR().title)}</button>`:''}<button type="button" class="wa${(c.status||'Available')==='Sold'?' wide':''}" data-a="share"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15s-.77.96-.94 1.16s-.35.22-.64.07a8.1 8.1 0 0 1-2.38-1.47a9 9 0 0 1-1.65-2.05c-.17-.3 0-.46.13-.6c.13-.14.3-.35.45-.52a2 2 0 0 0 .3-.5a.55.55 0 0 0-.03-.52c-.07-.15-.67-1.62-.92-2.22c-.24-.58-.49-.5-.67-.51h-.57a1.1 1.1 0 0 0-.8.37a3.35 3.35 0 0 0-1.04 2.49a5.8 5.8 0 0 0 1.22 3.1a13.3 13.3 0 0 0 5.1 4.5c.71.31 1.27.5 1.7.63a4.1 4.1 0 0 0 1.88.12a3.08 3.08 0 0 0 2.02-1.42a2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.57-.35M12.04 21.5a9.4 9.4 0 0 1-4.8-1.31l-.34-.2l-3.57.93l.95-3.48l-.22-.36a9.43 9.43 0 1 1 7.98 4.42m8.02-17.45A11.3 11.3 0 0 0 2.27 17.66L.67 23.5l5.97-1.57a11.3 11.3 0 0 0 5.4 1.37a11.33 11.33 0 0 0 8.02-19.3"/></svg>WhatsApp</button>
       <button type="button" data-a="det">${esc(w(1))}</button><button type="button" data-a="close">${esc(w(2))}</button></div>`;
     const g=dlg.querySelector('.cs-gal'),n=dlg.querySelector('.cs-n');
     if(g&&n)g.addEventListener('scroll',()=>{n.textContent=(Math.round(g.scrollLeft/g.clientWidth)+1)+' / '+ps.length},{passive:true});
     dlg.dataset.price=document.getElementById('sRows').dataset.price||'both';
+    try{history.replaceState(null,'',location.pathname+location.search+'#car='+encodeURIComponent(c.id))}catch(e){}
     dlg.showModal();dlg.querySelector('.cs-scroll').scrollTop=0;
   }
   function text(c){
     const km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'');
     const price=`Business to Business: ${eur(c.dealer_net)} (${w(5)})\n💶 Business to Customer: ${eur(c.dealer_gross)} (${w(6)})`;
     return [`🚗 ${c.model||''}`,[c.colour,c.interior].filter(Boolean).join(' · '),[c.first_reg,km,c.power,c.fuel,c.transmission].filter(Boolean).join(' · '),
-      (c.highlights||[]).slice(0,4).join(' · '),'',`💶 ${price}`,'',`CarAdvance · ${site()} · ${w(7)} ${c.id}`].filter((l,i,a)=>l!==''||(a[i-1]&&a[i-1]!=='')).join('\n').trim();
+      (c.highlights||[]).slice(0,4).join(' · '),'',`💶 ${price}`,'',`🔗 ${location.origin}/sales/#car=${encodeURIComponent(c.id)}`,'',`CarAdvance · ${site()} · ${w(7)} ${c.id}`].filter((l,i,a)=>l!==''||(a[i-1]&&a[i-1]!=='')).join('\n').trim();
   }
   async function share(c){
     const msg=text(c);const p=pics(c)[0];
@@ -1268,6 +1270,12 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
     else if(a==='offer'){const id=cur.id;dlg.close();openOffer(id);}
     else if(a==='det'){const id=cur.id;dlg.close();S.open=id;renderStock();const r=document.querySelector(`#sRows tr.row[data-id="${CSS.escape(id)}"]`);if(r)r.scrollIntoView({behavior:'smooth',block:'start'});}
   });
+  // Megosztott link (…/sales/#car=P1-01): a betöltés után egyből az autó kártyája nyílik meg.
+  const deep=()=>{const m=/^#car=([^&]+)/.exec(location.hash);if(!m)return false;const id=decodeURIComponent(m[1]);
+    const c=(S.cars||[]).find(x=>x.id===id);if(!c)return false;if(!dlg.open||!cur||cur.id!==id){if(dlg.open)dlg.close();open(c);}return true};
+  {let n=0;const iv=setInterval(()=>{if(deep()||++n>120)clearInterval(iv)},250);}
+  addEventListener('hashchange',deep);
+  dlg.addEventListener('close',()=>{if(/^#car=/.test(location.hash)){try{history.replaceState(null,'',location.pathname+location.search+'#stock')}catch(e){}}});
   // Érintőképernyőn és keskeny kijelzőn a sorra koppintás a kártyát nyitja (a lenyíló részletek helyett).
   document.getElementById('sRows').addEventListener('click',e=>{
     if(!touch.matches)return;
