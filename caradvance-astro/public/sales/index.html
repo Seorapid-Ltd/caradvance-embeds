@@ -627,6 +627,8 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 .public #carSheet [data-a=det]{display:none}
 .public #carSheet .cs-act [data-a=close]{grid-column:1/-1}
 @media(max-width:640px){.public .loginbtn b{display:none}.public .loginbtn{padding:0 11px}}
+/* Telefonon a nyilvános nézetben csak a Járművek gomb maradna — fölösleges, eltűnik */
+@media(max-width:700px){.public .topright nav#tabs{display:none!important}.public .topbar{margin-bottom:10px}}
 /* Autó-kártya (érintőképernyőn koppintásra) */
 #carSheet{width:min(520px,100vw);max-width:100vw;max-height:94dvh;padding:0;border:0;border-radius:24px;overflow:hidden;background:var(--card);color:var(--ink)}
 #carSheet[open]{display:flex;flex-direction:column;height:fit-content!important;min-height:0;margin:auto!important}
