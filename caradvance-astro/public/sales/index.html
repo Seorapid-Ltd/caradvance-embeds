@@ -591,6 +591,8 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
   #ways .catcard .cc-txt b{font-size:12.5px;line-height:1.2;white-space:normal}
   #ways .catcard .cc-txt span,#ways .catcard .cc-btn,#ways .catcard .cc-bar{display:none}
 }
+/* Telefonon a hiányzó adatok jelzése nem látszik (PC-n igen) */
+@media(max-width:700px){#sRows .chip.gap,#sRows .gapd{display:none!important}#sRows .chips:not(:has(.chip:not(.gap))){display:none}}
 /* Autó-kártya (érintőképernyőn koppintásra) */
 #carSheet{width:min(520px,100vw);max-width:100vw;max-height:94dvh;padding:0;border:0;border-radius:24px;overflow:hidden;background:var(--card);color:var(--ink)}
 #carSheet[open]{display:block;height:fit-content!important;min-height:0;margin:auto!important}
@@ -972,7 +974,7 @@ function renderStock(){
     const dl=daysLeft(c.available_until),soon=dl!=null&&dl<=28&&(c.status||'Available')==='Available';
     const flags=(c.flags||[]).length;
     let h=`<tr class="row" data-id="${esc(c.id)}"><td class="sub idc">${esc(c.id)}</td>
-    <td><div class="carcell">${pics(c).length?`<img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt="">`:'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span><span class="sub mmeta">${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||''),c.power].filter(Boolean).join(' · '))}</span>${soon||flags?'<span class="chips">':''}${soon?`<span class="chip warn">Ending soon · ${dl} d</span>`:''}${flags?`<span class="chip warn" title="${esc(c.flags.join('; '))}">${flags} data gap${flags>1?'s':''}</span>`:''}${soon||flags?'</span>':''}</div></div></td>
+    <td><div class="carcell">${pics(c).length?`<img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt="">`:'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span><span class="sub mmeta">${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||''),c.power].filter(Boolean).join(' · '))}</span>${soon||flags?'<span class="chips">':''}${soon?`<span class="chip warn">Ending soon · ${dl} d</span>`:''}${flags?`<span class="chip warn gap" title="${esc(c.flags.join('; '))}">${flags} data gap${flags>1?'s':''}</span>`:''}${soon||flags?'</span>':''}</div></div></td>
     <td class="hide-s"><span class="mono">${esc(c.vin||c.plate||'no plate yet')}</span><br><span class="sub">${esc(c.first_reg||'')} · ${c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':esc(c.km_text||'km on request')}</span></td>
     <td class="pcol">${eur(c.dealer_net)}${c.asking_price!=null&&c.asking_price!==''?`<span class="sub">${esc(t('th_ask').replace(/\s*€$/,''))}: ${eur(c.asking_price)}</span>`:''}</td>
     <td class="pcol b2c">${eur(c.dealer_gross)}</td>
@@ -982,7 +984,7 @@ function renderStock(){
       h+=`<tr class="det"><td colspan="6">${pics(c).length?`<div class="gal">${pics(c).map((p,i)=>`<button type="button" data-lb="${esc(c.id)}" data-i="${i}" aria-label="Open photo ${i+1}"><img loading="lazy" src="img/t/${esc(p)}" alt=""></button>`).join('')}</div>`:''}<div class="dgrid">
       <dl>${dd('Make / model',c.model)}${dd('Colour',c.colour)}${dd('Interior',c.interior)}${dd('Wheels',c.wheels)}${dd('VIN',c.vin)}${dd('Plate',c.plate)}${dd('First reg.',c.first_reg)}${dd('Mileage',c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'on request'))}${dd('Power',c.power)}${dd('Fuel',c.fuel)}${dd('Transmission',c.transmission)}${dd('Body',c.body)}${dd('Prev. owners',c.prev_owners)}${dd('Available until',c.available_until)}</dl>
       <dl>${dd('List price gross',c.msrp_gross?eur(c.msrp_gross):'')}${dd('Business to Business (B2B)',c.dealer_net?eur(c.dealer_net):'')}${dd('Business to Customer (B2C)',c.dealer_gross?eur(c.dealer_gross):'')}${dd('vs list',c.pct_vs_list!=null?c.pct_vs_list+'%':'')}${dd('Status changed',c.status_changed)}${dd('Price source',c.price_source||c.source)}${dd('Note',c.match_note)}
-        ${(c.flags||[]).length?`<dt>Data gaps</dt><dd>${c.flags.map(esc).join('<br>')}</dd>`:''}</dl>
+        ${(c.flags||[]).length?`<dt class="gapd">Data gaps</dt><dd class="gapd">${c.flags.map(esc).join('<br>')}</dd>`:''}</dl>
       <div><div class="pricebox"><label class="f"><span>Asking price €</span><input class="price" inputmode="decimal" data-f="asking_price" data-id="${esc(c.id)}" value="${esc(c.asking_price??'')}" placeholder="—"></label><label class="f"><span>Minimum price € (internal)</span><input class="price" inputmode="decimal" data-f="min_price" data-id="${esc(c.id)}" value="${esc(c.min_price??'')}" placeholder="—"></label></div><label class="f">Reserved for / offered to<select data-f="reserved_for" data-id="${esc(c.id)}"><option value="">—</option>${dOpts}</select></label>
       <label class="f">Notes<textarea data-f="notes" data-id="${esc(c.id)}">${esc(c.notes||'')}</textarea></label></div>
       </div>${(c.highlights||[]).length?`<p class="sub" style="margin:12px 0 4px">Equipment</p><ul class="eq">${c.highlights.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</td></tr>`;

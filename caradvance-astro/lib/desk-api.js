@@ -170,12 +170,23 @@ function cookie(request, name) {
   }
   return null;
 }
+/** users.desk_access (0/1): who may open the Sales Desk. Added on first use, so no separate migration is needed. */
+let DESK_COL = false;
+export async function ensureDeskColumn(env) {
+  if (DESK_COL || !env.DB) return;
+  try { await env.DB.prepare('ALTER TABLE users ADD COLUMN desk_access INTEGER DEFAULT 0').run(); } catch (e) { /* already there */ }
+  DESK_COL = true;
+}
+
 export async function whoAmI(request, env) {
   if (env.DESK_DEV_NO_ACCESS === '1') return { email: request.headers.get('x-dev-email') || 'dev@localhost', name: 'Dev' };
   const token = cookie(request, 'ca_session');
   if (!token || !env.DB) throw bad('Sign-in required.', 401);
-  const row = await env.DB.prepare('SELECT u.email, u.name, u.role, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
+  await ensureDeskColumn(env);
+  const row = await env.DB.prepare('SELECT u.email, u.name, u.role, u.desk_access, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
   if (!row || new Date(row.expires_at + 'Z').getTime() < Date.now()) throw bad('Sign-in required.', 401);
+  // Only the people given Sales Desk access (Admin → Felhasználók → "Sales Desk"), and every "Csak Sales Desk" account.
+  if (!(row.role === 'sales_desk' || Number(row.desk_access) === 1)) throw bad('This account has no access to the Sales Desk.', 403);
   return { email: row.email, name: row.name, role: row.role };
 }
 
