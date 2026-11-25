@@ -624,7 +624,11 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 .bar select.fitw{flex:1 1 var(--fitw)!important;min-width:var(--fitw)!important;width:auto!important;max-width:100%}
 #v-stock .bar input[type=search]{flex:1 1 280px}
 #v-stock .bar .count{flex:1 0 100%;margin:0;padding:0 6px;width:auto}
-@media(max-width:700px){#v-stock .bar input[type=search]{flex:1 1 100%}}
+@media(max-width:700px){
+  #v-stock .bar{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+  #v-stock .bar input[type=search],#v-stock .bar .count{grid-column:1/-1}
+  #v-stock .bar select,#v-stock .bar select.fitw{width:100%!important;min-width:0!important;flex:none!important;padding-left:14px;padding-right:32px;background-position:right 12px center}
+}
 /* Ajánlattétel */
 .offerrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
 .offerbtn{min-height:44px;padding:0 22px;border-radius:999px;font-weight:800}
@@ -898,7 +902,7 @@ const t=k=>(I18N[LANG]&&I18N[LANG][k])??I18N.en[k]??k;
 function applyLang(){window.__loc={en:'en-GB',hu:'hu-HU',sk:'sk-SK',cs:'cs-CZ',de:'de-DE',pl:'pl-PL'}[LANG]||'en-GB';document.documentElement.lang=LANG;$('#lang').value=LANG;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n)});
   document.querySelectorAll('[data-i18n-ph]').forEach(e=>{e.placeholder=t(e.dataset.i18nPh)});
-  brandSig='';if(S.cars&&S.cars.length)renderStock();try{renderDealers();renderLogs()}catch(e){}if(typeof renderLangPicker==='function'){renderLangPicker();trAll();}if(window.__fitSelects)setTimeout(window.__fitSelects,0);}
+  brandSig='';if(S.cars&&S.cars.length)renderStock();try{renderDealers();renderLogs()}catch(e){}if(typeof renderLangPicker==='function'){renderLangPicker();trAll();}if(window.__sortShort)setTimeout(window.__sortShort,0);if(window.__fitSelects)setTimeout(window.__fitSelects,0);}
 $('#lang').addEventListener('change',e=>{LANG=e.target.value;ls.set('sd_lang',LANG);applyLang();});
 const setTheme=m=>{if(m)document.documentElement.dataset.theme=m;else delete document.documentElement.dataset.theme;};
 setTheme(ls.get('sd_theme'));
@@ -1217,6 +1221,25 @@ function openOffer(id){
 }
 window.__openOffer=openOffer;
 $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]');if(!b)return;e.stopPropagation();openOffer(b.dataset.offer)},true);
+
+/* Telefonon a rendezés opciói rövid felirattal (fél szélességbe férjenek) */
+(()=>{
+  const mq=matchMedia('(max-width:700px)'),sel=document.getElementById('sSort');if(!sel)return;
+  const SH={en:{id:'List order',until:'Available until',price:'Price high–low',km:'Mileage'},
+    hu:{id:'Lista sorrendje',until:'Elérhetőség vége',price:'Ár csökkenő',km:'Futás'},
+    sk:{id:'Poradie zoznamu',until:'Dostupné do',price:'Cena zostupne',km:'Najazdené km'},
+    cs:{id:'Pořadí seznamu',until:'Dostupné do',price:'Cena sestupně',km:'Najeté km'},
+    de:{id:'Listenreihenfolge',until:'Verfügbar bis',price:'Preis absteigend',km:'Kilometerstand'},
+    pl:{id:'Kolejność listy',until:'Dostępny do',price:'Cena malejąco',km:'Przebieg'}};
+  function apply(){const L=SH[typeof LANG!=='undefined'?LANG:'en']||SH.en;
+    [...sel.options].forEach(o=>{
+      if(mq.matches){if(!o.dataset.full)o.dataset.full=o.text;o.classList.add('notrans');const t2=L[o.value]||o.text;if(o.text!==t2)o.text=t2;}
+      else if(o.dataset.full){o.classList.remove('notrans');o.text=o.dataset.full;delete o.dataset.full;if(typeof trAll==='function')trAll();}
+    });
+    if(window.__fitSelects)window.__fitSelects();}
+  mq.addEventListener('change',apply);apply();
+  window.__sortShort=apply;
+})();
 
 /* Szűrő-dobozok: a kiválasztott felirat teljesen látsszon */
 (()=>{
