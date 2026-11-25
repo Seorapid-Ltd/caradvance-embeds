@@ -457,7 +457,7 @@
             <div class="fld"><label>E-mail</label><input id="u-email" placeholder="nev@caradvance.hu"></div>
           </div>
           <div class="row2">
-            <div class="fld"><label>Szerepkör</label><select id="u-role"><option value="sales_manager">Sales manager</option><option value="admin">Admin</option></select></div>
+            <div class="fld"><label>Szerepkör</label><select id="u-role"><option value="sales_desk">Csak Sales Desk</option><option value="sales_manager">Sales manager (CRM)</option><option value="admin">Admin</option></select></div>
             <div class="fld"><label>Ideiglenes jelszó</label><input id="u-pw" placeholder="min. 8 karakter"></div>
           </div>
           <div><button class="btn red sm" onclick="createUser()">Létrehozás</button></div>
@@ -1148,7 +1148,7 @@ function renderUsers(){
   var el=document.getElementById('userRows');if(!el)return;
   el.innerHTML=(allUsers||[]).map(function(u){
     var isSelf=currentUser&&u.id===currentUser.id;
-    return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+esc(u.role==='admin'?'Admin':'Sales manager')+'</td><td>'+esc((u.created_at||'').slice(0,10))+'</td>'
+    return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+esc(u.role==='admin'?'Admin':u.role==='sales_desk'?'Csak Sales Desk':'Sales manager')+'</td><td>'+esc((u.created_at||'').slice(0,10))+'</td>'
       +'<td style="white-space:nowrap"><button class="btn ghost sm" onclick="resetUserPassword('+u.id+')">Új jelszó</button> '
       +(isSelf?'':'<button class="btn ghost sm" onclick="deleteUser('+u.id+')">Törlés</button>')+'</td></tr>';
   }).join('')||'<tr><td colspan="5" style="color:#8a93a2">Nincs felhasználó.</td></tr>';
@@ -1318,6 +1318,8 @@ document.getElementById('nav').addEventListener('click',function(){if(window.inn
 function CA_boot(){
   return apiFetch('/me').then(function(r){
     currentUser=r.user;
+    // "Csak Sales Desk" fiók: a CRM nem az övé, egyből a Sales Deskre megy.
+    if(currentUser.role==='sales_desk'){location.replace('/sales/');return new Promise(function(){});}
     // Signed in and asked for another page (e.g. the Sales Desk): go straight there, before the CRM loads.
     var nx0=new URLSearchParams(location.search).get('next');
     if(nx0==='/sales')nx0='/sales/';
