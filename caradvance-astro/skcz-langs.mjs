@@ -17,12 +17,14 @@
 import { langFix } from './skcz-rev26.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { parse, serialize, visit, finishLd, maskNums, unmaskNums } from './i18n-core.mjs';
 import { neutral } from './i18n-templates.mjs';
 import { maskModels, unmaskModels, neutralL, maskModels2, normNums, phraseFix } from './skcz-langs-mask.mjs';
 import { SKL } from './skcz-langs-data.mjs';
 import { CSL } from './skcz-langs-data-cs.mjs';
-import { memo, tcacheReport } from './tcache.mjs';
+import { memo, tcacheReport, tcacheStats } from './tcache.mjs';
 
 const DIST = 'dist';
 /* piaconként: caradvance.sk → szlovák + angol, német, magyar; caradvance.cz → cseh + angol, német */
@@ -129,36 +131,21 @@ function switcher(h, cur, p) {
   return h;
 }
 
-function run(ml) {
-  ML = ml; MK = MARKETS[ml]; SK = path.join(DIST, ml); SITE = MK.site; LANGS = MK.langs; IDX = MK.idx; SW = MK.sw;
-  HL = Object.fromEntries(LANGS.map((l) => [l, l + '-' + MK.cc]));
-  if (!fs.existsSync(SK)) return 'nincs dist/' + ml;
-  const { D, bad } = dicts();
-  const list = pages(SK);
-  const ok = Object.fromEntries(LANGS.map((l) => [l, new Set()]));
-  const miss = new Map();
+// 1) + 2) egy oldalcsoportra (a fő szálon vagy worker szálon). Az oldalak egymástól függetlenek; ami közös
+// (hiányzó szövegek listája, indexelhető oldalak), azt eseményként adjuk vissza, és a fő szál a régi sorrendben
+// (előbb az összes oldal 1. lépése, aztán a 2.) játssza vissza — így az eredmény ugyanaz, mint egy szálon.
+function relSteps(rels, D, exists) {
   const stat = Object.fromEntries(LANGS.map((l) => [l, [0, 0]]));
   const out = {};
-  const pathOf = (rel) => '/' + rel;           // 'prenajom/bmw-x3/' → '/prenajom/bmw-x3/'
-  const exists = new Set(list.map(pathOf));
-
-  // 0) JSON-LD: a caradvance.hu oldal-URL-ek (url, @id) a saját domain megfelelő oldalára (a _slugs.json alapján)
-  try {
-    const slugs = JSON.parse(fs.readFileSync(path.join(SK, '_slugs.json'), 'utf8'));
-    for (const rel of list) {
-      const f = path.join(SK, rel, 'index.html'); const h0 = fs.readFileSync(f, 'utf8');
-      const h1 = h0.replace(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g, (all, a, js, b) => a + js.replace(/"(url|@id|item)":"https:\/\/www\.caradvance\.hu(\/[^"#?]*)?(#[^"]*)?"/g, (m, k, p0, hash) => {
-        const p1 = p0 || '/';
-        if (/\.[a-z0-9]{2,5}$/i.test(p1)) return m;
-        const q = slugs[p1] || (exists.has(p1) ? p1 : (p1 === '/' ? '/' : null));
-        return q ? `"${k}":"${SITE}${q}${hash || ''}"` : m;
-      }) + b);
-      if (h1 !== h0) fs.writeFileSync(f, h1);
-    }
-  } catch (e) {}
-
+  const pathOf = (rel) => '/' + rel;
+  const E = new Map();
+  const ev = (rel) => { let x = E.get(rel); if (!x) E.set(rel, (x = { m1: [], m2: [], add: [], del: [] })); return x; };
+  const REC = { rel: '', ph: 1 };
+  const miss = { get: (km) => ({ n: 0, l: { add: (l) => ev(REC.rel)['m' + REC.ph].push([km, l]) }, p: REC.rel }), set() {} };
+  let written = 0;
   // 1) fordítás
-  for (const rel of list) {
+  for (const rel of rels) {
+    REC.rel = rel; REC.ph = 1;
     const src = fs.readFileSync(path.join(SK, rel, 'index.html'), 'utf8');
     if (/http-equiv=["']?refresh/i.test(src)) continue;
     for (const l of LANGS) {
@@ -180,7 +167,7 @@ function run(ml) {
       const cover = tot ? hit / tot : 1;
       stat[l][0] += hit; stat[l][1] += tot;
       out[l + '|' + rel] = { h: r.h, cover };
-      if (cover >= MIN_COVER) ok[l].add(pathOf(rel));
+      if (cover >= MIN_COVER) ev(rel).add.push(l);
     }
   }
 
@@ -190,8 +177,8 @@ function run(ml) {
     const q = p.split(/[?#]/)[0]; const n = q.endsWith('/') ? q : q + '/';
     return exists.has(n) ? SITE + '/' + l + p : m;
   });
-  let written = 0;
-  for (const rel of list) {
+  for (const rel of rels) {
+    REC.rel = rel; REC.ph = 2;
     const p = pathOf(rel);
     for (const l of LANGS) {
       const o = out[l + '|' + rel]; if (!o) continue;
@@ -265,7 +252,7 @@ function run(ml) {
       h = langFix(h, ML, l);
       h = h.replace(/[ \t]*<meta\s+name=["']robots["'][^>]*>\s*\n?/gi, (m) => (/noindex/i.test(m) ? m : ''));
       if (o.cover < MIN_COVER && !/<meta\s+name=["']robots["'][^>]*noindex/i.test(h)) h = h.replace(/<\/head>/i, '<meta name="robots" content="noindex,follow">\n</head>');
-      if (/<meta\s+name=["']robots["'][^>]*noindex/i.test(h)) ok[l].delete(p);
+      if (/<meta\s+name=["']robots["'][^>]*noindex/i.test(h)) ev(rel).del.push(l);
       const f = path.join(SK, l, rel, 'index.html');
       fs.mkdirSync(path.dirname(f), { recursive: true });
       fs.writeFileSync(f, h); written++;
@@ -276,23 +263,111 @@ function run(ml) {
     if (nh !== sh) fs.writeFileSync(sf, nh);
   }
 
-  // 3) hreflang en-SK / de-SK / hu-SK a teljes klaszterben (minden oldalon, amelyiknek van szlovák párja)
+  return { stat, written, ev: [...E] };
+}
+
+// 3) egy fájlcsoport hreflang-javítása (ok: nyelv → indexelhető útvonalak)
+function hreflangFiles(files, okArr) {
+  const ok = Object.fromEntries(Object.entries(okArr).map(([l, a]) => [l, new Set(a)]));
+  const siteRe = SITE.replace(/[.\/]/g, '\\$&');
+  const reM = new RegExp(`<link rel="alternate" hreflang="${ML}" href="${siteRe}(\\/[^"]*)">`);
+  const reC = new RegExp(`[ \\t]*<link rel="alternate" hreflang="(?:en|de|hu)-${MK.cc}" href="[^"]*">\\s*\\n?`, 'g');
   let hl = 0;
+  for (const f of files) {
+    const h = fs.readFileSync(f, 'utf8');
+    const m = h.match(reM);
+    if (!m) continue;
+    const p = m[1];
+    const clean = h.replace(reC, '');
+    const add = LANGS.filter((l) => ok[l].has(p)).map((l) => `\n<link rel="alternate" hreflang="${HL[l]}" href="${SITE}/${l}${p}">`).join('');
+    const n = clean.replace(m[0], m[0] + add);
+    if (n !== h) { fs.writeFileSync(f, n); hl++; }
+  }
+  return hl;
+}
+const SKL_NW = Math.max(1, Math.min(8, +(process.env.CA_SKCZLANGS_WORKERS || 0) || (os.availableParallelism ? os.availableParallelism() : os.cpus().length)));
+const TCX = { hit: 0, miss: 0 }; // a worker szálak gyorsítótár-statisztikája (a tcacheReport-hoz)
+async function relParts(ml, list, D, exists) {
+  if (SKL_NW < 2 || list.length < 40) return [relSteps(list, D, exists)];
+  const chunks = Array.from({ length: SKL_NW }, () => []);
+  list.forEach((r, i) => chunks[i % SKL_NW].push(r));
+  return Promise.all(chunks.filter((c) => c.length).map((ch) => new Promise((resolve, reject) => {
+    let done = false;
+    const w = new Worker(new URL(import.meta.url), { workerData: { skczLangs: { ml, rels: ch, exists: [...exists] } } });
+    w.once('message', (m) => { done = true; if (m.err) return reject(new Error(m.err)); TCX.hit += m.tc.hit; TCX.miss += m.tc.miss; resolve(m.ok); });
+    const fb = (e) => { if (done) return; done = true; console.log('[skcz-langs] szál hiba, egy szálon folytatja: ' + (e && e.message)); try { resolve(relSteps(ch, D, exists)); } catch (x) { reject(x); } };
+    w.once('error', fb); w.once('exit', () => fb(new Error('kilépett')));
+  })));
+}
+function setup(ml) {
+  ML = ml; MK = MARKETS[ml]; SK = path.join(DIST, ml); SITE = MK.site; LANGS = MK.langs; IDX = MK.idx; SW = MK.sw;
+  HL = Object.fromEntries(LANGS.map((l) => [l, l + '-' + MK.cc]));
+}
+
+async function run(ml) {
+  setup(ml);
+  if (!fs.existsSync(SK)) return 'nincs dist/' + ml;
+  const { D, bad } = dicts();
+  const list = pages(SK);
+  const ok = Object.fromEntries(LANGS.map((l) => [l, new Set()]));
+  const miss = new Map();
+  const stat = Object.fromEntries(LANGS.map((l) => [l, [0, 0]]));
+  const out = {};
+  const pathOf = (rel) => '/' + rel;           // 'prenajom/bmw-x3/' → '/prenajom/bmw-x3/'
+  const exists = new Set(list.map(pathOf));
+
+  // 0) JSON-LD: a caradvance.hu oldal-URL-ek (url, @id) a saját domain megfelelő oldalára (a _slugs.json alapján)
+  try {
+    const slugs = JSON.parse(fs.readFileSync(path.join(SK, '_slugs.json'), 'utf8'));
+    for (const rel of list) {
+      const f = path.join(SK, rel, 'index.html'); const h0 = fs.readFileSync(f, 'utf8');
+      const h1 = h0.replace(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g, (all, a, js, b) => a + js.replace(/"(url|@id|item)":"https:\/\/www\.caradvance\.hu(\/[^"#?]*)?(#[^"]*)?"/g, (m, k, p0, hash) => {
+        const p1 = p0 || '/';
+        if (/\.[a-z0-9]{2,5}$/i.test(p1)) return m;
+        const q = slugs[p1] || (exists.has(p1) ? p1 : (p1 === '/' ? '/' : null));
+        return q ? `"${k}":"${SITE}${q}${hash || ''}"` : m;
+      }) + b);
+      if (h1 !== h0) fs.writeFileSync(f, h1);
+    }
+  } catch (e) {}
+
+  // 1) fordítás + 2) oldal-szintű csere és kiírás — az oldalak a processzormagok között szétosztva
+  const parts = await relParts(ML, list, D, exists);
+  for (const r of parts) for (const l of LANGS) { stat[l][0] += r.stat[l][0]; stat[l][1] += r.stat[l][1]; }
+  let written = parts.reduce((a, r) => a + r.written, 0);
+  const evs = new Map(parts.flatMap((r) => r.ev));
+  const replay = (k) => { for (const rel of list) { const x = evs.get(rel); if (!x) continue; for (const [km, l] of x[k]) { const m = miss.get(km) || { n: 0, l: new Set(), p: rel }; m.n++; m.l.add(l); miss.set(km, m); } } };
+  replay('m1');
+  for (const rel of list) { const x = evs.get(rel); if (x) for (const l of x.add) ok[l].add(pathOf(rel)); }
+  replay('m2');
+  for (const rel of list) { const x = evs.get(rel); if (x) for (const l of x.del) ok[l].delete(pathOf(rel)); }
+  const siteRe = SITE.replace(/[.\/]/g, '\\$&');
+
+  // 3) hreflang en-SK / de-SK / hu-SK a teljes klaszterben (minden oldalon, amelyiknek van szlovák párja)
+  //    fájlonként független → a fájlok a processzormagok között szétosztva
+  const allHtml = [];
   (function walk(d) {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
       const f = path.join(d, e.name);
       if (e.isDirectory()) { walk(f); continue; }
-      if (!e.name.endsWith('.html')) continue;
-      const h = fs.readFileSync(f, 'utf8');
-      const m = h.match(new RegExp(`<link rel="alternate" hreflang="${ML}" href="${siteRe}(\\/[^"]*)">`));
-      if (!m) continue;
-      const p = m[1];
-      const clean = h.replace(new RegExp(`[ \\t]*<link rel="alternate" hreflang="(?:en|de|hu)-${MK.cc}" href="[^"]*">\\s*\\n?`, 'g'), '');
-      const add = LANGS.filter((l) => ok[l].has(p)).map((l) => `\n<link rel="alternate" hreflang="${HL[l]}" href="${SITE}/${l}${p}">`).join('');
-      const n = clean.replace(m[0], m[0] + add);
-      if (n !== h) { fs.writeFileSync(f, n); hl++; }
+      if (e.name.endsWith('.html')) allHtml.push(f);
     }
   })(DIST);
+  const okArr = Object.fromEntries(LANGS.map((l) => [l, [...ok[l]]]));
+  let hl = 0;
+  if (SKL_NW < 2 || allHtml.length < 400) hl = hreflangFiles(allHtml, okArr);
+  else {
+    const chunks = Array.from({ length: SKL_NW }, () => []);
+    allHtml.forEach((f, i) => chunks[i % SKL_NW].push(f));
+    const ns = await Promise.all(chunks.map((ch) => new Promise((resolve, reject) => {
+      let done = false;
+      const w = new Worker(new URL(import.meta.url), { workerData: { skczHl: { ml: ML, files: ch, ok: okArr } } });
+      w.once('message', (m) => { done = true; if (m.err) reject(new Error(m.err)); else resolve(m.ok); });
+      const fb = (e) => { if (done) return; done = true; console.log('[skcz-langs] szál hiba (hreflang), egy szálon folytatja: ' + (e && e.message)); try { resolve(hreflangFiles(ch, okArr)); } catch (x) { reject(x); } };
+      w.once('error', fb); w.once('exit', () => fb(new Error('kilépett')));
+    })));
+    hl = ns.reduce((x, y) => x + y, 0);
+  }
 
   // 4) sitemap
   const smf = path.join(SK, 'sitemap.xml');
@@ -358,5 +433,16 @@ function run(ml) {
   return `[skcz-langs ${ML}] ${written} oldal (${LANGS.map((l) => l + ' ' + pct(l) + ', indexelve ' + ok[l].size).join(' | ')}), hiányzó egység ${miss.size}, hibás kézi fordítás ${bad}, hreflang ${hl} fájlban`;
 }
 
-for (const ml of Object.keys(MARKETS)) { try { console.log(run(ml)); } catch (e) { console.log(`[skcz-langs ${ml}] hiba: ` + (e && e.stack || e)); } }
-tcacheReport('skcz-langs');
+if (!isMainThread && workerData && workerData.skczHl) {
+  const J = workerData.skczHl;
+  let r; try { setup(J.ml); r = { ok: hreflangFiles(J.files, J.ok) }; } catch (e) { r = { err: (e && e.stack) || String(e) }; }
+  parentPort.postMessage(r);
+} else if (!isMainThread && workerData && workerData.skczLangs) {
+  const J = workerData.skczLangs;
+  let r;
+  try { setup(J.ml); const { D } = dicts(); r = { ok: relSteps(J.rels, D, new Set(J.exists)), tc: tcacheStats() }; } catch (e) { r = { err: (e && e.stack) || String(e) }; }
+  parentPort.postMessage(r);
+} else {
+  for (const ml of Object.keys(MARKETS)) { try { console.log(await run(ml)); } catch (e) { console.log(`[skcz-langs ${ml}] hiba: ` + (e && e.stack || e)); } }
+  tcacheReport('skcz-langs', TCX);
+}
