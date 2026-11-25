@@ -507,7 +507,7 @@ Ready when you are.</h1>
       <span class="count" id="sCount"></span>
     </div>
     <div class="tbl"><table>
-      <thead><tr><th>#</th><th data-i18n="th_car">Car</th><th class="hide-s" data-i18n="th_reg">Registration · km</th><th class="num" data-i18n="th_price">Price</th><th class="hide-s" data-i18n="th_aud">Audience</th><th data-i18n="th_status">Status</th></tr></thead>
+      <thead><tr><th>#</th><th data-i18n="th_car">Car</th><th class="hide-s" data-i18n="th_reg">Registration · km</th><th class="num" data-i18n="th_net">B2B</th><th class="num">B2C</th><th data-i18n="th_status">Status</th></tr></thead>
       <tbody id="sRows"><tr><td colspan="6" class="empty">Loading stock…</td></tr></tbody>
     </table></div>
     <p class="foot">B2B prices exclude 19% VAT; B2C prices include it. Sources: Dealer Package 1 (16 Nov 2026), Dealer Package 2 (17 Nov 2026), 2026 stock list (18 Nov 2026), sales exposés (11 Nov 2026). Click a row for full details and photos.</p>
@@ -778,8 +778,8 @@ function renderStock(){
     let h=`<tr class="row" data-id="${esc(c.id)}"><td class="sub idc">${esc(c.id)}</td>
     <td><div class="carcell">${pics(c).length?`<img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt="">`:'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span>${soon||flags?'<span class="chips">':''}${soon?`<span class="chip warn">Ending soon · ${dl} d</span>`:''}${flags?`<span class="chip warn" title="${esc(c.flags.join('; '))}">${flags} data gap${flags>1?'s':''}</span>`:''}${soon||flags?'</span>':''}</div></div></td>
     <td class="hide-s"><span class="mono">${esc(c.vin||c.plate||'no plate yet')}</span><br><span class="sub">${esc(c.first_reg||'')} · ${c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':esc(c.km_text||'km on request')}</span></td>
-    <td class="num pricec">${c.asking_price!=null&&c.asking_price!==''?eur(c.asking_price):`${eur(c.dealer_net)}${c.dealer_net?'<span class="sub"> B2B</span>':''}`}</td>
-    <td class="hide-s">${isPk(c)?`<span class="aud pk"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 8h16v11H4zM9 8V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M4 13h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Dealer package</span></span>`:`<span class="aud all"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7a3.5 3.5 0 0 0 0 7zM3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 4.5a3.5 3.5 0 0 1 0 6.5M17.5 14.7c2.1.6 3.5 2.6 3.5 5.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Dealer &amp; private</span></span>`}</td>
+    <td class="num pricec">${eur(c.dealer_net)}${c.asking_price!=null&&c.asking_price!==''?`<br><span class="sub">${esc(t('th_ask').replace(/\s*€$/,''))}: ${eur(c.asking_price)}</span>`:''}</td>
+    <td class="num pricec">${eur(c.dealer_gross)}</td>
     <td><select class="st ${esc(c.status||'Available')}" data-f="status" data-id="${esc(c.id)}" aria-label="Status">${['Available','Reserved','Sold'].map(s=>`<option${(c.status||'Available')===s?' selected':''}>${s}</option>`).join('')}</select></td></tr>`;
     if(S.open===c.id){
       const dd=(l,v)=>v!=null&&v!==''?`<dt>${l}</dt><dd>${esc(v)}</dd>`:'';
