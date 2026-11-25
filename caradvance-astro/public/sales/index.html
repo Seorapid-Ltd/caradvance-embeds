@@ -594,11 +594,30 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 }
 /* Telefonon a hiányzó adatok jelzése nem látszik (PC-n igen) */
 @media(max-width:700px){#sRows .chip.gap,#sRows .gapd{display:none!important}#sRows .chips:not(:has(.chip:not(.gap))){display:none}}
+/* Ajánlattétel */
+.offerrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.offerbtn{min-height:44px;padding:0 22px;border-radius:999px;font-weight:800}
+#carSheet .cs-act .offer{background:var(--red);border-color:var(--red);color:#fff}
+.offhead{grid-column:1/-1;display:flex;gap:12px;align-items:center;padding:4px 0 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.offhead img{width:96px;height:64px;object-fit:cover;border-radius:10px;flex:0 0 auto}
+.offhead div{min-width:0;display:flex;flex-direction:column;gap:2px}
+.offhead b{font-weight:800}
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}
+.offmsg.ok{color:var(--ok);font-size:15px;font-weight:600;text-align:center;padding:18px 0}
+.offmsg.bad{color:var(--red)}
+/* Telefonon a Kereskedőknek / Magánvevőknek választás szerinti ár (alapból mindkettő) */
+@media(max-width:700px){
+  #sRows[data-price=b2b] td.pcol.b2c,#sRows[data-price=b2c] td.pcol:not(.b2c){display:none!important}
+  #sRows[data-price=b2b] tr.row>td.pcol,#sRows[data-price=b2c] tr.row>td.pcol{grid-column:span 2}
+  #carSheet[data-price=b2b] .hc-price>div:nth-child(2),#carSheet[data-price=b2c] .hc-price>div:nth-child(1){display:none}
+  #carSheet[data-price=b2b] .hc-price,#carSheet[data-price=b2c] .hc-price{grid-template-columns:1fr}
+  .audsw .asw.on{border-color:var(--red);box-shadow:0 0 0 2px color-mix(in srgb,var(--red) 22%,transparent)}
+}
 /* Nyilvános, csak megtekintés (bejelentkezés nélkül) */
 .loginbtn{display:none;text-decoration:none}
 .public .loginbtn{display:inline-flex}
 .public #tabs a[data-v=enq],.public #msgBtn,.public #v-dealers,.public #v-outreach{display:none!important}
-.public td.stcol select{pointer-events:none;-webkit-appearance:none;appearance:none;background-image:none!important;text-align:center}
+.public td.stcol select{pointer-events:none;-webkit-appearance:none;appearance:none;background-image:none!important;text-align:center;text-align-last:center;padding:0 10px!important;opacity:1;font-weight:700}
 .public #sRows .pricebox,.public #sRows label.f,.public #sRows .gapd,.public #sRows .chip.gap{display:none!important}
 .public #carSheet [data-a=det]{display:none}
 .public #carSheet .cs-act [data-a=close]{grid-column:1/-1}
@@ -981,6 +1000,7 @@ function renderStock(){
     price:(a,b)=>(price(b)??-1)-(price(a)??-1),km:(a,b)=>(a.mileage??1e9)-(b.mileage??1e9)}[so];
   L.sort(k);
   $('#sCount').textContent=L.length+' of '+S.cars.length+' vehicles';
+  $('#sRows').dataset.price=cat==='b2b'?'b2b':cat==='priv'?'b2c':'both';
   const dOpts=S.dealers.map(d=>`<option value="${esc(d.id)}">${esc(d.name)} (${esc(d.country)})</option>`).join('');
   $('#sRows').innerHTML=L.length?L.map(c=>{
     const dl=daysLeft(c.available_until),soon=dl!=null&&dl<=28&&(c.status||'Available')==='Available';
@@ -993,7 +1013,7 @@ function renderStock(){
     <td class="stcol"><select class="st ${esc(c.status||'Available')}" data-f="status" data-id="${esc(c.id)}" aria-label="Status">${['Available','Reserved','Sold'].map(s=>`<option${(c.status||'Available')===s?' selected':''}>${s}</option>`).join('')}</select></td></tr>`;
     if(S.open===c.id){
       const dd=(l,v)=>v!=null&&v!==''?`<dt>${l}</dt><dd>${esc(v)}</dd>`:'';
-      h+=`<tr class="det"><td colspan="6">${pics(c).length?`<div class="gal">${pics(c).map((p,i)=>`<button type="button" data-lb="${esc(c.id)}" data-i="${i}" aria-label="Open photo ${i+1}"><img loading="lazy" src="img/t/${esc(p)}" alt=""></button>`).join('')}</div>`:''}<div class="dgrid">
+      h+=`<tr class="det"><td colspan="6">${(c.status||'Available')!=='Sold'?`<div class="offerrow"><button type="button" class="pri offerbtn" data-offer="${esc(c.id)}">${esc(OFR().title)}</button><span class="sub">${esc(OFR().hint)}</span></div>`:''}${pics(c).length?`<div class="gal">${pics(c).map((p,i)=>`<button type="button" data-lb="${esc(c.id)}" data-i="${i}" aria-label="Open photo ${i+1}"><img loading="lazy" src="img/t/${esc(p)}" alt=""></button>`).join('')}</div>`:''}<div class="dgrid">
       <dl>${dd('Make / model',c.model)}${dd('Colour',c.colour)}${dd('Interior',c.interior)}${dd('Wheels',c.wheels)}${dd('VIN',c.vin)}${dd('Plate',c.plate)}${dd('First reg.',c.first_reg)}${dd('Mileage',c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'on request'))}${dd('Power',c.power)}${dd('Fuel',c.fuel)}${dd('Transmission',c.transmission)}${dd('Body',c.body)}${dd('Prev. owners',c.prev_owners)}${dd('Available until',c.available_until)}</dl>
       <dl>${dd('List price gross',c.msrp_gross?eur(c.msrp_gross):'')}${dd('Business to Business (B2B)',c.dealer_net?eur(c.dealer_net):'')}${dd('Business to Customer (B2C)',c.dealer_gross?eur(c.dealer_gross):'')}${dd('vs list',c.pct_vs_list!=null?c.pct_vs_list+'%':'')}${dd('Status changed',c.status_changed)}${dd('Price source',c.price_source||c.source)}${dd('Note',c.match_note)}
         ${(c.flags||[]).length?`<dt class="gapd">Data gaps</dt><dd class="gapd">${c.flags.map(esc).join('<br>')}</dd>`:''}</dl>
@@ -1105,6 +1125,50 @@ $('#addLog').addEventListener('click',()=>S.dealers.length?openLog(null):status(
 $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r)openLog(S.logs.find(o=>o.id===r.dataset.id))});
 
 
+/* ---------- AJÁNLATTÉTEL (mindenkinek, PC és telefon) ---------- */
+const OFR_T={
+ en:{title:'Make an offer',hint:'Send us your price — we reply quickly.',name:'Name',company:'Company (optional)',email:'Email',phone:'Phone',who:'I am buying as',dealer:'Dealer · Business to Business',priv:'Private buyer · Business to Customer',price:'Your offer (€)',msg:'Message (optional)',listed:'Listed price',send:'Send offer',thanks:'Thank you! We have received your offer and will get back to you soon.',err:'The offer could not be sent. Please try again or call us.',need:'Please fill in your name, an email or phone number, who you are buying as and your price.',many:'Too many offers from this connection. Please try again later.',vat0:'excl. VAT',vat1:'incl. 19% German VAT'},
+ hu:{title:'Ajánlatot teszek',hint:'Küldje el az árajánlatát — hamar válaszolunk.',name:'Név',company:'Cég (nem kötelező)',email:'E-mail',phone:'Telefon',who:'Vásárlóként',dealer:'Kereskedő · Business to Business',priv:'Magánvevő · Business to Customer',price:'Ajánlott ár (€)',msg:'Üzenet (nem kötelező)',listed:'Meghirdetett ár',send:'Ajánlat elküldése',thanks:'Köszönjük! Megkaptuk az ajánlatát, hamarosan jelentkezünk.',err:'Az ajánlatot nem sikerült elküldeni. Próbálja újra, vagy hívjon minket.',need:'Adja meg a nevét, egy e-mail címet vagy telefonszámot, hogy kinek vásárol, és az ajánlott árat.',many:'Túl sok ajánlat erről a kapcsolatról. Próbálja később.',vat0:'ÁFA nélkül',vat1:'19% német ÁFÁ-val'},
+ sk:{title:'Urobiť ponuku',hint:'Pošlite nám svoju cenu — rýchlo odpovieme.',name:'Meno',company:'Firma (nepovinné)',email:'E-mail',phone:'Telefón',who:'Kupujem ako',dealer:'Predajca · Business to Business',priv:'Súkromný kupujúci · Business to Customer',price:'Vaša ponuka (€)',msg:'Správa (nepovinné)',listed:'Ponuková cena',send:'Odoslať ponuku',thanks:'Ďakujeme! Vašu ponuku sme dostali a čoskoro sa ozveme.',err:'Ponuku sa nepodarilo odoslať. Skúste to znova alebo nám zavolajte.',need:'Vyplňte meno, e-mail alebo telefón, ako kupujete a vašu cenu.',many:'Príliš veľa ponúk z tohto pripojenia. Skúste neskôr.',vat0:'bez DPH',vat1:'s 19 % nemeckou DPH'},
+ cs:{title:'Učinit nabídku',hint:'Pošlete nám svou cenu — rychle odpovíme.',name:'Jméno',company:'Firma (nepovinné)',email:'E-mail',phone:'Telefon',who:'Kupuji jako',dealer:'Prodejce · Business to Business',priv:'Soukromý kupec · Business to Customer',price:'Vaše nabídka (€)',msg:'Zpráva (nepovinné)',listed:'Nabídková cena',send:'Odeslat nabídku',thanks:'Děkujeme! Vaši nabídku jsme obdrželi a brzy se ozveme.',err:'Nabídku se nepodařilo odeslat. Zkuste to znovu nebo nám zavolejte.',need:'Vyplňte jméno, e-mail nebo telefon, jak kupujete a vaši cenu.',many:'Příliš mnoho nabídek z tohoto připojení. Zkuste později.',vat0:'bez DPH',vat1:'s 19% německou DPH'},
+ de:{title:'Angebot machen',hint:'Senden Sie uns Ihren Preis — wir antworten schnell.',name:'Name',company:'Firma (optional)',email:'E-Mail',phone:'Telefon',who:'Ich kaufe als',dealer:'Händler · Business to Business',priv:'Privatkunde · Business to Customer',price:'Ihr Angebot (€)',msg:'Nachricht (optional)',listed:'Angebotspreis',send:'Angebot senden',thanks:'Vielen Dank! Wir haben Ihr Angebot erhalten und melden uns bald.',err:'Das Angebot konnte nicht gesendet werden. Bitte erneut versuchen oder anrufen.',need:'Bitte Name, E-Mail oder Telefon, Käuferart und Ihren Preis angeben.',many:'Zu viele Angebote von dieser Verbindung. Bitte später erneut.',vat0:'ohne MwSt.',vat1:'inkl. 19 % dt. MwSt.'},
+ pl:{title:'Złóż ofertę',hint:'Wyślij nam swoją cenę — szybko odpowiemy.',name:'Imię i nazwisko',company:'Firma (opcjonalnie)',email:'E-mail',phone:'Telefon',who:'Kupuję jako',dealer:'Dealer · Business to Business',priv:'Klient prywatny · Business to Customer',price:'Twoja oferta (€)',msg:'Wiadomość (opcjonalnie)',listed:'Cena ofertowa',send:'Wyślij ofertę',thanks:'Dziękujemy! Otrzymaliśmy ofertę i wkrótce się odezwiemy.',err:'Nie udało się wysłać oferty. Spróbuj ponownie lub zadzwoń.',need:'Podaj imię, e-mail lub telefon, typ kupującego i cenę.',many:'Zbyt wiele ofert z tego połączenia. Spróbuj później.',vat0:'bez VAT',vat1:'z 19% niem. VAT'}};
+const OFR=()=>OFR_T[LANG]||OFR_T.en;
+function openOffer(id){
+  const c=(S.cars||[]).find(x=>x.id===id);if(!c)return;const o=OFR();
+  const cat=$('#sCat').value,def=cat==='priv'?'b2c':cat==='b2b'?'b2b':'';
+  const html=`<div class="offhead">${pics(c)[0]?`<img src="img/t/${esc(pics(c)[0])}" alt="">`:''}<div><b>${esc(c.model||'')}</b><span class="sub">${esc(c.id)} · ${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':''].filter(Boolean).join(' · '))}</span>
+    <span class="sub">${esc(o.listed)}: <b>${eur(c.dealer_net)}</b> ${esc(o.vat0)} · <b>${eur(c.dealer_gross)}</b> ${esc(o.vat1)}</span></div></div>
+    <input type="hidden" name="car" value="${esc(c.id)}"><input name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+    <label class="f"><span>${esc(o.name)}</span><input name="name" required autocomplete="name" maxlength="100"></label>
+    <label class="f"><span>${esc(o.company)}</span><input name="company" autocomplete="organization" maxlength="120"></label>
+    <label class="f"><span>${esc(o.email)}</span><input name="email" type="email" autocomplete="email" maxlength="160"></label>
+    <label class="f"><span>${esc(o.phone)}</span><input name="phone" type="tel" autocomplete="tel" maxlength="40"></label>
+    <label class="f wide"><span>${esc(o.who)}</span><select name="type" required><option value=""></option><option value="b2b"${def==='b2b'?' selected':''}>${esc(o.dealer)}</option><option value="b2c"${def==='b2c'?' selected':''}>${esc(o.priv)}</option></select></label>
+    <label class="f wide"><span>${esc(o.price)}</span><input name="price" inputmode="numeric" required placeholder="€" maxlength="12"></label>
+    <label class="f wide"><span>${esc(o.msg)}</span><textarea name="message" rows="3" maxlength="1500"></textarea></label>
+    <p class="foot wide offmsg" hidden></p>`;
+  const saveBtn=$('#dlgForm .df button.pri'),saveTxt=saveBtn.textContent;
+  openDialog(o.title,html,async fd=>{
+    const m=$('#dlgBody .offmsg');
+    if(m.dataset.done){return true}
+    if(!fd.name||!(fd.email||fd.phone)||!fd.type||!fd.price){m.hidden=false;m.className='foot wide offmsg bad';m.textContent=o.need;return false}
+    saveBtn.disabled=true;
+    try{
+      const r=await fetch(location.origin+'/api/desk/offer',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fd,lang:LANG})});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok){m.hidden=false;m.className='foot wide offmsg bad';m.textContent=r.status===429?o.many:(j.error==='price'||j.error==='contact'||j.error==='name'||j.error==='type')?o.need:o.err;return false}
+      $('#dlgBody').querySelectorAll('label.f,.offhead').forEach(e=>e.hidden=true);
+      m.hidden=false;m.className='foot wide offmsg ok';m.textContent=o.thanks;m.dataset.done='1';saveBtn.textContent=t('Close')!=='Close'?t('Close'):'OK';return false;
+    }catch(e){m.hidden=false;m.className='foot wide offmsg bad';m.textContent=o.err;return false}
+    finally{saveBtn.disabled=false}
+  });
+  saveBtn.textContent=o.send;
+  dlg.addEventListener('close',()=>{saveBtn.textContent=saveTxt},{once:true});
+}
+window.__openOffer=openOffer;
+$('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]');if(!b)return;e.stopPropagation();openOffer(b.dataset.offer)},true);
+
 /* ---------- HOVER CARD (car list) ---------- */
 (()=>{
   const hc=document.createElement('div');hc.className='hcard';hc.setAttribute('aria-hidden','true');document.body.appendChild(hc);
@@ -1165,9 +1229,11 @@ $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r
       <button type="button" class="cs-x" aria-label="${esc(w(2))}">✕</button></div>
       <div class="hcard">${window.__carCardHtml(c)}</div></div>
       <div class="cs-act"><button type="button" class="wa wide" data-a="share"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15s-.77.96-.94 1.16s-.35.22-.64.07a8.1 8.1 0 0 1-2.38-1.47a9 9 0 0 1-1.65-2.05c-.17-.3 0-.46.13-.6c.13-.14.3-.35.45-.52a2 2 0 0 0 .3-.5a.55.55 0 0 0-.03-.52c-.07-.15-.67-1.62-.92-2.22c-.24-.58-.49-.5-.67-.51h-.57a1.1 1.1 0 0 0-.8.37a3.35 3.35 0 0 0-1.04 2.49a5.8 5.8 0 0 0 1.22 3.1a13.3 13.3 0 0 0 5.1 4.5c.71.31 1.27.5 1.7.63a4.1 4.1 0 0 0 1.88.12a3.08 3.08 0 0 0 2.02-1.42a2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.57-.35M12.04 21.5a9.4 9.4 0 0 1-4.8-1.31l-.34-.2l-3.57.93l.95-3.48l-.22-.36a9.43 9.43 0 1 1 7.98 4.42m8.02-17.45A11.3 11.3 0 0 0 2.27 17.66L.67 23.5l5.97-1.57a11.3 11.3 0 0 0 5.4 1.37a11.33 11.33 0 0 0 8.02-19.3"/></svg>${esc(w(0))}</button>
+      ${(c.status||'Available')!=='Sold'?`<button type="button" class="offer wide" data-a="offer">${esc(OFR().title)}</button>`:''}
       <button type="button" data-a="det">${esc(w(1))}</button><button type="button" data-a="close">${esc(w(2))}</button></div>`;
     const g=dlg.querySelector('.cs-gal'),n=dlg.querySelector('.cs-n');
     if(g&&n)g.addEventListener('scroll',()=>{n.textContent=(Math.round(g.scrollLeft/g.clientWidth)+1)+' / '+ps.length},{passive:true});
+    dlg.dataset.price=document.getElementById('sRows').dataset.price||'both';
     dlg.showModal();dlg.querySelector('.cs-scroll').scrollTop=0;
   }
   function text(c){
@@ -1196,6 +1262,7 @@ $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r
     const a=b.classList.contains('cs-x')?'close':b.dataset.a;
     if(a==='close')dlg.close();
     else if(a==='share')share(cur);
+    else if(a==='offer'){const id=cur.id;dlg.close();openOffer(id);}
     else if(a==='det'){const id=cur.id;dlg.close();S.open=id;renderStock();const r=document.querySelector(`#sRows tr.row[data-id="${CSS.escape(id)}"]`);if(r)r.scrollIntoView({behavior:'smooth',block:'start'});}
   });
   // Érintőképernyőn és keskeny kijelzőn a sorra koppintás a kártyát nyitja (a lenyíló részletek helyett).

@@ -256,6 +256,60 @@ const nameOf = email => { const n = (email || '').split('@')[0].split(/[._-]/)[0
 
 /* ---------------- entry ---------------- */
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
+/* ---------------- offers from the car page (no login needed) ----------------
+ * Saved to the Contact log in Notion (Channel: Website, Direction: Incoming, Outcome: Offer received),
+ * so the team sees them in the desk's activity list. Rate-limited per IP; a hidden "website" field catches bots. */
+async function offerRateOk(env, ip) {
+  if (!env.DB) return true;
+  const now = Math.floor(Date.now() / 1000), key = 'offer:' + ip;
+  try {
+    await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_rate (k TEXT PRIMARY KEY, n INTEGER NOT NULL, win INTEGER NOT NULL)').run();
+    const row = await env.DB.prepare('SELECT n, win FROM desk_rate WHERE k = ?').bind(key).first();
+    if (!row || now - row.win > 3600) { await env.DB.prepare('INSERT INTO desk_rate (k, n, win) VALUES (?, 1, ?) ON CONFLICT(k) DO UPDATE SET n = 1, win = excluded.win').bind(key, now).run(); return true; }
+    if (row.n >= 8) return false;
+    await env.DB.prepare('UPDATE desk_rate SET n = n + 1 WHERE k = ?').bind(key).run();
+    return true;
+  } catch (e) { return true; }
+}
+async function makeOffer(request, env, ctx) {
+  const url = new URL(request.url);
+  if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) return json({ error: 'Cross-site request refused.' }, 403);
+  const b = await request.json().catch(() => null);
+  if (!b || typeof b !== 'object') return json({ error: 'bad_request' }, 400);
+  if (b.website) return json({ ok: true }); // bot trap
+  const str = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000b-\u001f]/g, '').trim().slice(0, n);
+  const name = str(b.name, 100), company = str(b.company, 120), email = str(b.email, 160).toLowerCase(), phone = str(b.phone, 40), msg = str(b.message, 1500);
+  const type = b.type === 'b2c' ? 'b2c' : b.type === 'b2b' ? 'b2b' : '';
+  const price = Math.round(Number(String(b.price ?? '').replace(/[^\d.,]/g, '').replace(',', '.')));
+  if (name.length < 2) return json({ error: 'name' }, 400);
+  if (!/^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/.test(email) && phone.replace(/\D/g, '').length < 6) return json({ error: 'contact' }, 400);
+  if (!type) return json({ error: 'type' }, 400);
+  if (!(price > 0 && price < 10000000)) return json({ error: 'price' }, 400);
+  if (!(await offerRateOk(env, request.headers.get('cf-connecting-ip') || 'x'))) return json({ error: 'too_many' }, 429);
+  let car;
+  try { const all = await loadAll(env, ctx, false); car = all.vehicles.find(v => v.id === str(b.car, 20)); } catch (e) { return json({ error: 'unavailable' }, 503); }
+  if (!car || car.status === 'Sold') return json({ error: 'car' }, 400);
+  const eurs = n => n == null || n === '' ? '—' : '€' + Math.round(Number(n)).toLocaleString('en-GB');
+  const listed = type === 'b2b' ? `Business to Business ${eurs(car.dealer_net)} (excl. VAT)` : `Business to Customer ${eurs(car.dealer_gross)} (incl. 19% German VAT)`;
+  const notes = [
+    `OFFER: ${eurs(price)} — ${type === 'b2b' ? 'dealer / B2B' : 'private buyer / B2C'}`,
+    `Car: ${car.id} · ${car.model || ''}`, `Listed: ${listed}`,
+    `Name: ${name}`, company && `Company: ${company}`, email && `Email: ${email}`, phone && `Phone: ${phone}`,
+    msg && `Message: ${msg}`, `Sent from: ${url.hostname} (${str(b.lang, 5) || '—'})`,
+  ].filter(Boolean).join('\n');
+  const today = new Date().toISOString().slice(0, 10);
+  const props = {
+    Summary: writeProp('title', `Offer ${eurs(price)} — ${name}${company ? ' (' + company + ')' : ''} — ${car.id}`),
+    Date: writeProp('date', today), 'Cars (as typed)': writeProp('text', car.id),
+    Channel: writeProp('select', 'Website'), Direction: writeProp('select', 'Incoming'), Outcome: writeProp('select', 'Offer received'),
+    'Next step': writeProp('text', 'Reply to the offer'), 'Follow-up': writeProp('date', today), Notes: writeProp('text', notes),
+  };
+  try { await notion(env, 'POST', '/pages', { parent: { type: 'data_source_id', data_source_id: DS.outreach }, properties: props }); }
+  catch (e) { return json({ error: 'unavailable' }, 503); }
+  memo = null;
+  return json({ ok: true });
+}
+
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
  *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
@@ -269,6 +323,7 @@ export function publicCar(v) {
 export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
+  if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
     try {
       const { vehicles } = await loadAll(env, ctx, false);
