@@ -621,7 +621,10 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 #carSheet .cs-eq{margin:0;padding-left:18px;columns:2;column-gap:20px;font-size:13px;line-height:1.5}
 @media(max-width:480px){#carSheet .cs-eq{columns:1}}
 /* Szűrők: a doboz a felirathoz igazodik */
-.bar select.fitw{flex:0 0 auto!important;min-width:0!important;max-width:100%}
+.bar select.fitw{flex:1 1 var(--fitw)!important;min-width:var(--fitw)!important;width:auto!important;max-width:100%}
+#v-stock .bar input[type=search]{flex:1 1 280px}
+#v-stock .bar .count{flex:1 0 100%;margin:0;padding:0 6px;width:auto}
+@media(max-width:700px){#v-stock .bar input[type=search]{flex:1 1 100%}}
 /* Ajánlattétel */
 .offerrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
 .offerbtn{min-height:44px;padding:0 22px;border-radius:999px;font-weight:800}
@@ -1221,7 +1224,7 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
   function fit(sel){const cs=getComputedStyle(sel);if(cs.display==='none')return;cv.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     const txt=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:'';
     const w=Math.ceil(cv.measureText(txt).width+parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight)+parseFloat(cs.borderLeftWidth)+parseFloat(cs.borderRightWidth)+4);
-    sel.classList.add('fitw');sel.style.width=w+'px';}
+    sel.classList.add('fitw');sel.style.width='';sel.style.setProperty('--fitw',w+'px');}
   const all=()=>document.querySelectorAll('.bar select').forEach(fit);
   document.querySelectorAll('.bar select').forEach(sel=>{sel.addEventListener('change',()=>fit(sel));new MutationObserver(()=>fit(sel)).observe(sel,{childList:true,subtree:true,characterData:true});});
   addEventListener('resize',all);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(all);setTimeout(all,300);setTimeout(all,1500);
