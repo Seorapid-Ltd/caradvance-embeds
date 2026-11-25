@@ -256,9 +256,25 @@ const nameOf = email => { const n = (email || '').split('@')[0].split(/[._-]/)[0
 
 /* ---------------- entry ---------------- */
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
+/** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
+ *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
+export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
+  'highlights', 'msrp_gross', 'dealer_net', 'dealer_gross', 'pct_vs_list', 'status', 'available_until', 'vin'];
+export function publicCar(v) {
+  const o = {};
+  for (const k of PUBLIC_FIELDS) if (v[k] != null && v[k] !== '') o[k] = v[k];
+  return o;
+}
+
 export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
+  if (request.method === 'GET' && route === 'public') {
+    try {
+      const { vehicles } = await loadAll(env, ctx, false);
+      return json({ vehicles: vehicles.filter(v => (v.status || 'Available') !== 'Sold').map(publicCar), public: true, at: new Date().toISOString() });
+    } catch (e) { return json({ error: 'Could not load the cars.' }, 503); }
+  }
   try {
     const me = await whoAmI(request, env);
     if (request.method === 'GET' && route === 'data') {
