@@ -673,7 +673,7 @@ tr.det ul.eq.xnew li{border-color:color-mix(in srgb,var(--red) 35%,var(--line))}
 /* Nyilvános, csak megtekintés (bejelentkezés nélkül) */
 .loginbtn{display:none;text-decoration:none}
 .public .loginbtn{display:inline-flex}
-.public #tabs,.public #tabs a[data-v=contact],.public #v-contact,.public #tabs a[data-v=enq],.public #tabs a[data-v=leads],.public #msgBtn,.public #v-dealers,.public #v-outreach,.public #v-leads{display:none!important}
+.public #tabs,.public #tabs a[data-v=list],.public #v-list,.public #tabs a[data-v=contact],.public #v-contact,.public #tabs a[data-v=enq],.public #tabs a[data-v=leads],.public #msgBtn,.public #v-dealers,.public #v-outreach,.public #v-leads{display:none!important}
 .public .topbar .tools{grid-column:-2/-1;justify-self:end;margin-left:auto}
 #tabs .nLeads:empty,#tabs .nMsg:empty{display:none}#tabs .nMsg{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--red);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:18px;text-align:center}#tabs .nLeads{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--red);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:18px;text-align:center}
 #lRows .lofr{font-weight:800;white-space:nowrap}#lRows .lcar{font-weight:700}#lRows .sub{display:block}
@@ -838,6 +838,26 @@ tr.row.sold .car b{text-decoration:line-through;text-decoration-color:var(--red)
 .ofrankline li:first-of-type{border-color:var(--red)}.ofrankline li .flag{width:18px;height:12px}
 .ofrankline li small{color:var(--muted);font-weight:700}.ofrankline li.acc{background:#dcfce7;color:#166534;border-color:#86efac}
 .ofhead h3 .ofst{vertical-align:2px;margin-left:6px}
+
+/* Készletlista */
+.slbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.slbar input{flex:1 1 240px;min-width:0}
+.sltbl td{vertical-align:middle}
+.sltbl .slth{width:96px}.sltbl .slth img,.sltbl .slth .noimg{width:96px;height:64px;object-fit:cover;border-radius:10px;display:block;background:var(--soft)}
+.sltbl .slcar b{display:block;font-size:14px}.sltbl .slcar .sub{display:block;font-size:12px}
+.sltbl .slid{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.03em}
+.slprice b{display:block;white-space:nowrap}.slprice .sub{font-size:11.5px;white-space:nowrap}
+.slcomp{display:flex;flex-direction:column;gap:4px;min-width:220px}
+.slcomp a{display:flex;gap:8px;align-items:baseline;text-decoration:none;color:var(--ink);font-size:12.5px;padding:3px 8px;border-radius:8px;background:var(--soft);border:1px solid var(--line)}
+.slcomp a b{white-space:nowrap}.slcomp a span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slcomp a:hover{border-color:var(--red)}
+.slgap b{font-size:15px}.slgap .neg{color:#1f9d55}.slgap .pos{color:#d14343}.slgap .sub{display:block;font-size:11.5px}
+.slmde a{color:var(--red);font-weight:800;text-decoration:none;white-space:nowrap}
+.slconf{display:inline-block;margin-top:3px;padding:1px 7px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:11px;font-weight:800}
+.sl-adm{display:none}html.sl-admin .sl-adm{display:table-cell}
+tr.sldet td{background:var(--soft)}.sldet dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 18px;margin:0}
+.sldet dt{font-size:11.5px;color:var(--muted)}.sldet dd{margin:0 0 4px;font-weight:600;font-size:13px}.sldet p{margin:8px 0 0;font-size:12.5px}
+#slRows tr.row{cursor:pointer}
+@media(max-width:900px){.sltbl thead{display:none}.sltbl table,.sltbl tbody{display:block}#slRows tr.row{display:grid;grid-template-columns:96px 1fr;gap:8px 12px;padding:12px;border-bottom:1px solid var(--line)}#slRows tr.row>td{display:block;border:0;padding:0}#slRows tr.row>td.slth{grid-row:span 2}#slRows tr.row>td:not(.slth):not(.slcar){grid-column:1/-1}#slRows tr.row>td.hide-s{display:none}.slcomp{min-width:0}#slRows tr.sldet{display:block}}
 </style>
 </head>
 <body>
@@ -850,6 +870,7 @@ tr.row.sold .car b{text-decoration:line-through;text-decoration-color:var(--red)
         <a href="#dealers" data-v="enq"><i data-i18n="nav_enq">B2B List</i></a>
         <a href="#contact" data-v="contact"><i data-i18n="nav_contact">Help</i> <span class="nMsg"></span></a>
         <a href="#leads" data-v="leads"><i data-i18n="nav_leads">Enquiries</i> <span class="nLeads"></span></a>
+        <a href="#list" data-v="list"><i data-i18n="nav_list">Stock list</i></a>
       </nav>
       <div class="tools">
         <a class="langbtn loginbtn" id="loginBtn" href="/admin/?next=/sales/"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M12 12q-1.65 0-2.825-1.175T8 8t1.175-2.825T12 4t2.825 1.175T16 8t-1.175 2.825T12 12m-8 8v-2.8q0-.85.438-1.562T5.6 14.55q1.55-.775 3.15-1.162T12 13t3.25.388t3.15 1.162q.725.375 1.163 1.088T20 17.2V20z"/></svg><b data-i18n="login">Login</b></a>
@@ -917,6 +938,20 @@ Ready when you are.</h1>
       <tbody id="dRows"><tr><td colspan="7" class="empty">Loading dealers…</td></tr></tbody>
     </table></div>
     <div id="rulesNote" class="foot"></div>
+  </section>
+
+  <section class="view" id="v-list">
+    <div class="bar slbar">
+      <input id="slQ" type="search" data-i18n-ph="sl_search" placeholder="Search model, colour, VIN, plate…">
+      <select id="slMake" aria-label="Make"></select>
+      <select id="slSort" aria-label="Sort"></select>
+      <span class="count" id="slCount"></span>
+    </div>
+    <div class="tbl sltbl"><table>
+      <thead><tr><th></th><th data-i18n="sl_car">Car</th><th data-i18n="sl_regkm">Reg. · km</th><th class="num" data-i18n="sl_ours">Our price</th><th class="num" data-i18n="sl_mde">Our mobile.de ad</th><th data-i18n="sl_comp">3 competitor prices (mobile.de)</th><th class="num" data-i18n="sl_gap">vs cheapest</th><th class="hide-s" data-i18n="sl_avail">Available</th><th class="num sl-adm" data-i18n="sl_ek">EK net · margin</th></tr></thead>
+      <tbody id="slRows"><tr><td colspan="9" class="empty">…</td></tr></tbody>
+    </table></div>
+    <p class="foot" data-i18n="sl_foot">Vehicle master list (25 Nov 2026) with comparable mobile.de listings from other sellers (same model, ±1 year, up to 25,000 km more), cheapest first, checked 26 Nov 2026. Competitor prices are mobile.de asking prices incl. VAT, compared with our B2C price.</p>
   </section>
 
   <section class="view" id="v-contact">
@@ -990,9 +1025,9 @@ const daysLeft=d=>d?Math.round((new Date(d+'T12:00:00')-todayMs)/864e5):null;
 const status=t=>{const m=$('#status');m.hidden=!t;m.textContent=t||''};
 
 /* tabs */
-const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach',leads:'leads',contact:'contact'};const ok=map[v]||'stock';
+const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach',leads:'leads',contact:'contact',list:'list'};const ok=map[v]||'stock';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+ok));
-  const navv=ok==='stock'?'stock':ok==='leads'?'leads':ok==='contact'?'contact':'enq';if(ok==='contact'&&window.__msgOpen)window.__msgOpen();
+  const navv=ok==='stock'?'stock':ok==='leads'?'leads':ok==='contact'?'contact':ok==='list'?'list':'enq';if(ok==='list'&&window.__slOpen)window.__slOpen();if(ok==='contact'&&window.__msgOpen)window.__msgOpen();
   document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v===navv));
   document.querySelectorAll('.subnav a').forEach(a=>a.classList.toggle('on',a.dataset.s===ok));
   if(ok==='stock'&&typeof renderStock==='function'&&S.cars){const want={fordealers:'b2b',private:'priv'}[v]||(S.audSet?'':null);if(want!=null){$('#sCat').value=want;S.audSet=!!want;if(S.raw.length)renderStock();}}};
@@ -1052,6 +1087,7 @@ for(const[l,o]of Object.entries({"en": {"w_pk": "Business to Business", "w_ex": 
 for(const[l,o]of Object.entries({"en": {"nav_contact": "Help"}, "hu": {"nav_contact": "Segítség"}, "sk": {"nav_contact": "Pomoc"}, "cs": {"nav_contact": "Pomoc"}, "de": {"nav_contact": "Hilfe"}, "pl": {"nav_contact": "Pomoc"}, "ro": {"nav_contact": "Ajutor"}}))if(I18N[l])Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"cta_rs": "Rental / Sale", "c_rs": "Rental / Sale", "rs_empty": "No cars here yet — the cars offered for rental or sale will be listed here soon."}, "hu": {"cta_rs": "Bérlés / Eladás", "c_rs": "Bérlés / Eladás", "rs_empty": "Még nincs itt autó — a bérelhető vagy megvásárolható autók hamarosan itt lesznek."}, "sk": {"cta_rs": "Prenájom / Predaj", "c_rs": "Prenájom / Predaj", "rs_empty": "Zatiaľ tu nie sú autá — autá na prenájom alebo predaj tu budú čoskoro."}, "cs": {"cta_rs": "Pronájem / Prodej", "c_rs": "Pronájem / Prodej", "rs_empty": "Zatím tu nejsou vozy — vozy k pronájmu nebo prodeji tu budou brzy."}, "de": {"cta_rs": "Miete / Verkauf", "c_rs": "Miete / Verkauf", "rs_empty": "Noch keine Fahrzeuge — Fahrzeuge zur Miete oder zum Kauf erscheinen hier in Kürze."}, "pl": {"cta_rs": "Wynajem / Sprzedaż", "c_rs": "Wynajem / Sprzedaż", "rs_empty": "Na razie brak aut — auta do wynajmu lub sprzedaży pojawią się tu wkrótce."}, "ro": {"cta_rs": "Închiriere / Vânzare", "c_rs": "Închiriere / Vânzare", "rs_empty": "Încă nu sunt mașini aici — mașinile pentru închiriere sau vânzare vor apărea aici în curând."}}))if(I18N[l])Object.assign(I18N[l],o);
 for(const[l,o]of Object.entries({"en": {"l_guess": "Country code worked out from the number format / visitor location — check it", "l_nocode": "No country code given — ask the buyer", "l_via": "via"}, "hu": {"l_guess": "Az előhívót a szám formátumából / a látogató helyéből állapítottuk meg — ellenőrizze", "l_nocode": "Nincs megadva előhívó — kérdezze meg a vevőt", "l_via": "oldal:"}, "sk": {"l_guess": "Predvoľba odvodená z formátu čísla / polohy návštevníka — skontrolujte", "l_nocode": "Predvoľba chýba — overte u kupujúceho", "l_via": "cez"}, "cs": {"l_guess": "Předvolba odvozena z formátu čísla / polohy návštěvníka — zkontrolujte", "l_nocode": "Předvolba chybí — ověřte u kupce", "l_via": "přes"}, "de": {"l_guess": "Vorwahl aus Nummernformat / Standort ermittelt — bitte prüfen", "l_nocode": "Keine Vorwahl angegeben — beim Käufer nachfragen", "l_via": "über"}, "pl": {"l_guess": "Numer kierunkowy ustalony z formatu numeru / lokalizacji — sprawdź", "l_nocode": "Brak numeru kierunkowego — zapytaj kupującego", "l_via": "przez"}, "ro": {"l_guess": "Prefix dedus din formatul numărului / locația vizitatorului — verificați", "l_nocode": "Fără prefix — întrebați cumpărătorul", "l_via": "prin"}}))if(I18N[l])Object.assign(I18N[l],o);
+for(const[l,o]of Object.entries({"en": {"nav_list": "Stock list", "sl_search": "Search model, colour, VIN, plate…", "sl_car": "Car", "sl_regkm": "Reg. · km", "sl_ours": "Our price", "sl_mde": "Our mobile.de ad", "sl_comp": "3 competitor prices (mobile.de)", "sl_gap": "vs cheapest", "sl_avail": "Available", "sl_ek": "EK net · margin", "sl_foot": "Vehicle master list (25 Nov 2026) with comparable mobile.de listings from other sellers (same model, ±1 year, up to 25,000 km more), cheapest first, checked 26 Nov 2026. Competitor prices are mobile.de asking prices incl. VAT, compared with our B2C price.", "sl_s_gap": "Sort: biggest price gap", "sl_s_id": "Sort: car ID", "sl_s_price": "Sort: price high–low", "sl_s_km": "Sort: mileage", "sl_conf": "price differs between documents", "sl_noprice": "no sale price yet", "sl_avg3": "avg of 3:", "sl_plate": "Plate", "sl_list": "List price new (gross)", "sl_fuel": "Fuel", "sl_gear": "Gearbox", "sl_drive": "Drive", "sl_int": "Interior", "sl_owners": "Previous owners", "sl_rent": "Monthly rent (net)", "sl_month": "month", "sl_src": "Price taken from", "sl_range": "Net price range in documents", "sl_mdeq": "mobile.de search", "sl_hits": "listings found", "sl_allcmp": "See all comparable cars on mobile.de", "sl_opencar": "Open the car on the desk"}, "hu": {"nav_list": "Készletlista", "sl_search": "Keresés: modell, szín, alvázszám, rendszám…", "sl_car": "Autó", "sl_regkm": "Forg. · km", "sl_ours": "Saját ár", "sl_mde": "Saját mobile.de hirdetés", "sl_comp": "3 versenytárs ár (mobile.de)", "sl_gap": "a legolcsóbbhoz", "sl_avail": "Elérhető", "sl_ek": "Beszerzés nettó · árrés", "sl_foot": "Járműtörzslista (2026.11.25.) összevetve a mobile.de más eladóinak hasonló hirdetéseivel (ugyanaz a modell, ±1 év, legfeljebb +25 000 km), a legolcsóbb elöl, ellenőrizve 2026.11.26-án. A versenytárs árak bruttó mobile.de hirdetési árak, a saját B2C árunkhoz hasonlítva.", "sl_s_gap": "Rendezés: legnagyobb árkülönbség", "sl_s_id": "Rendezés: azonosító", "sl_s_price": "Rendezés: ár csökkenő", "sl_s_km": "Rendezés: futás", "sl_conf": "a dokumentumokban eltér az ár", "sl_noprice": "még nincs eladási ár", "sl_avg3": "3 átlaga:", "sl_plate": "Rendszám", "sl_list": "Új listaár (bruttó)", "sl_fuel": "Üzemanyag", "sl_gear": "Váltó", "sl_drive": "Hajtás", "sl_int": "Belső", "sl_owners": "Előző tulajdonosok", "sl_rent": "Havi bérleti díj (nettó)", "sl_month": "hó", "sl_src": "Az ár forrása", "sl_range": "Nettó ártartomány a dokumentumokban", "sl_mdeq": "mobile.de keresés", "sl_hits": "találat", "sl_allcmp": "Összes hasonló autó a mobile.de-n", "sl_opencar": "Megnyitás a deskben"}, "de": {"nav_list": "Bestandsliste", "sl_search": "Suche: Modell, Farbe, FIN, Kennzeichen…", "sl_car": "Fahrzeug", "sl_regkm": "EZ · km", "sl_ours": "Unser Preis", "sl_mde": "Unser mobile.de-Inserat", "sl_comp": "3 Wettbewerbspreise (mobile.de)", "sl_gap": "ggü. günstigstem", "sl_avail": "Verfügbar", "sl_ek": "EK netto · Marge", "sl_foot": "Fahrzeug-Stammliste (25.11.2026) mit vergleichbaren mobile.de-Inseraten anderer Anbieter (gleiches Modell, ±1 Jahr, bis 25.000 km mehr), günstigste zuerst, geprüft am 26.11.2026. Wettbewerbspreise = mobile.de-Angebotspreise inkl. MwSt., verglichen mit unserem B2C-Preis.", "sl_s_gap": "Sortierung: größte Preisdifferenz", "sl_s_id": "Sortierung: Fahrzeug-ID", "sl_s_price": "Sortierung: Preis absteigend", "sl_s_km": "Sortierung: Kilometer", "sl_conf": "Preis weicht zwischen Dokumenten ab", "sl_noprice": "noch kein Verkaufspreis", "sl_avg3": "Ø der 3:", "sl_plate": "Kennzeichen", "sl_list": "Neupreis (brutto)", "sl_fuel": "Kraftstoff", "sl_gear": "Getriebe", "sl_drive": "Antrieb", "sl_int": "Innenausstattung", "sl_owners": "Vorbesitzer", "sl_rent": "Monatsmiete (netto)", "sl_month": "Monat", "sl_src": "Preisquelle", "sl_range": "Nettopreisspanne in Dokumenten", "sl_mdeq": "mobile.de-Suche", "sl_hits": "Treffer", "sl_allcmp": "Alle vergleichbaren Fahrzeuge auf mobile.de", "sl_opencar": "Im Desk öffnen"}, "sk": {"nav_list": "Zoznam skladu", "sl_car": "Auto", "sl_regkm": "Reg. · km", "sl_ours": "Naša cena", "sl_mde": "Náš inzerát mobile.de", "sl_comp": "3 ceny konkurencie (mobile.de)", "sl_gap": "oproti najlacnejšiemu", "sl_avail": "Dostupné", "sl_ek": "Nákup netto · marža", "sl_s_gap": "Zoradiť: najväčší rozdiel", "sl_s_id": "Zoradiť: ID", "sl_s_price": "Zoradiť: cena zostupne", "sl_s_km": "Zoradiť: nájazd", "sl_conf": "cena sa líši v dokumentoch", "sl_noprice": "zatiaľ bez ceny", "sl_avg3": "priemer 3:", "sl_allcmp": "Všetky porovnateľné autá na mobile.de", "sl_opencar": "Otvoriť v desku"}, "cs": {"nav_list": "Seznam skladu", "sl_car": "Vůz", "sl_regkm": "Reg. · km", "sl_ours": "Naše cena", "sl_mde": "Náš inzerát mobile.de", "sl_comp": "3 ceny konkurence (mobile.de)", "sl_gap": "oproti nejlevnějšímu", "sl_avail": "K dispozici", "sl_ek": "Nákup netto · marže", "sl_s_gap": "Řadit: největší rozdíl", "sl_s_id": "Řadit: ID", "sl_s_price": "Řadit: cena sestupně", "sl_s_km": "Řadit: nájezd", "sl_conf": "cena se v dokumentech liší", "sl_noprice": "zatím bez ceny", "sl_avg3": "průměr 3:", "sl_allcmp": "Všechny srovnatelné vozy na mobile.de", "sl_opencar": "Otevřít v desku"}, "pl": {"nav_list": "Lista stanu", "sl_car": "Auto", "sl_regkm": "Rej. · km", "sl_ours": "Nasza cena", "sl_mde": "Nasze ogłoszenie mobile.de", "sl_comp": "3 ceny konkurencji (mobile.de)", "sl_gap": "wobec najtańszego", "sl_avail": "Dostępne", "sl_ek": "Zakup netto · marża", "sl_s_gap": "Sortuj: największa różnica", "sl_s_id": "Sortuj: ID", "sl_s_price": "Sortuj: cena malejąco", "sl_s_km": "Sortuj: przebieg", "sl_conf": "cena różni się w dokumentach", "sl_noprice": "brak ceny", "sl_avg3": "średnia 3:", "sl_allcmp": "Wszystkie porównywalne auta na mobile.de", "sl_opencar": "Otwórz w desku"}, "ro": {"nav_list": "Listă stoc", "sl_car": "Mașină", "sl_regkm": "Înm. · km", "sl_ours": "Prețul nostru", "sl_mde": "Anunțul nostru mobile.de", "sl_comp": "3 prețuri concurență (mobile.de)", "sl_gap": "față de cel mai ieftin", "sl_avail": "Disponibil", "sl_ek": "Achiziție net · marjă", "sl_s_gap": "Sortare: cea mai mare diferență", "sl_s_id": "Sortare: ID", "sl_s_price": "Sortare: preț descrescător", "sl_s_km": "Sortare: kilometraj", "sl_conf": "prețul diferă între documente", "sl_noprice": "încă fără preț", "sl_avg3": "media celor 3:", "sl_allcmp": "Toate mașinile comparabile pe mobile.de", "sl_opencar": "Deschide în desk"}}))if(I18N[l])Object.assign(I18N[l],o);
 function plIdx(n,L){n=Math.abs(Number(n));if(L==='sk'||L==='cs')return n===1?0:(n>=2&&n<=4?1:2);if(L==='pl'){if(n===1)return 0;const a=n%10,b=n%100;return(a>=2&&a<=4&&!(b>=12&&b<=14))?1:2}return n===1?0:1}
 function pl(n,k,L){L=L||LANG;const f=(PLF[k][L]||PLF[k].en);return n+' '+f[Math.min(plIdx(n,L),f.length-1)]}
 const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
@@ -1454,6 +1490,46 @@ $('#ofList').addEventListener('click',async e=>{
       `<button type="button" onclick="this.closest('dialog').close()">${esc(t('l_cancel'))}</button><button type="button" class="pri" id="ceGo">${esc(t('c_save'))}</button>`);
     $('#ceGo').onclick=async()=>{try{await api('msg/contact',{key:k,name:$('#ceN').value,email:$('#ceE').value,phone:$('#ceP').value});$('#ofDlg').close();await load();render()}catch(e){$('#ofDlgB').insertAdjacentHTML('beforeend',`<p class="note">${esc(e.message)}</p>`)}}}
   setTimeout(load,1500);setInterval(()=>{if(document.visibilityState==='visible')load()},30000);
+})();
+
+/* ---------- KÉSZLETLISTA: master list + mobile.de competitor prices (team only) ---------- */
+(()=>{
+  const SL={data:null,open:null,loading:false};
+  const n0=v=>v==null||v===''?null:Number(v);
+  const kmf=v=>v==null||v===''?'—':(isNaN(+v)?esc(v):Number(v).toLocaleString(window.__loc||'en-GB')+' km');
+  async function load(){if(SL.loading||document.documentElement.classList.contains('public'))return;SL.loading=true;
+    try{const r=await fetch('/api/desk/stocklist',{credentials:'same-origin'});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);SL.data=j;document.documentElement.classList.toggle('sl-admin',!!j.admin);render()}
+    catch(e){$('#slRows').innerHTML=`<tr><td colspan="9" class="empty">${esc(e.message)}</td></tr>`}finally{SL.loading=false}}
+  window.__slOpen=()=>{if(SL.data)render();else load()};
+  const gapOf=c=>{const g=n0(c.gross),p=(c.comp||[]).map(x=>x.price).filter(Boolean);if(!g||!p.length)return null;return{min:Math.min(...p),avg:p.reduce((a,b)=>a+b,0)/p.length,d:(Math.min(...p)-g)/g}};
+  function render(){
+    const d=SL.data;if(!d)return;const cars=d.cars||[];
+    const mk=$('#slMake'),so=$('#slSort');const mv=mk.value,sv=so.value||'gap';
+    mk.innerHTML=`<option value="">${esc(t('s_allmake'))}</option>`+[...new Set(cars.map(c=>c.make))].sort().map(m=>`<option${m===mv?' selected':''}>${esc(m)}</option>`).join('');
+    so.innerHTML=[['gap',t('sl_s_gap')],['id',t('sl_s_id')],['price',t('sl_s_price')],['km',t('sl_s_km')]].map(([v,l])=>`<option value="${v}"${v===sv?' selected':''}>${esc(l)}</option>`).join('');
+    $('#slQ').placeholder=t('sl_search');
+    const q=$('#slQ').value.trim().toLowerCase();
+    let L=cars.filter(c=>(!mv||c.make===mv)&&(!q||[c.id,c.model,c.aka,c.colour,c.vin,c.plate,c.desk].join(' ').toLowerCase().includes(q)));
+    const G=c=>{const g=gapOf(c);return g?g.d:9};
+    L.sort(sv==='id'?(a,b)=>a.id.localeCompare(b.id):sv==='price'?(a,b)=>(n0(b.gross)||0)-(n0(a.gross)||0):sv==='km'?(a,b)=>(n0(a.km)||1e9)-(n0(b.km)||1e9):(a,b)=>G(a)-G(b));
+    $('#slCount').textContent=`${L.length} / ${cars.length}`;
+    $('#slRows').innerHTML=L.length?L.map(c=>{const g=gapOf(c);const pw=c.kw?`${c.kw} kW / ${c.ps} PS`:'';
+      const ek=n0(c.ek),net=n0(c.net);
+      return `<tr class="row" data-id="${esc(c.id)}">
+      <td class="slth">${c.photo?`<img src="img/t/${esc(c.photo)}" alt="" loading="lazy">`:'<div class="noimg"></div>'}</td>
+      <td class="slcar"><span class="slid">${esc(c.id)}${c.desk?' · '+esc(c.desk):''}</span><b>${esc(c.model||'')}</b><span class="sub">${esc([c.colour,pw].filter(Boolean).join(' · '))}</span>${c.conf?`<span class="slconf" title="${esc(c.conf_notes||'')}">${esc(t('sl_conf'))}</span>`:''}</td>
+      <td>${esc(c.reg||'—')}<span class="sub" style="display:block">${kmf(c.km)}</span></td>
+      <td class="num slprice">${net?`<b>${eur(net)}</b><span class="sub">B2B · ${esc(t('l_net'))}</span><b>${eur(c.gross)}</b><span class="sub">B2C · ${esc(t('l_gross'))}</span>`:`<span class="sub">${esc(t('sl_noprice'))}</span>`}</td>
+      <td class="num slmde">${c.mde?`<a href="${esc(c.mde.url)}" target="_blank" rel="noopener">${c.mde.price?eur(c.mde.price):'—'} ↗</a>`:'<span class="sub">—</span>'}</td>
+      <td><div class="slcomp">${(c.comp||[]).map(x=>`<a href="https://suchen.mobile.de/fahrzeuge/details.html?id=${encodeURIComponent(x.id)}" target="_blank" rel="noopener" title="${esc(x.title||'')}"><b>${eur(x.price)}</b><span>${esc(x.fr||'')} · ${kmf(x.km)}${x.cn&&x.cn!=='DE'?' · '+esc(x.cn):''}</span></a>`).join('')||'<span class="sub">—</span>'}</div></td>
+      <td class="num slgap">${g?`<b class="${g.d<0?'pos':'neg'}">${g.d>0?'+':''}${(g.d*100).toFixed(1)}%</b><span class="sub">${esc(t('sl_avg3'))} ${eur(g.avg)}</span>`:'—'}</td>
+      <td class="hide-s">${esc(c.from||'—')}${c.until?`<span class="sub" style="display:block">→ ${esc(c.until)}</span>`:''}</td>
+      <td class="num sl-adm">${ek?`<b>${eur(ek)}</b><span class="sub" style="display:block">${net?(net-ek>=0?'+':'')+eur(net-ek):''}</span>`:'—'}</td></tr>`
+      +(SL.open===c.id?`<tr class="sldet"><td colspan="9"><dl>${[['VIN',c.vin],[t('sl_plate'),c.plate],[t('sl_list'),c.list?eur(c.list):''],[t('sl_fuel'),c.fuel],[t('sl_gear'),c.gear],[t('sl_drive'),c.drive],[t('sl_int'),c.interior],[t('sl_owners'),c.owners],[t('sl_rent'),c.rent?eur(c.rent)+' / '+t('sl_month'):''],[t('sl_src'),c.net_from],[t('sl_range'),c.low&&c.high&&c.low!==c.high?eur(c.low)+' – '+eur(c.high):''],[t('sl_mdeq'),c.comp_n!=null?`${c.comp_q} · ${c.comp_total} ${t('sl_hits')}`:'']].filter(x=>x[1]!=null&&x[1]!=='').map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${c.conf_notes?`<p>⚠ ${esc(String(c.conf_notes).replace(/➜.*$/,''))}</p>`:''}<p><a href="${esc(c.comp_url)}" target="_blank" rel="noopener">${esc(t('sl_allcmp'))} ↗</a>${c.desk?` · <a href="#car=${esc(c.desk)}">${esc(t('sl_opencar'))}</a>`:''}</p></td></tr>`:'');
+    }).join(''):`<tr><td colspan="9" class="empty">${esc(t('l_nomatch'))}</td></tr>`;
+  }
+  ['#slQ','#slMake','#slSort'].forEach(id=>$(id).addEventListener(id==='#slQ'?'input':'change',render));
+  $('#slRows').addEventListener('click',e=>{if(e.target.closest('a'))return;const r=e.target.closest('tr.row');if(!r)return;SL.open=SL.open===r.dataset.id?null:r.dataset.id;render()});
 })();
 
 function renderLogs(){try{renderLeads()}catch(e){}
