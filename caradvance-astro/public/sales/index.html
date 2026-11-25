@@ -489,6 +489,85 @@ th.stcol,td.stcol{text-align:center;padding-left:14px;padding-right:16px}
 .hcard .hc-hl{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}
 .hcard .hc-hl .chip{font-size:11px;white-space:normal}
 @media (hover:none),(max-width:900px){.hcard{display:none}}
+
+/* ===== Telefon és tablet (2026-11-25) ===== */
+#tabs a{white-space:nowrap;flex:0 0 auto}
+.carcell .thumb,.carcell .nophoto{flex:0 0 auto}
+@media(min-width:701px) and (max-width:1000px){#v-dealers .hide-s,#v-outreach .hide-s{display:none}#dRows td,#oRows td,#v-dealers th,#v-outreach th{padding-left:10px;padding-right:10px}}
+#tabs{scrollbar-width:none}#tabs::-webkit-scrollbar{display:none}
+.tbl{-webkit-overflow-scrolling:touch}
+button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
+/* iPad álló és kisebb laptop: a táblázat férjen ki vízszintes görgetés nélkül */
+@media(max-width:1100px){
+  .thumb,.nophoto{width:96px;height:64px}
+  .carcell{gap:12px}
+  th.pcol,td.pcol{width:112px;min-width:104px;padding-left:8px;padding-right:8px}
+  td.pcol{font-size:15px}
+  th.stcol,td.stcol{padding-left:8px;padding-right:10px}
+  #sRows td,#v-stock th{padding-left:10px;padding-right:10px}
+  #v-stock th:nth-child(3),#sRows tr.row>td:nth-child(3){max-width:170px}
+}
+@media(max-width:900px){
+  #v-stock th:nth-child(3),#sRows tr.row>td:nth-child(3){display:none}
+  .topbar .brand img{height:44px}
+}
+/* Telefon: a fejléc ne lógjon egymásra, a menü egy sorban görgethető */
+@media(max-width:640px){
+  .topbar{grid-template-columns:1fr auto;gap:12px}
+  .topbar .brand img{height:38px;width:auto}
+  .langbtn{height:40px;min-height:40px;padding:0 10px}
+  .iconbtn{width:40px;height:40px;min-height:40px}
+  .tools{gap:6px}
+  #tabs a{height:40px;min-height:40px;padding:0 14px;font-size:14px}
+}
+/* Telefon: az autólista kártyákként */
+@media(max-width:700px){
+  #v-stock .tbl{background:transparent;border:0;box-shadow:none;overflow:visible;border-radius:0}
+  #v-stock .tbl thead{display:none}
+  #v-stock .tbl table,#v-stock .tbl tbody{display:block;width:100%}
+  #sRows tr.row{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px;margin:0 0 12px}
+  #sRows tr.row>td{display:block;padding:0!important;border:0!important;width:auto!important;min-width:0!important;max-width:none!important;text-align:left!important}
+  #sRows tr.row>td.idc{position:absolute;top:14px;right:14px;font-size:12px}
+  #sRows tr.row>td:nth-child(2){grid-column:1/-1;padding-right:44px!important}
+  #sRows tr.row>td:nth-child(3){display:none}
+  #sRows .carcell{align-items:flex-start;gap:12px}
+  #sRows .thumb,#sRows .nophoto{width:104px;height:70px;flex:0 0 auto}
+  #sRows .car b{font-size:15px;line-height:1.3}
+  #sRows tr.row>td.pcol{background:var(--soft);border-radius:12px;padding:8px 10px!important;font-size:16px;white-space:nowrap}
+  #sRows td.pcol::before{display:block;font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--muted);margin-bottom:2px;content:"Business to Business"}
+  #sRows td.pcol.b2c::before{content:"Business to Customer"}
+  #sRows td.stcol{grid-column:1/-1}
+  #sRows td.stcol select{width:100%;height:44px}
+  #sRows tr.det{display:block;margin:-6px 0 12px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+  #sRows tr.det>td{display:block;padding:14px!important;border:0!important}
+  #sRows .dgrid{grid-template-columns:1fr}
+  #sRows .dgrid dl{grid-template-columns:8.5em 1fr}
+  #sRows .pricebox{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  #sRows .pricebox input.price{width:100%}
+  #sRows td.empty{display:block;background:var(--card);border-radius:20px;padding:24px!important;text-align:center}
+  /* Kereskedők és napló: soronként kártya, a mezők neve a cella előtt */
+  #v-dealers .tbl,#v-outreach .tbl{background:transparent;border:0;box-shadow:none;overflow:visible;border-radius:0}
+  #v-dealers thead,#v-outreach thead{display:none}
+  #v-dealers table,#v-dealers tbody,#v-outreach table,#v-outreach tbody{display:block;width:100%}
+  #dRows tr.row,#oRows tr.row{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px;margin:0 0 12px}
+  #dRows tr.row>td,#oRows tr.row>td{display:block;padding:0!important;border:0!important;text-align:left!important;min-width:0}
+  #dRows tr.row>td:first-child,#oRows tr.row>td:nth-child(2){grid-column:1/-1}
+  #dRows tr.row>td.hide-s,#oRows tr.row>td.hide-s{display:block}
+  #dRows tr.row>td[data-label]::before,#oRows tr.row>td[data-label]::before{content:attr(data-label);display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px}
+  #dRows tr.row>td:first-child::before,#oRows tr.row>td:nth-child(2)::before{display:none}
+  #dRows td.empty,#oRows td.empty{display:block;background:var(--card);border-radius:20px;padding:24px!important;text-align:center}
+  /* Szűrők: teljes szélesség, kényelmes érintési méret */
+  .bar input[type=search]{flex:1 1 100%;min-height:44px}
+  .bar select,.bar button{min-height:44px}
+  .bar .count{width:100%}
+  /* Párbeszédablak: teljes képernyő */
+  dialog{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border-radius:0}
+  dialog .db{max-height:calc(100dvh - 140px);overflow:auto}
+  dialog .df{position:sticky;bottom:0;background:var(--card)}
+  dialog input,dialog select,dialog textarea{font-size:16px}
+}
+/* iOS: 16px alatti betű nagyít a beviteli mezőkre koppintáskor */
+@media(max-width:1100px) and (hover:none){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -588,6 +667,14 @@ Ready when you are.</h1>
 </form></dialog>
 <dialog id="lb" aria-label="Photo viewer"><img id="lbImg" alt=""><div class="lbbar"><button type="button" id="lbPrev">‹ Previous</button><span id="lbCap"></span><button type="button" id="lbNext">Next ›</button><button type="button" id="lbX">Close</button></div></dialog>
 <script src="desk-shim.js"></script>
+<script>
+/* Telefonos kártyanézethez: minden cella megkapja az oszlop nevét (a fejlécből). */
+(function(){
+  const label=(tb)=>{const tbl=tb.closest('table');if(!tbl)return;const hs=[...tbl.querySelectorAll('thead th')].map(th=>th.textContent.trim());
+    tb.querySelectorAll('tr.row').forEach(tr=>[...tr.children].forEach((td,i)=>{if(hs[i])td.setAttribute('data-label',hs[i]);}));};
+  ['#dRows','#oRows'].forEach(sel=>{const tb=document.querySelector(sel);if(!tb)return;label(tb);new MutationObserver(()=>label(tb)).observe(tb,{childList:true});});
+})();
+</script>
 <datalist id="team"><option>Marc</option><option>Karoly</option><option>Tamas</option><option>Feri</option><option>Zsombor</option><option>Soma</option></datalist>
 
 <script>
@@ -656,7 +743,10 @@ for(const[l,o]of Object.entries({"en": {"w_pk": "Business to Business", "w_ex": 
 function plIdx(n,L){n=Math.abs(Number(n));if(L==='sk'||L==='cs')return n===1?0:(n>=2&&n<=4?1:2);if(L==='pl'){if(n===1)return 0;const a=n%10,b=n%100;return(a>=2&&a<=4&&!(b>=12&&b<=14))?1:2}return n===1?0:1}
 function pl(n,k,L){L=L||LANG;const f=(PLF[k][L]||PLF[k].en);return n+' '+f[Math.min(plIdx(n,L),f.length-1)]}
 const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-let LANG=ls.get('sd_lang')||'en';if(!I18N[LANG])LANG='en';
+// Alapnyelv a domain szerint: .hu → magyar, .sk → szlovák, .cz → cseh, .pl → lengyel, .ch → német; máshol angol.
+// Ha valaki a nyelvválasztóval mást választ, az marad meg (domainenként külön, mert a böngésző tárolója is domainenkénti).
+const hostLang=(h=>/\.hu$/.test(h)?'hu':/\.sk$/.test(h)?'sk':/\.cz$/.test(h)?'cs':/\.pl$/.test(h)?'pl':/\.ch$/.test(h)?'de':'en')(location.hostname);
+let LANG=ls.get('sd_lang')||hostLang;if(!I18N[LANG])LANG='en';
 const t=k=>(I18N[LANG]&&I18N[LANG][k])??I18N.en[k]??k;
 function applyLang(){window.__loc={en:'en-GB',hu:'hu-HU',sk:'sk-SK',cs:'cs-CZ',de:'de-DE',pl:'pl-PL'}[LANG]||'en-GB';document.documentElement.lang=LANG;$('#lang').value=LANG;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n)});
