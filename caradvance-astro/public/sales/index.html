@@ -570,9 +570,12 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
   .herobottom .ctas{width:100%}
   #ctaAll{width:100%;justify-content:center;height:48px}
   .herostats,.herobottom .herostats{width:100%;margin:0!important}
-  .herostats .stats{display:flex!important;flex-direction:row-reverse!important;flex-wrap:nowrap!important;align-items:flex-end;justify-content:space-between;gap:12px!important}
+  .herostats .stats{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-end;justify-content:space-between;gap:12px!important}
   .herostats .stat{flex:0 1 auto!important;padding:0!important;border:0!important;gap:8px}
-  .herostats .stat:first-child{text-align:right;flex-direction:row-reverse}
+  .herobottom{display:flex!important;flex-direction:column;align-items:stretch}
+  .herobottom .herostats{order:-1}
+  .herostats .stats{justify-content:flex-start!important}
+  .herostats .stat:first-child{text-align:left;flex-direction:row}
   .herostats .stat b{font-size:24px}
   .herostats .stat span{font-size:12.5px;max-width:none;white-space:nowrap}
   .herostats .stat svg{width:22px;height:22px}
@@ -1031,7 +1034,7 @@ function renderKpis(){
   const askSum=asked.reduce((s,c)=>s+Number(c.asking_price||0),0),netSum=av.reduce((s,c)=>s+(Number(c.dealer_net)||0),0);
   const ending=av.filter(c=>{if(c.category!=='2026 BMW/MINI stock')return false;const d=daysLeft(c.available_until);return d!=null&&d<=28}).length;
   const res=S.cars.filter(c=>c.status==='Reserved').length,sold=S.cars.filter(c=>c.status==='Sold').length;
-  const _st=`<div class="stats"><div class="stat"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M5 11l1.6-4.2A2 2 0 0 1 8.5 5.5h7a2 2 0 0 1 1.9 1.3L19 11M4 11h16v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM7.5 13.5h1M15.5 13.5h1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b class="red">${av.length}</b><span>${t('k_vavail')}</span><small>${t('k_res')}: ${res} / ${sold}</small></div></div>${asked.length?`<div class="stat"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-6.9 6.9a1 1 0 0 1-1.4 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg><div><b>${eur(askSum)}</b><span>${t('k_ask')}</span></div></div>`:''}<div class="stat"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><ellipse cx="10" cy="6.5" rx="6" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 6.5v4c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4M4 10.5v4c0 1.4 2.7 2.5 6 2.5M8 15v3.5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4c0-1.4-2.7-2.5-6-2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><div><b>${eur(netSum)}</b><span>${t('k_net')}</span></div></div></div>`;
+  const _st=`<div class="stats"><div class="stat"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M5 11l1.6-4.2A2 2 0 0 1 8.5 5.5h7a2 2 0 0 1 1.9 1.3L19 11M4 11h16v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM7.5 13.5h1M15.5 13.5h1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b class="red">${av.length}</b><span>${t('k_vavail')}</span><small>${t('k_res')}: ${res} / ${sold}</small></div></div></div>`;
   $('#heroStats').innerHTML=_st;
   $('#kpis').innerHTML='';
   const ns=document.getElementById('nStock');if(ns)ns.textContent=av.length;
