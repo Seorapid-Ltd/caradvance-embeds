@@ -468,7 +468,7 @@ async function handleAdminCreateUser(request, env) {
   const b = await request.json().catch(() => ({}));
   const email = (b.email || '').trim().toLowerCase();
   const name = b.name || '';
-  const role = b.role === 'admin' ? 'admin' : 'sales_manager';
+  const role = b.role === 'admin' ? 'admin' : b.role === 'sales_desk' ? 'sales_desk' : 'sales_manager';
   const password = b.password || '';
   if (!email || !name || !password) return json({ error: 'Hiányzó adat.' }, 400);
 
