@@ -116,4 +116,5 @@
     },
     me: () => me,
   };
+  window.__deskRefresh = () => refresh(true);
 })();
