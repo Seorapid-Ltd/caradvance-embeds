@@ -327,37 +327,10 @@ export function publicCar(v) {
   return o;
 }
 
-/* One-off import of the mobile.de details for the 26 matched cars (25 Nov 2026). Key-protected; never touches prices. */
-const IMPORT_KEY_SHA256 = '63ed75c18e2066e3b468e5d5fe7aff1ce1a837fdbb8e09bb1980d25abda28b2a';
-async function importMde(request, env, ctx) {
-  const key = request.headers.get('X-Import-Key') || '';
-  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key)))].map(b => b.toString(16).padStart(2, '0')).join('');
-  if (hash !== IMPORT_KEY_SHA256) return json({ error: 'Forbidden' }, 403);
-  const data = await fetch(new URL('/sales/_import/mde-2026-11-25.json', request.url)).then(r => r.json());
-  const all = await loadAll(env, ctx, true);
-  const banned = ['dealer_net', 'dealer_gross', 'msrp_gross', 'asking_price', 'min_price'];
-  const done = [], skipped = [];
-  for (const [id, d] of Object.entries(data)) {
-    const cur = all.vehicles.find(v => v.id === id);
-    if (!cur) { skipped.push(id + ': not found'); continue; }
-    const set = {};
-    for (const [k, v] of Object.entries(d)) {
-      if (banned.includes(k)) continue;
-      if (['mileage', 'interior', 'power'].includes(k) && cur[k] != null && cur[k] !== '') continue; // only fill gaps
-      set[k] = v;
-    }
-    await notion(env, 'PATCH', `/pages/${cur._pid}`, { properties: toProps('vehicles', set, all.idx) });
-    done.push(id);
-  }
-  memo = null;
-  return json({ ok: true, done, skipped });
-}
-
 export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
-  if (request.method === 'POST' && route === 'import-mde') return importMde(request, env, ctx); // one-off, removed after use
   if (request.method === 'GET' && route === 'public') {
     try {
       const { vehicles } = await loadAll(env, ctx, false);
