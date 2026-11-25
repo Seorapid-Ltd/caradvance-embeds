@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>CarAdvance Sales Desk</title>
 <style>
 /* VOICE: working sales desk — calm, exact, fast to scan; CarAdvance house style.
@@ -593,6 +594,15 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 }
 /* Telefonon a hiányzó adatok jelzése nem látszik (PC-n igen) */
 @media(max-width:700px){#sRows .chip.gap,#sRows .gapd{display:none!important}#sRows .chips:not(:has(.chip:not(.gap))){display:none}}
+/* Nyilvános, csak megtekintés (bejelentkezés nélkül) */
+.loginbtn{display:none;text-decoration:none}
+.public .loginbtn{display:inline-flex}
+.public #tabs a[data-v=enq],.public #msgBtn,.public #v-dealers,.public #v-outreach{display:none!important}
+.public td.stcol select{pointer-events:none;-webkit-appearance:none;appearance:none;background-image:none!important;text-align:center}
+.public #sRows .pricebox,.public #sRows label.f,.public #sRows .gapd,.public #sRows .chip.gap{display:none!important}
+.public #carSheet [data-a=det]{display:none}
+.public #carSheet .cs-act [data-a=close]{grid-column:1/-1}
+@media(max-width:640px){.public .loginbtn b{display:none}.public .loginbtn{padding:0 11px}}
 /* Autó-kártya (érintőképernyőn koppintásra) */
 #carSheet{width:min(520px,100vw);max-width:100vw;max-height:94dvh;padding:0;border:0;border-radius:24px;overflow:hidden;background:var(--card);color:var(--ink)}
 #carSheet[open]{display:block;height:fit-content!important;min-height:0;margin:auto!important}
@@ -649,6 +659,7 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
         <a href="#dealers" data-v="enq"><i data-i18n="nav_enq">Enquiries</i></a>
       </nav>
       <div class="tools">
+        <a class="langbtn loginbtn" id="loginBtn" href="/admin/?next=/sales/"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M12 12q-1.65 0-2.825-1.175T8 8t1.175-2.825T12 4t2.825 1.175T16 8t-1.175 2.825T12 12m-8 8v-2.8q0-.85.438-1.562T5.6 14.55q1.55-.775 3.15-1.162T12 13t3.25.388t3.15 1.162q.725.375 1.163 1.088T20 17.2V20z"/></svg><b data-i18n="login">Login</b></a>
         <div class="langpick" id="langpick"><button type="button" class="langbtn" id="langBtn" aria-haspopup="listbox" aria-expanded="false" title="Language"><span class="flag" id="langFlag"></span><b id="langCode">EN</b><svg viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><ul class="langmenu" id="langMenu" role="listbox" hidden></ul><select id="lang" hidden aria-hidden="true"><option value="en">EN</option><option value="hu">HU</option><option value="sk">SK</option><option value="cs">CZ</option><option value="de">DE</option><option value="pl">PL</option></select></div>
         <button type="button" class="iconbtn" id="msgBtn" title="Message a dealer" aria-label="Message a dealer"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 20q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4h16q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20zm8-7l8-5V6l-8 5l-8-5v2z"/></svg></button>
         <button type="button" class="iconbtn" id="themeBtn" title="Light / dark" aria-label="Switch light or dark mode"><svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 21q-3.75 0-6.375-2.625T3 12t2.625-6.375T12 3q.35 0 .688.025t.662.075q-1.025.725-1.638 1.888T11.1 7.5q0 2.250 1.575 3.825T16.500 12.900q1.375 0 2.525-.613T20.900 10.650q.05.325.075.662T21 12q0 3.750-2.625 6.375T12 21"/></svg><svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17q-2.075 0-3.537-1.463T7 12t1.463-3.537T12 7t3.538 1.463T17 12t-1.463 3.538T12 17M2 13q-.425 0-.712-.288T1 12t.288-.712T2 11h2q.425 0 .713.288T5 12t-.288.713T4 13zm18 0q-.425 0-.712-.288T19 12t.288-.712T20 11h2q.425 0 .713.288T23 12t-.288.713T22 13zm-8-8q-.425 0-.712-.288T11 4V2q0-.425.288-.712T12 1t.713.288T13 2v2q0 .425-.288.713T12 5m0 18q-.425 0-.712-.288T11 22v-2q0-.425.288-.712T12 19t.713.288T13 20v2q0 .425-.288.713T12 23"/></svg></button>
@@ -814,6 +825,7 @@ const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:
 // Ha valaki a nyelvválasztóval mást választ, az marad meg (domainenként külön, mert a böngésző tárolója is domainenkénti).
 const hostLang=(h=>/\.hu$/.test(h)?'hu':/\.sk$/.test(h)?'sk':/\.cz$/.test(h)?'cs':/\.pl$/.test(h)?'pl':/\.ch$/.test(h)?'de':'en')(location.hostname);
 let LANG=ls.get('sd_lang')||hostLang;if(!I18N[LANG])LANG='en';
+for(const[l,v]of Object.entries({en:'Login',hu:'Belépés',sk:'Prihlásenie',cs:'Přihlášení',de:'Anmelden',pl:'Logowanie'}))if(I18N[l])I18N[l].login=v;
 const t=k=>(I18N[LANG]&&I18N[LANG][k])??I18N.en[k]??k;
 function applyLang(){window.__loc={en:'en-GB',hu:'hu-HU',sk:'sk-SK',cs:'cs-CZ',de:'de-DE',pl:'pl-PL'}[LANG]||'en-GB';document.documentElement.lang=LANG;$('#lang').value=LANG;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n)});
