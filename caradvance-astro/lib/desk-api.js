@@ -34,6 +34,12 @@ export const MAP = {
     dealer_gross: ['B2C', 'number'], msrp_gross: ['List price new', 'number'], asking_price: ['Asking price', 'number'],
     min_price: ['Minimum price', 'number'], available_until: ['Available until', 'date'], highlights: ['Highlights', 'list'],
     source: ['Source', 'text'], data_gaps: ['Data gaps', 'text'], reserved_for: ['Reserved for', 'text'], notes: ['Notes', 'text'],
+    prev_owners: ['Previous owners', 'number'], condition: ['Condition', 'text'], paint: ['Paint (manufacturer)', 'text'],
+    trim: ['Trim', 'text'], climate: ['Climate', 'text'], park_assist: ['Park assist', 'text'], seats: ['Seats', 'number'],
+    doors: ['Doors', 'text'], engine_cc: ['Engine cc', 'number'], equipment: ['Equipment', 'list'], photo_count: ['Photos', 'number'],
+    // team only — never in PUBLIC_FIELDS
+    mde_url: ['mobile.de link', 'url'], mde_price: ['mobile.de price', 'number'], mde_km: ['mobile.de km', 'number'],
+    mde_checked: ['mobile.de checked', 'date'], mde_desc: ['mobile.de description', 'text'],
     updated: ['Updated', 'readonly_edited'],
   },
   dealers: {
@@ -313,7 +319,8 @@ async function makeOffer(request, env, ctx) {
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
  *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
-  'highlights', 'msrp_gross', 'dealer_net', 'dealer_gross', 'pct_vs_list', 'status', 'available_until', 'vin'];
+  'highlights', 'msrp_gross', 'dealer_net', 'dealer_gross', 'pct_vs_list', 'status', 'available_until', 'vin',
+  'prev_owners', 'condition', 'paint', 'trim', 'climate', 'park_assist', 'seats', 'doors', 'engine_cc', 'equipment'];
 export function publicCar(v) {
   const o = {};
   for (const k of PUBLIC_FIELDS) if (v[k] != null && v[k] !== '') o[k] = v[k];
