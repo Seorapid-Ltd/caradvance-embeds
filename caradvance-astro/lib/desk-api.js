@@ -36,7 +36,7 @@ export const MAP = {
     source: ['Source', 'text'], data_gaps: ['Data gaps', 'text'], reserved_for: ['Reserved for', 'text'], notes: ['Notes', 'text'],
     prev_owners: ['Previous owners', 'number'], condition: ['Condition', 'text'], paint: ['Paint (manufacturer)', 'text'],
     trim: ['Trim', 'text'], climate: ['Climate', 'text'], park_assist: ['Park assist', 'text'], seats: ['Seats', 'number'],
-    doors: ['Doors', 'text'], engine_cc: ['Engine cc', 'number'], equipment: ['Equipment', 'list'], photo_count: ['Photos', 'number'],
+    doors: ['Doors', 'text'], engine_cc: ['Engine cc', 'number'], equipment: ['Equipment', 'list'], photo_count: ['Photos', 'number'], rent_sale: ['Rental & sale', 'checkbox'],
     // team only — never in PUBLIC_FIELDS
     mde_url: ['mobile.de link', 'url'], mde_price: ['mobile.de price', 'number'], mde_km: ['mobile.de km', 'number'],
     mde_checked: ['mobile.de checked', 'date'], mde_desc: ['mobile.de description', 'text'],
@@ -80,6 +80,7 @@ function readProp(p, type) {
     case 'email': return p.email ?? undefined;
     case 'phone': return p.phone_number ?? undefined;
     case 'url': return p.url ?? undefined;
+    case 'checkbox': return p.checkbox ? true : undefined;
     case 'readonly_edited': return p.last_edited_time?.slice(0, 10);
     case 'readonly_created': return p.created_time;
     case 'readonly_uid': return p.unique_id?.number ?? undefined;
@@ -100,6 +101,7 @@ function writeProp(type, v) {
     case 'email': return { email: empty ? null : String(v) };
     case 'phone': return { phone_number: empty ? null : String(v) };
     case 'url': return { url: empty ? null : String(v) };
+    case 'checkbox': return { checkbox: !!v && v !== 'false' && v !== '0' };
   }
   return undefined; // read-only and unknown types are skipped
 }
@@ -358,44 +360,19 @@ async function linkSig(env, id) {
   return [...new Uint8Array(s)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
 }
 function germanCheck(offer, car, rk, base, sig) {
+  // Short on purpose (2 lines): which car · who offers · our price · the offer → accept or reject
   const p = parseOffer(offer);
-  const land = COUNTRY_DE[p.country] || p.country || '—';
-  const typ = p.type === 'b2b' ? 'Händler (netto, zzgl. 19 % MwSt.)' : 'Privatkunde (brutto, inkl. 19 % MwSt.)';
-  const ours = p.type === 'b2b' ? car.dealer_net : car.dealer_gross;
-  const diff = ours ? Math.round((p.price / ours - 1) * 1000) / 10 : null;
-  const km = car.mileage != null ? Number(car.mileage).toLocaleString('de-DE') + ' km' : (car.km_text || '—');
-  const subject = `Angebot zur Prüfung: ${car.model || ''} (${car.id}) – ${eurDe(p.price)} ${p.type === 'b2b' ? 'netto' : 'brutto'} aus ${land}`;
+  const land = COUNTRY_DE[p.country] || p.country || '';
+  const who = [p.name, p.company && '(' + p.company + ')'].filter(Boolean).join(' ') || 'Interessent';
+  const net = p.type === 'b2b';
+  const ours = net ? car.dealer_net : car.dealer_gross;
   const u = d => `${base}/api/desk/offer-decision?id=${encodeURIComponent(offer.id)}&sig=${sig}&d=${d}`;
-  const lines = [
-    'Guten Tag,', '',
-    `für das folgende Fahrzeug liegt ein Angebot vor. Bitte teilen Sie uns mit, ob das Angebot akzeptabel ist.`, '',
-    `FAHRZEUG: ${car.model || ''} · Ref. ${car.id}`,
-    `Erstzulassung ${car.first_reg || '—'} · ${km} · ${car.power || '—'} · ${car.colour || '—'}`,
-    `FIN: ${car.vin || '—'}`,
-    `Unsere Preise: Händlerpreis ${eurDe(car.dealer_net)} netto · Endkundenpreis ${eurDe(car.dealer_gross)} brutto`, '',
-    `ANGEBOT: ${eurDe(p.price)} – ${typ}`,
-    `Land: ${land}${p.company ? ' · Firma: ' + p.company : ''}`,
-    `Abweichung zu unserem Preis: ${diff == null ? '—' : (diff > 0 ? '+' : '') + diff.toLocaleString('de-DE') + ' %'}`,
-    `Rang: ${rk.rank} von ${rk.of} Angeboten für dieses Fahrzeug${rk.cof ? ` (in ${land}: ${rk.crank} von ${rk.cof})` : ''} · Höchstes Angebot (netto): ${eurDe(rk.best)}`,
-    p.message ? `Nachricht des Interessenten: ${p.message}` : '', '',
-    `Annehmen: ${u('accept')}`, `Ablehnen: ${u('decline')}`, `Gegenangebot: ${u('counter')}`, '',
-    'Mit freundlichen Grüßen', 'CarAdvance Sales Desk',
-  ].filter((l, i, a) => l !== '' || a[i - 1] !== '');
-  const btn = (t, d, bg) => `<a href="${u(d)}" style="display:inline-block;margin:0 8px 8px 0;padding:12px 20px;border-radius:999px;background:${bg};color:#fff;font-weight:bold;text-decoration:none">${t}</a>`;
-  const row = (k, v) => `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;white-space:nowrap">${k}</td><td style="padding:4px 0;font-weight:600">${escH(v)}</td></tr>`;
-  const img = car.photo ? `<img src="${base}/sales/img/t/${encodeURIComponent(car.photo)}" alt="" width="180" style="border-radius:12px;display:block;margin:0 0 12px">` : '';
-  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#141519;max-width:600px">
-<p>Guten Tag,</p><p>für das folgende Fahrzeug liegt ein Angebot vor. Bitte teilen Sie uns mit, ob das Angebot akzeptabel ist.</p>
-<div style="border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin:16px 0">${img}
-<div style="font-size:18px;font-weight:bold">${escH(car.model || '')}</div><div style="color:#6b7280;margin-bottom:8px">Ref. ${escH(car.id)} · FIN ${escH(car.vin || '—')}</div>
-<table style="border-collapse:collapse;font-size:14px">${row('Erstzulassung', car.first_reg || '—')}${row('Kilometerstand', km)}${row('Leistung', car.power || '—')}${row('Farbe', car.colour || '—')}${row('Händlerpreis netto', eurDe(car.dealer_net))}${row('Endkundenpreis brutto', eurDe(car.dealer_gross))}</table></div>
-<div style="background:#fff4f4;border-radius:16px;padding:16px;margin:16px 0">
-<div style="font-size:13px;color:#e30613;font-weight:bold;letter-spacing:.04em">ANGEBOT</div>
-<div style="font-size:24px;font-weight:bold;margin:4px 0">${eurDe(p.price)}</div><div>${escH(typ)}</div>
-<table style="border-collapse:collapse;font-size:14px;margin-top:8px">${row('Land', land)}${p.company ? row('Firma', p.company) : ''}${row('Abweichung zu unserem Preis', diff == null ? '—' : (diff > 0 ? '+' : '') + diff.toLocaleString('de-DE') + ' %')}${row('Rang', `${rk.rank} von ${rk.of} Angeboten` + (rk.cof ? ` · in ${land}: ${rk.crank} von ${rk.cof}` : ''))}${row('Höchstes Angebot (netto)', eurDe(rk.best))}${p.message ? row('Nachricht', p.message) : ''}</table></div>
-<p>${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}${btn('Gegenangebot', 'counter', '#141519')}</p>
-<p style="color:#6b7280;font-size:13px">Mit freundlichen Grüßen<br>CarAdvance Sales Desk</p></div>`;
-  return { subject, text: lines.join('\n'), html };
+  const l1 = `${car.model || ''} (${car.id}) – Angebot von ${who}${land ? ', ' + land : ''}: ${eurDe(p.price)} ${net ? 'netto' : 'brutto'} (unser Preis ${eurDe(ours)} ${net ? 'netto' : 'brutto'}).`;
+  const l2 = `Annehmen oder ablehnen? Annehmen: ${u('accept')} · Ablehnen: ${u('decline')}`;
+  const subject = `Angebot ${car.id}: ${eurDe(p.price)} – annehmen oder ablehnen?`;
+  const btn = (t, d, bg) => `<a href="${u(d)}" style="display:inline-block;margin:0 6px 0 0;padding:8px 16px;border-radius:999px;background:${bg};color:#fff;font-weight:bold;text-decoration:none">${t}</a>`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519"><div><b>${escH(car.model || '')} (${escH(car.id)})</b> – Angebot von ${escH(who)}${land ? ', ' + escH(land) : ''}: <b>${eurDe(p.price)} ${net ? 'netto' : 'brutto'}</b> (unser Preis ${eurDe(ours)} ${net ? 'netto' : 'brutto'}).</div><div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
+  return { subject, text: l1 + '\n' + l2, html };
 }
 const todayIso = () => new Date().toISOString().slice(0, 10);
 async function setOutcome(env, offer, outcome, next, line) {
@@ -554,7 +531,7 @@ async function msgRoute(route, request, env, me) {
  *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
   'highlights', 'msrp_gross', 'dealer_net', 'dealer_gross', 'pct_vs_list', 'status', 'available_until', 'vin',
-  'prev_owners', 'condition', 'paint', 'trim', 'climate', 'park_assist', 'seats', 'doors', 'engine_cc', 'equipment'];
+  'prev_owners', 'condition', 'paint', 'trim', 'climate', 'park_assist', 'seats', 'doors', 'engine_cc', 'equipment', 'rent_sale'];
 export function publicCar(v) {
   const o = {};
   for (const k of PUBLIC_FIELDS) if (v[k] != null && v[k] !== '') o[k] = v[k];
