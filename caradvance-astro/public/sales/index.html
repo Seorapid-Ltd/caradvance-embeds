@@ -696,6 +696,21 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 }
 /* iOS: 16px alatti betű nagyít a beviteli mezőkre koppintáskor */
 @media(max-width:1100px) and (hover:none){input,select,textarea{font-size:16px}}
+
+/* Márka-csempék: egyforma, rendezett; a logók világos és sötét módban is látszanak */
+.frow .brands .br{gap:10px;font-weight:700}
+.frow .brands .br .lg{display:inline-flex;align-items:center;justify-content:center;width:30px;height:24px;flex:none}
+.frow .brands .br .lg img{height:20px;max-width:30px;width:auto;object-fit:contain}
+.frow .brands .br .nolg{color:var(--muted)}
+.frow .brands .br{flex:1 1 auto!important;min-width:max-content!important;padding:0 14px!important}
+.frow .brands .br b{font-size:14px;white-space:nowrap}
+.frow .brands .br.on .nolg{color:inherit}
+:root[data-theme=dark] .frow .brands .br .bl-w{display:block}:root[data-theme=dark] .frow .brands .br .bl-d{display:none}
+:root[data-theme=dark] .frow .brands .br.on .bl-w{display:none}:root[data-theme=dark] .frow .brands .br.on .bl-d{display:block}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme=light]) .frow .brands .br .bl-w{display:block}:root:not([data-theme=light]) .frow .brands .br .bl-d{display:none}
+  :root:not([data-theme=light]) .frow .brands .br.on .bl-w{display:none}:root:not([data-theme=light]) .frow .brands .br.on .bl-d{display:block}
+}
 </style>
 </head>
 <body>
@@ -1004,8 +1019,8 @@ function buildBrands(){
   sel.innerHTML=`<option value="">${t('s_allmake')}</option>`+makes.map(m=>`<option${m===cur?' selected':''}>${esc(m)}</option>`).join('');
   const total=makes.reduce((s,m)=>s+cnt[m],0);
   const top=makes.slice(0,5),more=makes.slice(5);
-  const pill=m=>{const l=logoOf(m);return `<button type="button" class="br${cur===m?' on':''}" data-m="${esc(m)}" aria-pressed="${cur===m}" title="${esc(m)} · ${cnt[m]}">${l?`<em class="lg"><img class="bl-w" src="img/brands/bl-${l}.webp" alt=""><img class="bl-d" src="img/brands/bl-${l}-dark.webp" alt=""></em>`:''}<b>${esc(m)}</b></button>`};
-  $('#brands').innerHTML=`<button type="button" class="br all${!cur?' on':''}" data-m="" aria-pressed="${!cur}">${t('s_allmake')}</button>`+top.map(pill).join('')+(more.length?`<label class="br more"><select aria-label="${t('more_mk')}"><option value="">${t('more_mk')}</option>${more.map(m=>`<option${m===cur?' selected':''} value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label>`:'');
+  const pill=m=>{const l=logoOf(m);return `<button type="button" class="br${cur===m?' on':''}" data-m="${esc(m)}" aria-pressed="${cur===m}" title="${esc(m)} · ${cnt[m]}">${l?`<em class="lg"><img class="bl-w" src="img/brands/bl-${l}.webp" alt=""><img class="bl-d" src="img/brands/bl-${l}-dark.webp" alt=""></em>`:`<em class="lg nolg"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 11l1.6-4.2A2 2 0 0 1 8.5 5.5h7a2 2 0 0 1 1.9 1.3L19 11M4 11h16v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM7.5 13.5h1M15.5 13.5h1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></em>`}<b>${esc(m)}</b></button>`};
+  $('#brands').innerHTML=`<button type="button" class="br all${!cur?' on':''}" data-m="" aria-pressed="${!cur}"><em class="lg nolg"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></em><b>${t('s_allmake')}</b></button>`+top.map(pill).join('')+(more.length?`<label class="br more"><select aria-label="${t('more_mk')}"><option value="">${t('more_mk')}</option>${more.map(m=>`<option${m===cur?' selected':''} value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label>`:'');
 }
 $('#brands').addEventListener('change',e=>{const sl=e.target.closest('.more select');if(!sl)return;$('#sMake').value=sl.value;renderStock();});
 $('#brands').addEventListener('click',e=>{if(e.target.closest('.more'))return;const b=e.target.closest('button.br');if(!b)return;$('#sMake').value=b.dataset.m;if(location.hash&&location.hash!=='#stock')location.hash='#stock';renderStock();});
