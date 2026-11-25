@@ -466,6 +466,29 @@ th.pcol span{display:block}
 
 /* Status column centred like the price columns */
 th.stcol,td.stcol{text-align:center;padding-left:14px;padding-right:16px}
+
+/* hover card on the car list */
+.hcard{position:fixed;z-index:60;width:340px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:20px;box-shadow:0 18px 50px rgba(15,16,19,.18),0 2px 8px rgba(15,16,19,.08);overflow:hidden;pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .14s ease,transform .14s ease}
+.hcard.on{opacity:1;transform:none}
+.hcard .hc-img{width:100%;height:186px;object-fit:cover;display:block;background:var(--soft)}
+.hcard .hc-noimg{height:72px;display:flex;align-items:center;justify-content:center;background:var(--soft);color:var(--muted);font-size:13px}
+.hcard .hc-body{padding:14px 18px 16px}
+.hcard .cc-bar{margin-bottom:8px}
+.hcard .hc-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.hcard .hc-st{margin-left:auto;font-weight:700}
+.hcard .hc-st.Available{color:var(--ok)} .hcard .hc-st.Reserved{color:var(--warn)} .hcard .hc-st.Sold{color:var(--red)}
+.hcard b.hc-name{display:block;font-size:17px;line-height:1.25;font-weight:800}
+.hcard .hc-col{font-size:13px;color:var(--muted);margin-top:2px}
+.hcard .hc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:12px 0;font-size:12.5px}
+.hcard .hc-grid span{color:var(--muted);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.hcard .hc-grid div{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hcard .hc-price{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 12px;border-radius:14px;background:var(--soft);border:1px solid var(--line)}
+.hcard .hc-price b{display:block;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.hcard .hc-price small{display:block;font-size:11px;color:var(--muted);line-height:1.3}
+.hcard .hc-ask{font-size:12px;color:var(--muted);margin-top:6px}
+.hcard .hc-hl{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}
+.hcard .hc-hl .chip{font-size:11px;white-space:normal}
+@media (hover:none),(max-width:900px){.hcard{display:none}}
 </style>
 </head>
 <body>
@@ -911,6 +934,47 @@ function openLog(o){
 }
 $('#addLog').addEventListener('click',()=>S.dealers.length?openLog(null):status('Add a dealer first, then log contact with them.'));
 $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r)openLog(S.logs.find(o=>o.id===r.dataset.id))});
+
+
+/* ---------- HOVER CARD (car list) ---------- */
+(()=>{
+  const hc=document.createElement('div');hc.className='hcard';hc.setAttribute('aria-hidden','true');document.body.appendChild(hc);
+  let tmr=null,curId=null,lx=0,ly=0;
+  const L=()=>({en:['Business to Business','excl. VAT','Business to Customer','incl. 19% German VAT','Registration','Mileage','Power','Fuel','Gearbox','Drive','Asking','Available until','no photo yet'],
+    hu:['Business to Business','ÁFA nélkül','Business to Customer','19% német ÁFÁ-val','Forgalomba helyezés','Futás','Teljesítmény','Üzemanyag','Váltó','Hajtás','Kínálati ár','Elérhető eddig','még nincs fotó'],
+    de:['Business to Business','ohne MwSt.','Business to Customer','inkl. 19 % dt. MwSt.','Erstzulassung','Kilometer','Leistung','Kraftstoff','Getriebe','Antrieb','Angebot','Verfügbar bis','noch kein Foto'],
+    sk:['Business to Business','bez DPH','Business to Customer','s 19 % nem. DPH','Registrácia','Nájazd','Výkon','Palivo','Prevodovka','Pohon','Ponuka','Dostupné do','zatiaľ bez fotky'],
+    cs:['Business to Business','bez DPH','Business to Customer','s 19% něm. DPH','Registrace','Nájezd','Výkon','Palivo','Převodovka','Pohon','Nabídka','K dispozici do','zatím bez fotky'],
+    pl:['Business to Business','bez VAT','Business to Customer','z 19% niem. VAT','Rejestracja','Przebieg','Moc','Paliwo','Skrzynia','Napęd','Oferta','Dostępne do','brak zdjęcia']}[window.LANG||(typeof LANG!=='undefined'?LANG:'en')]||null);
+  function html(c){
+    const T=L()||L.call(null)||[];const tx=T.length?T:['Business to Business','excl. VAT','Business to Customer','incl. 19% German VAT','Registration','Mileage','Power','Fuel','Gearbox','Drive','Asking','Available until','no photo yet'];
+    const p=pics(c)[0];const km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'—');
+    const cell=(k,v)=>v?`<div><span>${esc(k)}</span>${esc(v)}</div>`:'';
+    const hl=(c.highlights||[]).slice(0,4).map(h=>`<span class="chip">${esc(h)}</span>`).join('');
+    const st=c.status||'Available';
+    return `${p?`<img class="hc-img" src="img/${esc(p)}" alt="">`:`<div class="hc-noimg">${esc(tx[12])}</div>`}
+    <div class="hc-body"><i class="cc-bar"></i><div class="hc-top"><span>${esc(c.id)}</span><span>${esc(c.category||'')}</span><span class="hc-st ${esc(st)}">${esc(st)}</span></div>
+    <b class="hc-name">${esc(c.model||'')}</b><div class="hc-col">${esc([c.colour,c.interior].filter(Boolean).join(' · '))}</div>
+    <div class="hc-grid">${cell(tx[4],c.first_reg)}${cell(tx[5],km)}${cell(tx[6],c.power)}${cell(tx[7],c.fuel)}${cell(tx[8],c.transmission)}${cell(tx[9],c.drive)}${c.available_until?cell(tx[11],c.available_until):''}</div>
+    <div class="hc-price"><div><small>${esc(tx[0])}</small><b>${eur(c.dealer_net)}</b><small>${esc(tx[1])}</small></div><div><small>${esc(tx[2])}</small><b>${eur(c.dealer_gross)}</b><small>${esc(tx[3])}</small></div></div>
+    ${c.asking_price!=null&&c.asking_price!==''?`<div class="hc-ask">${esc(tx[10])}: <b>${eur(c.asking_price)}</b></div>`:''}
+    ${hl?`<div class="hc-hl">${hl}</div>`:''}</div>`;
+  }
+  function place(){const w=hc.offsetWidth||340,h=hc.offsetHeight||420,m=16;let x=lx+24,y=ly-h/2;
+    if(x+w>innerWidth-m)x=lx-w-24; if(x<m)x=m; if(y+h>innerHeight-m)y=innerHeight-h-m; if(y<m)y=m; hc.style.left=x+'px';hc.style.top=y+'px';}
+  function hide(){clearTimeout(tmr);tmr=null;curId=null;hc.classList.remove('on');}
+  const rows=document.getElementById('sRows');
+  rows.addEventListener('mousemove',e=>{lx=e.clientX;ly=e.clientY;
+    const r=e.target.closest('tr.row');
+    if(!r||e.target.closest('select,input,textarea,a,button')){hide();return}
+    if(r.dataset.id===curId){if(hc.classList.contains('on'))place();return}
+    hide();curId=r.dataset.id;
+    tmr=setTimeout(()=>{const c=(S.cars||[]).find(x=>x.id===curId);if(!c)return;hc.innerHTML=html(c);place();hc.classList.add('on');const im=hc.querySelector('img');if(im)im.onload=place;},220);
+  });
+  rows.addEventListener('mouseleave',hide);
+  rows.addEventListener('click',hide);
+  addEventListener('scroll',hide,{passive:true});
+})();
 
 /* ---------- DB ---------- */
 async function save(path,data,merge){
