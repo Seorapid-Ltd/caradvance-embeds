@@ -1,4 +1,5 @@
 // CarAdvance /belso auth + data API
+import { ensureDeskColumn } from '../../../lib/desk-api.js';
 // Route: www.caradvance.hu/api/belso/*
 // D1 binding name expected: DB
 
@@ -458,7 +459,8 @@ async function requireAdmin(request, env) {
 async function handleAdminListUsers(request, env) {
   const { error } = await requireAdmin(request, env);
   if (error) return error;
-  const rows = await env.DB.prepare(`SELECT id, email, name, role, created_at FROM users ORDER BY id`).all();
+  await ensureDeskColumn(env);
+  const rows = await env.DB.prepare(`SELECT id, email, name, role, created_at, desk_access FROM users ORDER BY id`).all();
   return json({ users: rows.results });
 }
 
@@ -468,7 +470,7 @@ async function handleAdminCreateUser(request, env) {
   const b = await request.json().catch(() => ({}));
   const email = (b.email || '').trim().toLowerCase();
   const name = b.name || '';
-  const role = b.role === 'admin' ? 'admin' : 'sales_manager';
+  const role = b.role === 'admin' ? 'admin' : b.role === 'sales_desk' ? 'sales_desk' : 'sales_manager';
   const password = b.password || '';
   if (!email || !name || !password) return json({ error: 'Hiányzó adat.' }, 400);
 
@@ -477,9 +479,11 @@ async function handleAdminCreateUser(request, env) {
 
   const saltHex = randomHex(16);
   const hashHex = await pbkdf2Hex(password, saltHex);
+  await ensureDeskColumn(env);
+  const desk = role === 'sales_desk' || b.desk_access === true || b.desk_access === 1 ? 1 : 0;
   const res = await env.DB.prepare(
-    `INSERT INTO users (email, name, role, salt_hex, hash_hex) VALUES (?,?,?,?,?)`
-  ).bind(email, name, role, saltHex, hashHex).run();
+    `INSERT INTO users (email, name, role, salt_hex, hash_hex, desk_access) VALUES (?,?,?,?,?,?)`
+  ).bind(email, name, role, saltHex, hashHex, desk).run();
   return json({ id: res.meta.last_row_id });
 }
 
@@ -494,6 +498,15 @@ async function handleAdminResetPassword(request, env, id) {
   await env.DB.prepare(`UPDATE users SET salt_hex = ?, hash_hex = ? WHERE id = ?`)
     .bind(saltHex, hashHex, id).run();
   await env.DB.prepare(`DELETE FROM sessions WHERE user_id = ?`).bind(id).run();
+  return json({ ok: true });
+}
+
+async function handleAdminSetDesk(request, env, id) {
+  const { error } = await requireAdmin(request, env);
+  if (error) return error;
+  const b = await request.json().catch(() => ({}));
+  await ensureDeskColumn(env);
+  await env.DB.prepare(`UPDATE users SET desk_access = ? WHERE id = ?`).bind(b.on ? 1 : 0, id).run();
   return json({ ok: true });
 }
 
@@ -787,6 +800,8 @@ export async function onRequest(context) {
       if (path === '/admin/users' && method === 'POST') return await handleAdminCreateUser(request, env);
       m = path.match(/^\/admin\/users\/(\d+)\/reset-password$/);
       if (m && method === 'POST') return await handleAdminResetPassword(request, env, m[1]);
+      m = path.match(/^\/admin\/users\/(\d+)\/desk$/);
+      if (m && method === 'POST') return await handleAdminSetDesk(request, env, m[1]);
       m = path.match(/^\/admin\/users\/(\d+)$/);
       if (m && method === 'DELETE') return await handleAdminDeleteUser(request, env, m[1]);
       if (path === '/admin/assign' && method === 'POST') return await handleAdminAssign(request, env);

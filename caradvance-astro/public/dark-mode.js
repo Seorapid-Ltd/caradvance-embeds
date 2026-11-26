@@ -2,9 +2,13 @@
 (function () {
   var d = document.documentElement;
   var host = location.hostname.replace(/^www\./, '');
-  if (!/(^|\.)caradvance\.(hu|sk|cz|pl|ch|eu)$/.test(location.hostname) || /^\/(belso|ajanlat)(\/|$)/.test(location.pathname)) return;
-  if (!window.matchMedia) return;
-  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  // egyszer fusson (a főoldal maga is betöltheti, ha window.__CA_FORCE_DARK be van állítva)
+  if (window.__caDM) return; window.__caDM = 1;
+  // window.__CA_FORCE_DARK: az oldal mindig sötét (a készülék beállításától függetlenül) — jelenleg csak a magyar főoldal állítja be
+  var force = !!window.__CA_FORCE_DARK;
+  if (!force && (!/(^|\.)caradvance\.(hu|sk|cz|pl|ch|eu)$/.test(location.hostname) || /^\/(belso|ajanlat)(\/|$)/.test(location.pathname))) return;
+  if (!force && !window.matchMedia) return;
+  var mq = force ? { matches: true, addEventListener: function () {}, addListener: function () {} } : window.matchMedia('(prefers-color-scheme: dark)');
 
   var CSS = [
     'html.ca-dark{color-scheme:dark;--ink:#E8EBF0;--muted:#A3ADBC;--line:#2B313C;--bg:#0D0F13;--soft:#1A1E26}',
@@ -132,7 +136,7 @@
   function reset(root) {
     var els = [root].concat([].slice.call(root.querySelectorAll('*')));
     els.forEach(function (e) {
-      if (!e.classList || e.closest('.cstage')) return;
+      if (!e.classList || e.closest('.cstage,[data-dm-skip]')) return;
       RESETK.forEach(function (k) { e.classList.remove(k); });
       var o;
       if (e.hasAttribute('data-dmc')) { o = e.getAttribute('data-dmc'); e.style.removeProperty('color'); e.style.removeProperty('-webkit-text-fill-color'); if (o) e.style.setProperty('color', o); e.removeAttribute('data-dmc'); }
@@ -152,7 +156,7 @@
     var els = root ? [root].concat([].slice.call(root.querySelectorAll('*'))) : document.body.querySelectorAll('*');
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      if (el.closest('.cstage')) continue;
+      if (el.closest('.cstage,[data-dm-skip]')) continue;
       // menü (hamburger) vonalai: világosak maradjanak a sötét gombon — minden oldalon és piacon (különben a világos vonalakat
       // a sötétítés sötétre festi, és mobilon eltűnik a menü ikon)
       if (el.parentElement && el.parentElement.classList && el.parentElement.classList.contains('burger') && el.tagName === 'SPAN') { if (!el.hasAttribute('data-dmbg')) el.setAttribute('data-dmbg', el.style.getPropertyValue('background-color') || ''); el.style.setProperty('background-color', '#E8EBF0', 'important'); continue; }
@@ -219,8 +223,11 @@
     function walk(list) { for (var i = 0; i < list.length; i++) { var r = list[i]; if (r.cssRules && !r.selectorText) { try { walk(r.cssRules); } catch (e) {} } else if (r.selectorText && (STATE.test(r.selectorText) || /::?(before|after)/.test(r.selectorText))) rules.push(r); } }
     for (var i = 0; i < document.styleSheets.length; i++) { var sh = document.styleSheets[i]; if (sh.ownerNode && sh.ownerNode.id && sh.ownerNode.id.indexOf('ca-dark') === 0) continue; try { walk(sh.cssRules); } catch (e) {} }
     var out = [];
+    // a [data-dm-skip] területre vonatkozó szabályokat nem írjuk át (az a rész saját sötét dizájnt használ)
+    function inSkip(sel) { try { var base = sel.replace(/::?(before|after)|:(hover|focus-visible|focus-within|focus|active|checked)/g, ''); var els = document.querySelectorAll(base); if (!els.length) return false; for (var k = 0; k < els.length; k++) if (!els[k].closest('[data-dm-skip]')) return false; return true; } catch (e) { return false; } }
     rules.forEach(function (r) {
       if (/dots?\b/i.test(r.selectorText)) return;
+      if (document.querySelector('[data-dm-skip]') && inSkip(r.selectorText)) return;
       if (/::?(before|after)/.test(r.selectorText) && !STATE.test(r.selectorText.replace(/::?(before|after)/g, ''))) { var pb = resolve(r.style.getPropertyValue('background-color')); if (pb && pb.a > 0.35 && sat(pb) < 40 && lum(pb) > 0.82) out.push(splitSel(r.selectorText).map(pre).join(',') + '{background-color:#3A414D!important}'); return; }
       var st = r.style, decl = [];
       var bgv = st.getPropertyValue('background-color'), bgc = resolve(bgv);
@@ -242,7 +249,10 @@
     muts.forEach(function (m) {
       if (m.type === 'attributes') {
         var t = m.target;
-        if (m.attributeName === 'class') { var strip = function (v) { return (v || '').replace(/(^|\s)dm-\S+/g, ' ').replace(/\s+/g, ' ').trim(); }; if (strip(m.oldValue) === strip(t.getAttribute('class'))) return; }
+        // kényszerített sötét módban (főoldal) a megjelenési / kiemelési jelzők (in, ca-*) váltása nem indít újraszínezést —
+        // különben az újraszínezés a beúszó animációkat is letiltaná
+        if (m.attributeName === 'class') { var strip = function (v) { v = (v || '').replace(/(^|\s)dm-\S+/g, ' '); if (force) v = v.replace(/(^|\s)(in|ca-[\w-]+)(?=\s|$)/g, ' '); return v.replace(/\s+/g, ' ').trim(); }; if (strip(m.oldValue) === strip(t.getAttribute('class'))) return; }
+        if (force && m.attributeName === 'style') { var cp = function (v) { return (v || '').replace(/--[\w-]+\s*:[^;]*;?/g, '').replace(/\s+/g, ' ').trim(); }; if (cp(m.oldValue) === cp(t.getAttribute('style'))) return; }
         if (m.attributeName === 'style' && (t.hasAttribute('data-dmc') || t.hasAttribute('data-dmbd') || t.hasAttribute('data-dmbi') || t.hasAttribute('data-dmbg') || /dm-/.test(t.getAttribute('class') || ''))) return;
         if (t.nodeType === 1 && !(t instanceof SVGElement)) { (pending || (pending = [])).push(t); if (m.attributeName === 'class' && t !== document.body && t !== d) (resets || (resets = [])).push(t); }
         return;
