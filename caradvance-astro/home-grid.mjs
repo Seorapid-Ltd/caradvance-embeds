@@ -6,7 +6,7 @@
 //    (hullámszerű átmenet, parallaxis), a szomszéd oldal autói halványan kilátszanak; telefonon soronként oldalra húzható
 //  · Eladó: a legutóbb feltöltött autók elöl (a táblázat „hozzaadva” dátuma szerint), ugyanaz a modell csak egyszer; az új autók „Új” címkét kapnak
 // A régi körhinta és a „színpad” rejtve marad (adatforrásként szolgál, az ajánlatkérő ablak az eredeti kártyákról nyílik).
-// Csak a magyar főoldalt érinti. Idempotens.
+// Az alapértelmezett fül az Eladó. Csak a magyar főoldalt érinti. Idempotens.
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -194,7 +194,7 @@ if(!L.length){var none=itemsOf(p[0].replace("panel","cw")).length;W.appendChild(
 GR.forEach(function(x){if(!x.l.length)return;var R=rowEl();W.appendChild(R);R.querySelector(".cg-rt").textContent=x.t;R.querySelector(".cg-rc").textContent=x.l.length+" autó";var G=R.querySelector(".cg-grid"),VP=R.querySelector(".cg-vp");
 x.l.forEach(function(o){G.appendChild(card(o))});if(!narrow)pager(R,VP,G);var s=R.querySelector(".cg-sw");if(x.l.length>1)x.l.forEach(function(_,k){s.appendChild(el("i",k===0?"on":""))})})})}
 var to=0;function later(d){clearTimeout(to);to=setTimeout(render,d||120)}
-function boot(){A=document.getElementById("autoink");if(!A)return;A.classList.add("ca-grid","ca-stg-on");render();
+function boot(){A=document.getElementById("autoink");if(!A)return;A.classList.add("ca-grid","ca-stg-on");var te=A.querySelector('.autok-tab[data-tab="elado"]');if(te)te.click();render();
 ["cw-berelheto","cw-elado","cw-bizomanyos"].forEach(function(id){var r=rootOf(id),t=r&&r.querySelector(".cw-track");if(t)new MutationObserver(function(){later()}).observe(t,{childList:true})});
 document.addEventListener("click",function(e){if(e.target.closest&&e.target.closest("#autoink .cf-br,#autoink .autok-tab")){later(60);setTimeout(function(){[].forEach.call(document.querySelectorAll("#autoink .cg-vp"),function(v){v.__relayout&&v.__relayout()})},90)}});
 var w=(innerWidth<=720)+"|"+colsN();addEventListener("resize",function(){var n=(innerWidth<=720)+"|"+colsN();if(n!==w){w=n;later()}});
@@ -208,6 +208,11 @@ try {
     if (h.indexOf('id="ca-grid-js"') > -1) console.log('[home-grid] már alkalmazva');
     else if (h.indexOf('id="autoink"') < 0) console.log('[home-grid] nincs #autoink — kihagyva');
     else {
+      // alapértelmezett fül: Eladó (színesebb, valódi fotók) — már a HTML-ben is ez az aktív, a szkript pedig rákattint, hogy a fejléc és a lusta betöltés is ehhez igazodjon
+      h = h.replace('<button class="autok-tab on" data-tab="berelheto"', '<button class="autok-tab" data-tab="berelheto"')
+        .replace('<button class="autok-tab" data-tab="elado"', '<button class="autok-tab on" data-tab="elado"')
+        .replace('<div class="autok-panel on" id="panel-berelheto">', '<div class="autok-panel" id="panel-berelheto">')
+        .replace('<div class="autok-panel" id="panel-elado">', '<div class="autok-panel on" id="panel-elado">');
       h = h.replace('</head>', '<script>window.__caGrid=1</script>' + CSS + '</head>').replace(/<\/body>(?![\s\S]*<\/body>)/i, JS + '</body>');
       fs.writeFileSync(FILE, h);
       console.log('[home-grid] klasszikus autókártyák a Kínálat részben');
