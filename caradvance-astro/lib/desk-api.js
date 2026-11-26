@@ -563,12 +563,15 @@ async function stockList(env, me) {
   const rows = (await env.DB.prepare('SELECT data, updated FROM desk_stocklist ORDER BY sort').all()).results || [];
   const admin = me.role === 'admin';
   const cars = rows.map(r => { const d = JSON.parse(r.data); if (!admin) for (const k of STOCK_ADMIN_ONLY) delete d[k]; return d; });
-  return { cars, admin, canPrice: ['admin', 'sales_manager'].includes(me.role), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
+  return { cars, admin, canPrice: canPickPrice(me), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
 }
 
 /* Choosing the right price when the documents disagree (admins / sales managers). Optionally also sets the desk price in Notion. */
+// Only Alexander decides stock-list prices; everyone else can see them but not choose.
+const PRICE_DECIDERS = ['a.roether@caradvance.de'];
+const canPickPrice = me => PRICE_DECIDERS.includes(String((me && me.email) || '').trim().toLowerCase());
 async function stockChoosePrice(request, env, ctx, me) {
-  if (!['admin', 'sales_manager'].includes(me.role)) throw bad('Only an admin or a sales manager can set the price.', 403);
+  if (!canPickPrice(me)) throw bad('Only Alexander (a.roether@caradvance.de) can choose the price.', 403);
   const b = await request.json().catch(() => ({}));
   const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
   if (!(net > 1000 && net < 5000000)) throw bad('Enter a valid net price.');
