@@ -1110,6 +1110,14 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .dvwrap{display:block}
 .dvempty{color:var(--muted);text-align:center;padding:22px}
 .dv2head{display:flex;align-items:center;gap:16px;margin:2px 0 18px}
+.dv2acts{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 18px}
+.dv2acts button{min-height:46px;padding:0 20px;border-radius:999px;font-weight:800;font-size:14.5px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;border:2px solid transparent;transition:background .15s,box-shadow .15s,transform .05s}
+.dv2acts button:active{transform:translateY(1px)}
+.dv2acts button svg{width:19px;height:19px;flex:none}
+.dv2acts .dv2logbtn{background:var(--red);color:#fff;box-shadow:0 3px 12px rgba(226,0,26,.32)}
+.dv2acts .dv2logbtn:hover{background:#c40018}
+.dv2acts .dv2offbtn{background:var(--card);color:var(--red);border-color:var(--red)}
+.dv2acts .dv2offbtn:hover{background:color-mix(in srgb,var(--red) 10%,var(--card))}
 .dv2av{flex:none;width:46px;height:52px;border-radius:0;background:none;color:var(--ink);display:grid;place-items:center;border-right:1px solid var(--line)}
 .dv2av svg{width:34px;height:34px}
 .dv2htx{min-width:0}
@@ -2033,7 +2041,7 @@ function field([k,l,t,req],val){
     return`<label class="f">${l}<select name="${k}"${req?' required':''}><option value="">—</option>${os}</select></label>`;}
   return`<label class="f">${l}<input name="${k}" type="${t&&t!=='text'?t:'text'}" value="${v}"${req?' required':''}></label>`;
 }
-function openDialog(title,html,save,del){$('#dlgTitle').textContent=title;$('#dlgBody').innerHTML=html;$('#dlgBody').classList.remove('dvwrap');dlg.classList.remove('dlg-view');onSave=save;onDel=del;$('#dlgDel').hidden=!del;$('#dlgSave').hidden=false;$('#dlgEdit').hidden=true;dlg.showModal()}
+function openDialog(title,html,save,del){$('#dlgTitle').textContent=title;$('#dlgBody').innerHTML=html;$('#dlgBody').classList.remove('dvwrap');dlg.classList.remove('dlg-view');onSave=save;onDel=del;$('#dlgDel').hidden=!del;$('#dlgSave').hidden=false;$('#dlgSave').textContent='Save';$('#dlgEdit').hidden=true;dlg.showModal()}
 $('#dlgX').onclick=$('#dlgCancel').onclick=()=>dlg.close();
 $('#dlgDel').onclick=async()=>{if(onDel&&$('#dlgDel').dataset.armed){await onDel();dlg.close();$('#dlgDel').dataset.armed='';$('#dlgDel').textContent='Delete'}else{$('#dlgDel').dataset.armed='1';$('#dlgDel').textContent='Click again to delete'}};
 $('#dlgForm').addEventListener('submit',async e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));for(const k in fd)if(typeof fd[k]==='string')fd[k]=fd[k].trim();if(onSave&&await onSave(fd)!==false)dlg.close()});
@@ -2097,9 +2105,9 @@ function dealerViewHtml(d){
   const sales=sec(IV.chart,'Sales',(()=>{const r=[fld('Score reason',E(d.score_reason)),fld('Outreach language',E(d.language)),fld('Owner (team member)',E(d.owner)),fld('Last contact',E(d.last_contact))].filter(Boolean).join('');return r?`<div class="dv2grid">${r}</div>`:''})());
   const notesInner=(()=>{const parts=[];if(has(d.notes))parts.push(`<div class="dv2f wide"><span class="dv2v note">${E(d.notes)}</span></div>`);const lk=links(d.sources);if(lk)parts.push(`<div class="dv2f"><span class="dv2l">${E(trStr('Source'))}</span><span class="dv2v">${lk}</span></div>`);return parts.length?`<div class="dv2grid">${parts.join('')}</div>`:''})();
   const notes=sec(IV.note,'Sales notes',notesInner);
-  const acts=`<div class="dv2acts" style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 16px">`+
-    `<button type="button" class="pri" data-dealerlog="1">${E(trStr('Log activity'))}</button>`+
-    `<button type="button" data-dealeroffer="1" style="min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font-weight:700;cursor:pointer">${E(trStr('Record offer'))}</button>`+
+  const acts=`<div class="dv2acts">`+
+    `<button type="button" class="dv2logbtn" data-dealerlog="1">${IV.note}${E(trStr('Log activity'))}</button>`+
+    `<button type="button" class="dv2offbtn" data-dealeroffer="1">${IV.tag}${E(trStr('Record offer'))}</button>`+
     `</div>`;
   const body=company+contact+bprofile+sales+notes;
   return head+acts+(body||`<p class="dvempty">—</p>`);
