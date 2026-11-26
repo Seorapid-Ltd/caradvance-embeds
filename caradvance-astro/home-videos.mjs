@@ -59,7 +59,7 @@ const CSS = '<style id="ca-video-css">'
   + '@media(min-width:901px){.cav-ai,.cav-fl{align-items:stretch}.cav-ai>div:first-child,.cav-fl-txt{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start}'
   + '.cav-ai>div:first-child>*,.cav-fl-txt>*{margin-top:0;margin-bottom:0}.cav-ai .cav-screen,.cav-fl .cav-film{align-self:start}'
   + '.cav-ai .cav-h{font-size:clamp(28px,2.7vw,40px);line-height:1.06}.cav-ai .cav-p{font-size:15px;line-height:1.5}'
-  + '.cav-ai .cav-chips{flex-wrap:nowrap;gap:6px}.cav-ai .cav-chip{white-space:nowrap;font-size:12.5px;padding:8px 12px}'
+  + '.cav-ai .cav-chips{flex-wrap:nowrap;gap:6px;max-width:100%}.cav-ai .cav-chip{white-space:nowrap;font-size:12px;padding:8px 6px;flex:1 1 auto;text-align:center;justify-content:center}'
   + '.cav-fl .cav-h3{font-size:clamp(30px,3vw,46px)}.cav-fl .cav-ul{gap:16px}.cav-fl .cav-ul li{font-size:17px}}'
   + '@media(prefers-reduced-motion:reduce){.cav-play::after,.cav-eb i{animation:none}}'
   + '</style>';
@@ -71,7 +71,7 @@ const AI = '<section class="cav-sec" id="ai-autokereso" data-dm-skip><div class=
   + '<h2 class="cav-h reveal">Mondd el, mit szeretnél. <em>Mi megtaláljuk.</em></h2>'
   + '<p class="cav-p reveal">Nem kell szűrőkkel bajlódnod: írd le a saját szavaiddal, milyen autót keresel, és az asszisztensünk másodpercek alatt kiválasztja a hozzád illőket a kínálatunkból.</p>'
   + '<div class="cav-chips reveal"><span class="cav-chip" data-q="Családi autót keresek, ami tágas és prémium">„Tágas családi autó”</span><span class="cav-chip" data-q="Sportos autót keresek 25 millió forintig">„Sportos, 25 millióig”</span><span class="cav-chip" data-q="Elektromos vagy hibrid autót bérelnék">„Hibrid bérlésre”</span></div>'
-  + '<button type="button" class="cav-btn reveal" data-cav-chat>Kipróbálom az AI keresőt →</button></div>'
+  + '</div>'
   + '<div class="cav-screen reveal"><video muted loop playsinline preload="none" poster="/video/ai-kereso.webp" data-cav-src="/video/ai-kereso.mp4" aria-label="Bemutató: az AI autókereső működés közben"></video></div>'
   + '</div></div></section>';
 
@@ -102,6 +102,9 @@ const JS = '<script id="ca-video-js">(function(){'
   + 'var v=lb.querySelector("video");if(!v.src)v.src="/video/rendeles.mp4";lb.classList.add("on");document.documentElement.style.overflow="hidden";v.currentTime=0;var p=v.play();p&&p.catch&&p.catch(function(){})}'
   + 'document.addEventListener("click",function(e){if(e.target.closest&&e.target.closest("[data-cav-film]"))film()});'
   + 'document.addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("[data-cav-film]")){e.preventDefault();film()}});'
+  // AI blokk: a 3 példa-box sora pontosan a bekezdés szövegének elejétől a végéig ér (gépen)
+  + 'function chipFit(){var P=document.querySelector(".cav-ai .cav-p"),C=document.querySelector(".cav-ai .cav-chips");if(!P||!C)return;C.style.width="";if(innerWidth<901)return;var r=document.createRange();r.selectNodeContents(P);var R=0;[].forEach.call(r.getClientRects(),function(x){if(x.right>R)R=x.right});var L=P.getBoundingClientRect().left;if(R>L)C.style.width=Math.round(R-L)+"px"}'
+  + 'chipFit();addEventListener("resize",chipFit);addEventListener("load",chipFit);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(chipFit);'
   + '})();</script>';
 
 try {
