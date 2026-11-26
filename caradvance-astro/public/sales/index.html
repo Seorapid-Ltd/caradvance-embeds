@@ -1583,7 +1583,7 @@ Ready when you are.</h1>
 
   <section class="view" id="v-outreach">
     <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"></span><a href="#outreach" data-s="outreach"><svg class="subic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
-    <div class="bar"><button class="pri" id="addLog">Log a call or email</button><span class="count" id="oCount"></span></div>
+    <div class="bar"><button class="pri" id="addLog">Log a call or email</button><select id="oCountry" aria-label="Filter by country"><option value="">All countries</option></select><span class="count" id="oCount"></span></div>
     <div class="tbl"><table>
       <thead><tr><th>Date</th><th>Dealer</th><th>Cars</th><th>Channel</th><th class="hide-s">Team member</th><th>Outcome</th></tr></thead>
       <tbody id="oRows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
@@ -2016,7 +2016,12 @@ function field([k,l,t,req],val){
   if(t&&t.startsWith('sel:')){const o=t.slice(4).split(',').map(x=>{const[a,b]=x.split('|');return`<option value="${esc(a)}"${String(val??'')===a?' selected':''}>${esc(b||a)}</option>`}).join('');
     return`<label class="f">${l}<select name="${k}"${req?' required':''}><option value="">—</option>${o}</select></label>`}
   if(t==='area')return`<label class="f${wide}">${l}<textarea name="${k}">${v}</textarea></label>`;
-  if(t==='team')return`<label class="f">${l}<input name="${k}" list="team" value="${v}"></label>`;
+  if(t==='team'){const roster=[...document.querySelectorAll('#team option')].map(o=>(o.value||o.textContent).trim()).filter(Boolean);
+    const cur=(val==null?'':String(val)).trim();
+    let sel=roster.find(n=>n.toLowerCase()===cur.toLowerCase())||roster.find(n=>cur.toLowerCase().split(' ')[0]===n.toLowerCase());
+    const list=(cur&&!sel?[cur]:[]).concat(roster);const chosen=sel||cur;
+    const os=list.map(n=>`<option${n===chosen?' selected':''}>${esc(n)}</option>`).join('');
+    return`<label class="f">${l}<select name="${k}"${req?' required':''}><option value="">—</option>${os}</select></label>`;}
   return`<label class="f">${l}<input name="${k}" type="${t&&t!=='text'?t:'text'}" value="${v}"${req?' required':''}></label>`;
 }
 function openDialog(title,html,save,del){$('#dlgTitle').textContent=title;$('#dlgBody').innerHTML=html;$('#dlgBody').classList.remove('dvwrap');dlg.classList.remove('dlg-view');onSave=save;onDel=del;$('#dlgDel').hidden=!del;$('#dlgSave').hidden=false;$('#dlgEdit').hidden=true;dlg.showModal()}
@@ -2429,8 +2434,16 @@ $('#ofList').addEventListener('click',async e=>{
 })();
 
 function renderLogs(){try{renderLeads()}catch(e){}
-  const L=[...S.logs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  $('#oCount').textContent=L.length+' entries';$('#nOut').textContent=L.length||'';document.querySelectorAll('.nOut2').forEach(e=>e.textContent=L.length||'');
+  const coByDealer=id=>{const d=S.dealers.find(x=>x.id===id);return d?d.country:''};
+  const coSel=$('#oCountry');
+  if(coSel){const keep=coSel.value,present=new Set(S.logs.map(o=>coByDealer(o.dealer)).filter(Boolean));
+    const cos=(typeof COUNTRIES!=='undefined'?COUNTRIES:[...present]).filter(c=>present.has(c));
+    coSel.innerHTML='<option value="">All countries</option>'+cos.map(c=>`<option value="${esc(c)}"${c===keep?' selected':''}>${esc(c)}</option>`).join('');
+    if(keep&&!cos.includes(keep))coSel.value='';}
+  const coF=coSel?coSel.value:'';
+  let L=[...S.logs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(coF)L=L.filter(o=>coByDealer(o.dealer)===coF);
+  $('#oCount').textContent=L.length+' entries';$('#nOut').textContent=S.logs.length||'';document.querySelectorAll('.nOut2').forEach(e=>e.textContent=S.logs.length||'');
   const dn=id=>{const d=S.dealers.find(x=>x.id===id);return d?d.name+' ('+d.country+')':id};
   $('#oRows').innerHTML=L.length?L.map(o=>`<tr class="row" data-id="${esc(o.id)}"><td>${esc(o.date)}</td><td>${esc(dn(o.dealer))}</td><td class="sub">${esc(o.cars)}</td><td>${esc(o.channel)}</td><td class="hide-s">${esc(o.member)}</td><td>${esc(o.outcome)}</td></tr>`).join('')
    :`<tr><td colspan="6" class="empty">No calls or emails logged yet.</td></tr>`;
@@ -2446,6 +2459,7 @@ function openLog(o){
         await save('dealers/'+d.id,up,true)}return ok},o?()=>remove('outreach/'+o.id):null);
 }
 $('#addLog').addEventListener('click',()=>S.dealers.length?openLog(null):status('Add a dealer first, then log contact with them.'));
+$('#oCountry')&&$('#oCountry').addEventListener('change',renderLogs);
 $('#oRows').addEventListener('click',e=>{const r=e.target.closest('tr.row');if(r)openLog(S.logs.find(o=>o.id===r.dataset.id))});
 
 
