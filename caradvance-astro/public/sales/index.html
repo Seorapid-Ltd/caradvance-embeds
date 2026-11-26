@@ -1571,6 +1571,7 @@ Ready when you are.</h1>
 
   <section class="view" id="v-leads">
     <div class="bar ofbar">
+      <button class="pri" id="recOffer" type="button">Record an offer</button>
       <select id="ofCountry" aria-label="Country"></select>
       <select id="ofState" aria-label="Status"></select>
       <span class="count" id="lCount"></span>
@@ -2204,6 +2205,7 @@ const ofRefresh=async()=>{try{if(window.__deskRefresh)await window.__deskRefresh
 function ofDialog(title,body,foot){$('#ofDlgT').textContent=title;$('#ofDlgB').innerHTML=body;$('#ofDlgF').innerHTML=foot;const d=$('#ofDlg');if(!d.open)d.showModal();return d}
 $('#ofDlgX').addEventListener('click',()=>$('#ofDlg').close());
 $('#ofCountry').addEventListener('change',renderLeads);$('#ofState').addEventListener('change',renderLeads);
+$('#recOffer')&&$('#recOffer').addEventListener('click',openRecordOffer);
 $('#ofList').addEventListener('click',async e=>{
   const h=e.target.closest('.ofhead');if(h&&!e.target.closest('button')){const c=(S.cars||[]).find(x=>x.id===h.dataset.car);if(c&&window.__openCarSheet)window.__openCarSheet(c);return}
   const tg=e.target.closest('.oftog');if(tg){const r=tg.closest('.ofrow'),id=r.dataset.id,O=S.ofOpen||(S.ofOpen=new Set());const on=!r.classList.contains('open');r.classList.toggle('open',on);on?O.add(id):O.delete(id);tg.setAttribute('aria-expanded',on);tg.firstChild.textContent=t(on?'of_less':'of_more');return}
@@ -2478,6 +2480,49 @@ const GEO_DIAL={HU:'+36',SK:'+421',CZ:'+420',PL:'+48',RO:'+40',AT:'+43',DE:'+49'
 let GEO='';fetch('/api/desk/geo').then(r=>r.json()).then(j=>{GEO=j.country||''}).catch(()=>{});
 const DIALDEF=()=>GEO_DIAL[GEO]||({hu:'+36',sk:'+421',cs:'+420',pl:'+48',de:'+49',ro:'+40'}[LANG])||({ro:'+40',eu:'+36'}[MARKET])||({hu:'+36',sk:'+421',cz:'+420',pl:'+48',ch:'+41',de:'+49'}[location.hostname.split('.').pop()])||'+36';
 const DIALOPTS=()=>DIALS.map(([d,c])=>`<option value="${d}"${d===DIALDEF()?' selected':''}>${c} ${d}</option>`).join('');
+function openRecordOffer(){
+  if(!(S.cars&&S.cars.length)){status('Stock is still loading — try again in a moment.');return}
+  const me=((window.claude&&claude.me&&claude.me())||{}).name||'';
+  const avail=S.cars.filter(c=>(c.status||'Available')!=='Sold');
+  const carOpts=avail.map(c=>`<option value="${esc(c.id)}">${esc(c.id)} · ${esc(c.model||'')}</option>`).join('');
+  const dealerOpts=(S.dealers||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(d=>`<option value="${esc(d.id)}">${esc(d.name)}${d.country?' ('+esc(d.country)+')':''}</option>`).join('');
+  const html=
+    `<label class="f">Car<select name="car" required><option value="">—</option>${carOpts}</select></label>`+
+    `<label class="f">Dealer (optional)<select name="_dealer"><option value="">—</option>${dealerOpts}</select></label>`+
+    `<label class="f">From (name)<input name="name" required maxlength="100"></label>`+
+    `<label class="f">Phone or email<input name="contact" required maxlength="160"></label>`+
+    `<label class="f">Type<select name="type" required><option value="b2b">Business to Business (net)</option><option value="b2c">Business to Customer (incl. VAT)</option></select></label>`+
+    `<label class="f">Amount €<input name="price" inputmode="numeric" required placeholder="€" maxlength="12"></label>`+
+    field(['member','Recorded by','team'],me)+
+    `<label class="f wide">Note<textarea name="note" rows="2" maxlength="1000"></textarea></label>`+
+    `<p class="foot wide recmsg" hidden></p>`;
+  openDialog('Record an offer',html,async fd=>{
+    const m=$('#dlgBody .recmsg'),bad=t=>{m.hidden=false;m.className='foot wide recmsg bad';m.textContent=t;return false};
+    const price=Number(String(fd.price||'').replace(/[^\d.,]/g,'').replace(',','.'));
+    if(!fd.car)return bad('Pick a car.');
+    if(!fd.name||fd.name.trim().length<2)return bad('Enter who made the offer.');
+    if(!fd.contact||(fd.contact.replace(/\D/g,'').length<6&&!/@/.test(fd.contact)))return bad('Enter a phone or email for the offerer.');
+    if(!(price>0))return bad('Enter the offer amount.');
+    const isEmail=/@/.test(fd.contact),dealer=(S.dealers||[]).find(d=>d.id===fd._dealer);
+    const note=[fd.note&&fd.note.trim(),`(Recorded by ${fd.member||me||'team'} · ${new Date().toISOString().slice(0,10)})`].filter(Boolean).join('\n');
+    const payload={car:fd.car,name:fd.name.trim(),company:dealer?dealer.name:'',email:isEmail?fd.contact.trim():'',phone:isEmail?'':fd.contact.trim(),type:fd.type==='b2c'?'b2c':'b2b',price:String(price),message:note,lang:LANG};
+    const sv=$('#dlgSave');if(sv)sv.disabled=true;
+    try{
+      const r=await fetch('/api/desk/offer',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok)return bad(r.status===429?'Too many offers just now — try again shortly.':j.error==='contact'?'Enter a valid phone or email.':j.error==='price'?'Check the amount.':j.error==='car'?'That car is not available.':'Could not save the offer.');
+      status('Offer recorded.');try{if(window.__deskRefresh)await window.__deskRefresh()}catch(e){}
+      return true;
+    }catch(e){return bad('Network error — try again.')}
+    finally{if(sv)sv.disabled=false}
+  });
+  const sv=$('#dlgSave');if(sv)sv.textContent='Record offer';
+  const dsel=$('#dlgBody select[name="_dealer"]');
+  if(dsel)dsel.addEventListener('change',()=>{const d=(S.dealers||[]).find(x=>x.id===dsel.value);if(!d)return;
+    const nm=$('#dlgBody input[name="name"]'),ct=$('#dlgBody input[name="contact"]');
+    if(nm&&!nm.value)nm.value=d.name||'';
+    if(ct&&!ct.value)ct.value=d.phone||d.contact_phone||d.email||d.contact_email||'';});
+}
 function openOffer(id){
   const c=(S.cars||[]).find(x=>x.id===id);if(!c)return;const o=OFR();
   const cat=$('#sCat').value,def=cat==='priv'?'b2c':cat==='b2b'?'b2b':'';
