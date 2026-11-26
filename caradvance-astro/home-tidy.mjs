@@ -86,6 +86,8 @@ const CSS = '<style id="ca-dark-tidy-css">'
   + '#ca-cta .ca-tel:hover{background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.10))!important;border-color:rgba(255,255,255,.45)!important}'
   + '#ca-cta .ca-cta-alt{display:block;margin-top:12px;font-size:14px;opacity:.75}#ca-cta .ca-cta-alt a{color:inherit;font-weight:700}'
   + '@media(max-width:640px){#ca-cta .card.ca-cta-card{padding:28px 22px}}'
+  // Így dolgozunk (világos): nincs üveg-hatás a kártyákon (a piros pontok színe nem szűrődik át), nincs udvar a pontok körül
+  + 'html:not(.ca-dark) body #miert .card.value{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background-color:#fff!important}html:not(.ca-dark) body #miert .ca-tl .ca-tl-dot,html:not(.ca-dark) body #miert .ca-tl .ca-tl-dot.on{box-shadow:none!important}html:not(.ca-dark) body #miert .ca-tl .ca-tl-fill{box-shadow:none!important}html:not(.ca-dark) body #miert .ca-tl .ca-tl-fill::after{display:none!important}'
   + '</style>';
 
 function findAll(node, pred, out = []) {
