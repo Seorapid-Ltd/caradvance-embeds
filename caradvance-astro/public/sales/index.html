@@ -2408,7 +2408,11 @@ $('#ofList').addEventListener('click',async e=>{
     catch(err){status(err.message);b.disabled=false}});
   function slAskDelete(id){const c=carOf(id);if(!c||!c.chosen)return;const back=c.chosen.orig?c.chosen.orig.net:c.chosen.prev;
     ofDialog(t('sl_del_q'),`<p>${esc(t('sl_del_help')).replace('{p}',back?'<b>'+eur(back)+'</b>':'—')}</p>`,`<button type="button" onclick="this.closest('dialog').close()">${esc(t('l_cancel'))}</button><button type="button" class="pri" id="slDelGo">${esc(t('sl_del'))}</button>`);
-    $('#slDelGo').onclick=()=>{$('#ofDlg').close();savePrice(id,null,null,true)}}
+    $('#slDelGo').onclick=()=>{$('#ofDlg').close();
+      /* clear the price on the card right away so it disappears instantly, regardless of the server (test mode saves nothing) */
+      const ci=SL.data.cars.findIndex(x=>x.id===id);
+      if(ci>=0){const m=Object.assign({},SL.data.cars[ci]);const bk=m.chosen&&(m.chosen.orig?m.chosen.orig.net:m.chosen.prev);delete m.chosen;delete m.price_ok;if(bk!=null){m.net=bk;m.gross=Math.round(bk*1.19*100)/100;}SL.data.cars[ci]=m;patchCard(m);}
+      savePrice(id,null,null,true);}}
   $('#slRows').addEventListener('click',e=>{const b=e.target.closest('[data-sldel]');if(!b)return;e.preventDefault();slAskDelete(b.dataset.sldel)});
   $('#slRows').addEventListener('change',e=>{const r=e.target.closest('input[data-slp]');if(!r||!SL.data.canPrice)return;const id=r.dataset.slp;
     if(r.value==='custom'){const f=document.querySelector(`input[data-slc="${CSS.escape(id)}"]`);if(f)f.focus();return}
