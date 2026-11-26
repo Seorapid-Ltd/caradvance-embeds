@@ -1030,6 +1030,15 @@ tr.det .offerrow{margin:0}
 .subnav a[data-s=outreach]:hover{background:var(--red-dark,#B80015)}
 .subnav a[data-s=outreach].on{background:var(--red-dark,#B80015);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
 .subnav a[data-s=outreach] span{background:rgba(255,255,255,.22);color:#fff}
+/* Tail-light style arrow pointing to the Activity button */
+.subnav .subarrow{margin-left:auto;align-self:center;display:inline-flex;align-items:center;color:var(--red);pointer-events:none}
+.subnav a[data-s=outreach]{margin-left:12px}
+.subarrow svg{width:46px;height:24px;overflow:visible}
+.subarrow .sa-main{stroke:var(--red);stroke-width:3;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--red) 80%,transparent)) drop-shadow(0 0 7px color-mix(in srgb,var(--red) 55%,transparent))}
+.subarrow .sa-trail{stroke:var(--red);stroke-width:7;stroke-linecap:round;opacity:.18}
+.subarrow{animation:saPulse 1.3s ease-in-out infinite}
+@keyframes saPulse{0%,100%{transform:translateX(0);opacity:.85}50%{transform:translateX(6px);opacity:1}}
+@media(prefers-reduced-motion:reduce){.subarrow{animation:none}}
 
 /* ---- Dealers (B2B) list ---- */
 .dlrhead{display:flex;align-items:baseline;gap:14px;margin:4px 0 16px}
@@ -1436,7 +1445,7 @@ Ready when you are.</h1>
   </section>
 
   <section class="view" id="v-dealers">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 46 24"><path d="M3 12h30" class="sa-trail"/><path d="M4 12h30M25 5l9 7-9 7" class="sa-main" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
     <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
     <div id="dkpis" hidden style="display:none"></div>
     <div class="dlrpanel">
@@ -1502,7 +1511,7 @@ Ready when you are.</h1>
   <dialog id="ofDlg"><form method="dialog" id="ofForm"><div class="dh"><h2 id="ofDlgT"></h2><button value="cancel" type="button" id="ofDlgX" aria-label="Close">✕</button></div><div class="db" id="ofDlgB"></div><div class="df" id="ofDlgF"></div></form></dialog>
 
   <section class="view" id="v-outreach">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 46 24"><path d="M3 12h30" class="sa-trail"/><path d="M4 12h30M25 5l9 7-9 7" class="sa-main" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
     <div class="bar"><button class="pri" id="addLog">Log a call or email</button><span class="count" id="oCount"></span></div>
     <div class="tbl"><table>
       <thead><tr><th>Date</th><th>Dealer</th><th>Cars</th><th>Channel</th><th class="hide-s">Team member</th><th>Outcome</th></tr></thead>
