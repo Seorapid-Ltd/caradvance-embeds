@@ -153,6 +153,10 @@ async function serveDomain(context, url, l) {
   const p = url.pathname;
   if (!url.hostname.startsWith('www.') && !previewDomain(url.hostname)) { url.hostname = 'www.' + url.hostname; return Response.redirect(url.toString(), 301); }
   if (p.startsWith('/api/') || p.startsWith('/admin/ajanlatmotor')) return next();
+  // Sales Desk (/sales/) és a munkatársi belépés (/admin/): közös, nem országfüggő oldalak — minden domainen a gyökérből.
+  // A Sales Desk nyelvét a domain választja ki (public/sales/index.html: MARKET_LANGS).
+  if (p === '/sales' || p === '/admin') { url.pathname = p + '/'; return Response.redirect(url.toString(), 301); }
+  if (p.startsWith('/sales/') || p.startsWith('/admin/')) return next();
   if ((l === 'ch' || l === 'eu') && !(await chReady(env, url.origin, l))) {
     if (p === '/robots.txt') return new Response('User-agent: *\nDisallow: /\n', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
     if (/\.[a-z0-9]{1,5}$/i.test(p)) return next();
