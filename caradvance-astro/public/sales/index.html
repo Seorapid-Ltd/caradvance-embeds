@@ -923,6 +923,8 @@ tr.sldet td{background:var(--soft)}.sldet dl{display:grid;grid-template-columns:
 html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 @media(max-width:1100px){.slcarw{min-width:200px}.slcarw .slph,.slcarw .noimg{width:96px;height:66px}.slcar b{font-size:16px}}
 @media(max-width:900px){.sltbl thead{display:none}#slRows>tr.row{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;padding:14px;border-bottom:1px solid var(--line)}#slRows>tr.row>td{display:block;border:0!important;padding:0}#slRows>tr.row>td.slcarc,#slRows>tr.row>td.slcompc{grid-column:1/-1}.slcompc{min-width:0}.slmde,.slgap{text-align:left}#slRows>tr.row>td.slek{text-align:left}}
+#ofDlg .ofto{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}#ofDlg .ofto span{font-size:13px;color:var(--muted);font-weight:700}#ofDlg .ofto input{width:100%;box-sizing:border-box}
+#ofDlg .ofmail{border:1px solid var(--line);border-radius:14px;overflow:hidden}#ofDlg .ofsubj{padding:10px 14px;font-weight:800;font-size:13.5px;border-bottom:1px solid var(--line);background:var(--soft)}#ofDlg .ofbody{padding:14px;background:#fff;border-radius:0 0 14px 14px}
 </style>
 </head>
 <body>
@@ -1501,7 +1503,7 @@ $('#ofList').addEventListener('click',async e=>{
   if(a==='check'){
     ofDialog(t('l_chk_t'),`<p class="sub">${esc(t('l_loading'))}</p>`,'');
     try{const pv=await offerApi({id,action:'preview'});
-      $('#ofDlgB').innerHTML=`${pv.ready?'':`<p class="note">${esc(t('l_nomail'))}</p>`}<label class="f"><span>${esc(t('l_to'))}: Alexander</span><input id="ofTo" type="email" value="${esc(pv.to||'')}" placeholder="${esc(t('l_alexph'))}"></label><p class="sub" style="margin:10px 0 0"><b>${esc(pv.subject)}</b></p><pre>${esc(pv.text)}</pre>`;
+      $('#ofDlgB').innerHTML=`${pv.ready?'':`<p class="note">${esc(t('l_nomail'))}</p>`}<div class="ofto"><span>${esc(t('l_to'))}: Alexander</span><input id="ofTo" type="email" value="${esc(pv.to||'')}" placeholder="${esc(t('l_alexph'))}"></div><div class="ofmail"><div class="ofsubj">${esc(pv.subject)}</div><div class="ofbody">${pv.html||esc(pv.text)}</div></div>`;
       $('#ofDlgF').innerHTML=`<button type="button" onclick="this.closest('dialog').close()">${esc(t('l_cancel'))}</button><a id="ofMail" href="#">${esc(t('l_ownmail'))}</a><button type="button" class="pri" id="ofSend">${esc(t('l_send'))}</button>`;
       const mailto=()=>`mailto:${encodeURIComponent($('#ofTo').value.trim())}?subject=${encodeURIComponent(pv.subject)}&body=${encodeURIComponent(pv.text)}`;
       $('#ofMail').onclick=async ev=>{ev.preventDefault();location.href=mailto();try{await offerApi({id,action:'check',manual:true});await ofRefresh()}catch(e){}$('#ofDlg').close()};

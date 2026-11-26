@@ -1,5 +1,5 @@
 // CarAdvance /belso auth + data API
-import { ensureDeskColumn } from '../../../lib/desk-api.js';
+import { ensureDeskColumn, cleanMarkets } from '../../../lib/desk-api.js';
 // Route: www.caradvance.hu/api/belso/*
 // D1 binding name expected: DB
 
@@ -460,7 +460,7 @@ async function handleAdminListUsers(request, env) {
   const { error } = await requireAdmin(request, env);
   if (error) return error;
   await ensureDeskColumn(env);
-  const rows = await env.DB.prepare(`SELECT id, email, name, role, created_at, desk_access FROM users ORDER BY id`).all();
+  const rows = await env.DB.prepare(`SELECT id, email, name, role, created_at, desk_access, desk_markets FROM users ORDER BY id`).all();
   return json({ users: rows.results });
 }
 
@@ -482,8 +482,8 @@ async function handleAdminCreateUser(request, env) {
   await ensureDeskColumn(env);
   const desk = role === 'sales_desk' || b.desk_access === true || b.desk_access === 1 ? 1 : 0;
   const res = await env.DB.prepare(
-    `INSERT INTO users (email, name, role, salt_hex, hash_hex, desk_access) VALUES (?,?,?,?,?,?)`
-  ).bind(email, name, role, saltHex, hashHex, desk).run();
+    `INSERT INTO users (email, name, role, salt_hex, hash_hex, desk_access, desk_markets) VALUES (?,?,?,?,?,?,?)`
+  ).bind(email, name, role, saltHex, hashHex, desk, cleanMarkets(b.desk_markets)).run();
   return json({ id: res.meta.last_row_id });
 }
 
@@ -506,7 +506,8 @@ async function handleAdminSetDesk(request, env, id) {
   if (error) return error;
   const b = await request.json().catch(() => ({}));
   await ensureDeskColumn(env);
-  await env.DB.prepare(`UPDATE users SET desk_access = ? WHERE id = ?`).bind(b.on ? 1 : 0, id).run();
+  if (b.on !== undefined) await env.DB.prepare(`UPDATE users SET desk_access = ? WHERE id = ?`).bind(b.on ? 1 : 0, id).run();
+  if (b.markets !== undefined) await env.DB.prepare(`UPDATE users SET desk_markets = ? WHERE id = ?`).bind(cleanMarkets(b.markets), id).run();
   return json({ ok: true });
 }
 

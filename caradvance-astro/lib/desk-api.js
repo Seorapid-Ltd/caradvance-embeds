@@ -183,7 +183,23 @@ let DESK_COL = false;
 export async function ensureDeskColumn(env) {
   if (DESK_COL || !env.DB) return;
   try { await env.DB.prepare('ALTER TABLE users ADD COLUMN desk_access INTEGER DEFAULT 0').run(); } catch (e) { /* already there */ }
+  // users.desk_markets: which country sites the account may use the Sales Desk on, e.g. "sk,cz". Empty/NULL = every site.
+  try { await env.DB.prepare('ALTER TABLE users ADD COLUMN desk_markets TEXT').run(); } catch (e) { /* already there */ }
   DESK_COL = true;
+}
+
+/** Sales Desk market of a host: caradvance.sk → sk, dev.caradvance.cz → cz, dev-pl.….pages.dev → pl; everything else → hu. */
+export const DESK_MARKETS = ['hu', 'sk', 'cz', 'pl', 'ch', 'eu'];
+export function deskMarketOf(host) {
+  const h = String(host || '').toLowerCase();
+  let m = /(?:^|\.)caradvance\.(hu|sk|cz|pl|ch|eu)$/.exec(h); if (m) return m[1];
+  m = /^dev-(hu|sk|cz|pl|ch|eu)\./.exec(h); if (m) return m[1];
+  return 'hu';
+}
+/** "SK, cz ,xx" → "sk,cz" (only known markets); empty → null (= every site). */
+export function cleanMarkets(v) {
+  const list = (Array.isArray(v) ? v : String(v || '').split(/[\s,;]+/)).map(x => String(x).trim().toLowerCase()).filter(x => DESK_MARKETS.includes(x));
+  return list.length ? [...new Set(list)].join(',') : null;
 }
 
 export async function whoAmI(request, env) {
@@ -191,10 +207,13 @@ export async function whoAmI(request, env) {
   const token = cookie(request, 'ca_session');
   if (!token || !env.DB) throw bad('Sign-in required.', 401);
   await ensureDeskColumn(env);
-  const row = await env.DB.prepare('SELECT u.email, u.name, u.role, u.desk_access, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
+  const row = await env.DB.prepare('SELECT u.email, u.name, u.role, u.desk_access, u.desk_markets, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
   if (!row || new Date(row.expires_at + 'Z').getTime() < Date.now()) throw bad('Sign-in required.', 401);
   // Only the people given Sales Desk access (Admin → Felhasználók → "Sales Desk"), and every "Csak Sales Desk" account.
   if (!(row.role === 'sales_desk' || Number(row.desk_access) === 1)) throw bad('This account has no access to the Sales Desk.', 403);
+  // Country limit (Admin → Felhasználók → "Országok"): e.g. "sk,cz" = only on caradvance.sk and caradvance.cz.
+  const allowed = cleanMarkets(row.desk_markets);
+  if (allowed && !allowed.split(',').includes(deskMarketOf(new URL(request.url).hostname))) throw bad('This account can use the Sales Desk only on: ' + allowed.toUpperCase().split(',').join(', ') + '.', 403);
   return { email: row.email, name: row.name, role: row.role };
 }
 
@@ -357,21 +376,22 @@ const escH = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&
 async function linkSig(env, id) {
   const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.DESK_LINK_SECRET || env.DESK_NOTION_TOKEN || 'x'), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const s = await crypto.subtle.sign('HMAC', k, new TextEncoder().encode('offer-check|' + id));
-  return [...new Uint8Array(s)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  return [...new Uint8Array(s)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
 }
 function germanCheck(offer, car, rk, base, sig) {
-  // Short on purpose (2 lines): which car · who offers · our price · the offer → accept or reject
+  // 2 lines: where the offer comes from · model + year · our price vs offer · link to the car · accept / reject
   const p = parseOffer(offer);
-  const land = COUNTRY_DE[p.country] || p.country || '';
-  const who = [p.name, p.company && '(' + p.company + ')'].filter(Boolean).join(' ') || 'Interessent';
-  const net = p.type === 'b2b';
+  const land = COUNTRY_DE[p.country] || p.country || '—';
+  const net = p.type === 'b2b', vat = net ? 'netto' : 'brutto';
   const ours = net ? car.dealer_net : car.dealer_gross;
-  const u = d => `${base}/api/desk/offer-decision?id=${encodeURIComponent(offer.id)}&sig=${sig}&d=${d}`;
-  const l1 = `${car.model || ''} (${car.id}) – Angebot von ${who}${land ? ', ' + land : ''}: ${eurDe(p.price)} ${net ? 'netto' : 'brutto'} (unser Preis ${eurDe(ours)} ${net ? 'netto' : 'brutto'}).`;
-  const l2 = `Annehmen oder ablehnen? Annehmen: ${u('accept')} · Ablehnen: ${u('decline')}`;
-  const subject = `Angebot ${car.id}: ${eurDe(p.price)} – annehmen oder ablehnen?`;
-  const btn = (t, d, bg) => `<a href="${u(d)}" style="display:inline-block;margin:0 6px 0 0;padding:8px 16px;border-radius:999px;background:${bg};color:#fff;font-weight:bold;text-decoration:none">${t}</a>`;
-  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519"><div><b>${escH(car.model || '')} (${escH(car.id)})</b> – Angebot von ${escH(who)}${land ? ', ' + escH(land) : ''}: <b>${eurDe(p.price)} ${net ? 'netto' : 'brutto'}</b> (unser Preis ${eurDe(ours)} ${net ? 'netto' : 'brutto'}).</div><div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
+  const year = String(car.first_reg || '').replace(/^(\d{1,2})\//, '$1/') || '—';
+  const carUrl = `${base}/sales/#car=${encodeURIComponent(car.id)}`;
+  const dec = `${base}/api/desk/offer-decision?id=${encodeURIComponent(offer.id)}&sig=${sig}`;
+  const l1 = `Angebot aus ${land}: ${car.model || ''} (EZ ${year}) – unser Preis ${eurDe(ours)} ${vat}, Angebot ${eurDe(p.price)} ${vat}.`;
+  const l2 = `Fahrzeug: ${carUrl} · Annehmen/Ablehnen: ${dec}`;
+  const subject = `Angebot ${car.id} aus ${land}: ${eurDe(p.price)} – annehmen?`;
+  const btn = (t, d, bg) => `<a href="${dec}&d=${d}" style="display:inline-block;margin:0 6px 0 0;padding:8px 18px;border-radius:999px;background:${bg};color:#fff;font-weight:bold;text-decoration:none">${t}</a>`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519">Angebot aus <b>${escH(land)}</b>: <a href="${carUrl}" style="color:#e30613;font-weight:bold">${escH(car.model || '')} (EZ ${escH(year)})</a> – unser Preis ${eurDe(ours)} ${vat}, Angebot <b>${eurDe(p.price)} ${vat}</b>.<div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
   return { subject, text: l1 + '\n' + l2, html };
 }
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -412,7 +432,7 @@ async function offerAction(request, env, ctx, me) {
   let alex = '';
   if (env.DB) { try { await ensureMsg(env); const r = await env.DB.prepare("SELECT email FROM desk_contacts WHERE k = 'alexander'").first(); alex = (r && r.email) || ''; } catch (e) {} }
   const to = String(b.to || alex || env.DESK_CHECK_EMAIL || '').trim();
-  if (b.action === 'preview') return { ok: true, to, toName: 'Alexander', subject: mail.subject, text: mail.text, ready: !!(env.RESEND_API_KEY && to) };
+  if (b.action === 'preview') return { ok: true, to, toName: 'Alexander', subject: mail.subject, text: mail.text, html: mail.html, ready: !!(env.RESEND_API_KEY && to) };
   if (b.manual) { await setOutcome(env, offer, 'Sent for check', 'Waiting for the decision', `Sent for check by ${who} (own email)`); return { ok: true }; }
   if (!env.RESEND_API_KEY || !to) return { ok: false, manual: true, to, subject: mail.subject, text: mail.text, why: !env.RESEND_API_KEY ? 'RESEND_API_KEY' : 'DESK_CHECK_EMAIL' };
   const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
@@ -433,7 +453,7 @@ async function offerDecision(request, env, ctx) {
   const offer = all.outreach.find(o => o.id === id);
   if (!offer) return page('<h1>Angebot nicht gefunden</h1>', 404);
   const p = parseOffer(offer); const car = all.vehicles.find(v => v.id === p.car) || { id: p.car };
-  const head = `<h1>${escH(car.model || '')} · ${escH(car.id)}</h1><div class="s">Händlerpreis ${eurDe(car.dealer_net)} netto · Endkundenpreis ${eurDe(car.dealer_gross)} brutto</div>
+  const head = `<h1><a href="/sales/#car=${encodeURIComponent(car.id)}" style="color:#141519">${escH(car.model || '')}</a> · ${escH(car.id)}</h1><div class="s">Händlerpreis ${eurDe(car.dealer_net)} netto · Endkundenpreis ${eurDe(car.dealer_gross)} brutto</div>
 <div class="big">${eurDe(p.price)}</div><div class="s">${p.type === 'b2b' ? 'Händlerangebot (netto)' : 'Privatkunde (brutto)'} · ${escH(COUNTRY_DE[p.country] || p.country || '')}</div>
 <p class="s">Aktueller Status: <b>${escH(offer.outcome || '—')}</b></p>`;
   if (request.method === 'POST') {
@@ -448,7 +468,8 @@ async function offerDecision(request, env, ctx) {
   const d = url.searchParams.get('d');
   const form = (dd, label, cls, extra = '') => `<form method="post"><input type="hidden" name="d" value="${dd}">${extra}<textarea name="comment" rows="2" placeholder="Kommentar (optional)"></textarea><button class="${cls}">${label}</button></form>`;
   const body = d === 'counter' ? form('counter', 'Gegenangebot senden', 'c', `<label>Gegenangebot (€, ${p.type === 'b2b' ? 'netto' : 'brutto'})<input name="price" inputmode="numeric" required></label>`)
-    : d === 'decline' ? form('decline', 'Angebot ablehnen', 'd') : form('accept', 'Angebot annehmen', 'a');
+    : d === 'decline' ? form('decline', 'Angebot ablehnen', 'd') : d === 'accept' ? form('accept', 'Angebot annehmen', 'a')
+    : `<form method="post" style="display:inline"><input type="hidden" name="d" value="accept"><button class="a">Annehmen</button></form><form method="post" style="display:inline"><input type="hidden" name="d" value="decline"><button class="d">Ablehnen</button></form>`;
   return page(head + body + `<p class="s" style="margin-top:14px">Andere Entscheidung: <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=accept">Annehmen</a> · <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=decline">Ablehnen</a> · <a href="?id=${encodeURIComponent(id)}&sig=${sig}&d=counter">Gegenangebot</a></p>`);
 }
 
@@ -570,22 +591,6 @@ async function stockChoosePrice(request, env, ctx, me) {
   return { ok: true, car: d, desk };
 }
 
-const STOCK_IMPORT_SHA256 = '64dc722f85632b1d55a5aab9b0b2dfe6cb26b57136e4d75c4837f6016c4c3434'; // one-off upload key (hash only); removed after use
-async function stockImport(request, env) {
-  const key = request.headers.get('X-Import-Key') || '';
-  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key)))].map(b => b.toString(16).padStart(2, '0')).join('');
-  if (hash !== STOCK_IMPORT_SHA256) return json({ error: 'Forbidden' }, 403);
-  const list = await request.json();
-  if (!Array.isArray(list) || !list.length) return json({ error: 'Empty' }, 400);
-  await ensureStock(env);
-  const old = Object.fromEntries(((await env.DB.prepare('SELECT id, data FROM desk_stocklist').all()).results || []).map(r => [r.id, JSON.parse(r.data)]));
-  for (const c of list) { const o = old[c.id]; if (o && o.chosen) { c.chosen = o.chosen; c.net = o.net; c.gross = o.gross; c.net_from = o.net_from; c.price_ok = true; } }
-  await env.DB.prepare('DELETE FROM desk_stocklist').run();
-  const now = Math.floor(Date.now() / 1000);
-  const stmts = list.map((c, i) => env.DB.prepare('INSERT INTO desk_stocklist (id, sort, data, updated) VALUES (?, ?, ?, ?)').bind(String(c.id), i, JSON.stringify(c), now));
-  for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
-  return json({ ok: true, n: list.length });
-}
 
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
  *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
@@ -602,7 +607,6 @@ export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
-  if (request.method === 'POST' && route === 'stocklist-import') return stockImport(request, env); // one-off, removed after use
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
