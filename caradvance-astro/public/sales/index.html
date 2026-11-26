@@ -1017,7 +1017,7 @@ tr.det .offerrow{margin:0}
 .sloff:hover,.sloff:focus{background:var(--soft);color:var(--ink);border-color:var(--sl-line)}
 .sloff.on{background:var(--soft);color:var(--ink)}
 .sloffnote{display:block;margin-top:14px;font-size:12.5px;color:var(--muted)}
-.slc.off .slcr,.slc.off .slcl>:not(.sloff):not(.sloffnote){opacity:.45;filter:grayscale(1)}
+.slc.off .slcr,.slc.off .slcl>:not(.sloff):not(.sloffnote):not(.slph){opacity:.45;filter:grayscale(1)}
 .slc.off .slcr{pointer-events:none}
 .slofftag{position:absolute;top:14px;right:16px;z-index:2;padding:5px 12px;border-radius:999px;background:var(--chip);color:var(--muted);border:1px solid var(--sl-line);font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 
@@ -1040,7 +1040,7 @@ li.op .dmgst{background:var(--red);color:#fff}li.fx .dmgst{background:color-mix(
 .dmgchip{display:flex;width:max-content;margin-top:3px;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--red) 10%,transparent);color:var(--red);font-size:11.5px;font-weight:800}
 .gonechip{display:flex;width:max-content;margin-top:3px;padding:2px 9px;border-radius:999px;background:var(--chip);color:var(--muted);font-size:11.5px;font-weight:800}
 html.public .dmgbox,html.public .dmgchip,html.public .vddmg{display:none!important}
-tr.row.gone>td{opacity:.5}tr.row.gone img{filter:grayscale(1)}
+tr.row.gone>td:not(:has(>.carcell)),tr.row.gone .carcell>:not(.thumb):not(.soldw){opacity:.5}
 
 /* Telefon/iPad: nincs háttérgörgetés nyitott ablaknál; űrlapmezők 16px (nem nagyít rá az iOS) */
 html.dlg-open,html.dlg-open body{overscroll-behavior:none}
