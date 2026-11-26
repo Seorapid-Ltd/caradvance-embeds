@@ -1,0 +1,645 @@
+/* Világos mód: a rózsaszín/piros árnyalatú kiemelések, ragyogások és hover-hatások semleges szürkére cserélve.
+   Az egyszínű piros gombok, aktív állapotok és piros szövegek maradnak. Generálva a dev oldal 49 oldalának CSS-éből. */
+html:not(.ca-dark) .kapcsolat:hover{box-shadow:rgba(18,19,23,0.240) 0px 8px 22px!important}
+html:not(.ca-dark) .hero .overlay{background-image:radial-gradient(1100px 460px at 50% -10%, rgba(18,19,23,0.099), transparent 60%), linear-gradient(rgba(8, 8, 10, 0.42), rgba(8, 8, 10, 0.48) 45%, rgba(8, 8, 10, 0.7))!important}
+html:not(.ca-dark) .hero .btn-primary{box-shadow:rgba(18,19,23,0.240) 0px 10px 30px!important}
+html:not(.ca-dark) .cah .chip.cta{box-shadow:rgba(18,19,23,0.228) 0px 12px 28px!important}
+html:not(.ca-dark) .cah .svc .tag{background-color:rgba(18,19,23,0.050)!important}
+html:not(.ca-dark) .cah .why-special{box-shadow:rgba(18,19,23,0.210) 0px 18px 44px!important}
+html:not(.ca-dark) .cah .value .ic{background-color:rgba(18,19,23,0.050)!important}
+html:not(.ca-dark) .cah .mission::before{background-color:rgba(18,19,23,0.121)!important}
+html:not(.ca-dark) .biz-buyerwrap .bb-cta{box-shadow:rgba(18,19,23,0.180) 0px 8px 18px!important}
+html:not(.ca-dark) .ca-sbtn:focus-visible{outline:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .cs-ai-b{box-shadow:rgba(18,19,23,0.168) 0px 4px 14px!important}
+html:not(.ca-dark) .cs-in{box-shadow:rgba(18,19,23,0.084) 0px 10px 30px!important}
+html:not(.ca-dark) .cs-in:focus-within{box-shadow:transparent 0px 0px 0px 5px, rgba(18,19,23,0.120) 0px 12px 32px!important}
+html:not(.ca-dark) .ca-pbtn:focus-visible{outline:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #autoink .cw.cf3d .cw-item.cw-c > .card{box-shadow:rgba(18,19,23,0.096) 0px 26px 60px, transparent 0px 0px 0px 2px!important}
+html:not(.ca-dark) #autoink .cw.cf3d .cw-item.cw-tb.cw-c > .sub-card{box-shadow:rgba(18,19,23,0.096) 0px 26px 60px, transparent 0px 0px 0px 2px!important}
+html:not(.ca-dark) #autoink.ca-show{background-image:radial-gradient(46% 40% at 50% 52%, rgba(255, 255, 255, 0.1), transparent 72%), radial-gradient(38% 22% at 50% 96%, rgba(18,19,23,0.121), transparent 72%), linear-gradient(rgb(23, 24, 29) 0%, rgb(15, 16, 19) 40%, rgb(10, 10, 13) 70%, rgb(6, 6, 8) 100%)!important}
+html:not(.ca-dark) #autoink .ca-all{box-shadow:rgba(18,19,23,0.210) 0px 10px 30px!important}
+html:not(.ca-dark) #autoink.ca-show .cf-br.on{box-shadow:rgba(18,19,23,0.270) 0px 8px 24px!important}
+html:not(.ca-dark) #autoink.ca-show .cw.cf3d .cw-item.cw-c > .sub-card, html:not(.ca-dark) #autoink.ca-show .cw.cf3d .cw-item.cw-c > .card{box-shadow:rgba(255, 255, 255, 0.5) 0px 0px 0px 1px, rgba(0, 0, 0, 0.55) 0px 30px 80px, rgba(18,19,23,0.132) 0px 0px 90px!important}
+html:not(.ca-dark) #autoink.ca-show .cw.cf3d .cw-item.cw-c > .sub-card{box-shadow:rgba(255, 255, 255, 0.3) 1.5px 1.5px 1px inset, rgba(255, 255, 255, 0.22) 0px 0px 0px 1px, rgba(0, 0, 0, 0.6) 0px 30px 80px, rgba(18,19,23,0.150) 0px 0px 90px!important}
+html:not(.ca-dark) #autoink.ca-show .cf-br.on, html:not(.ca-dark) #autoink.ca-show .cf-br.on:hover{background-image:linear-gradient(rgba(18,19,23,.35), rgba(18,19,23,0.209))!important}
+html:not(.ca-dark) #autoink.ca-show .cf-br.on, html:not(.ca-dark) #autoink.ca-show .cf-br.on:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #autoink.ca-show .cf-br.on, html:not(.ca-dark) #autoink.ca-show .cf-br.on:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #autoink.ca-show .cf-br.on, html:not(.ca-dark) #autoink.ca-show .cf-br.on:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #autoink.ca-show .cf-br.on, html:not(.ca-dark) #autoink.ca-show .cf-br.on:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #autoink.ca-show .cf-br.on, html:not(.ca-dark) #autoink.ca-show .cf-br.on:hover{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, transparent 0px 0px 0px 3px, rgba(18,19,23,0.175) 0px 8px 28px!important}
+html:not(.ca-dark) .ca-spot::after{background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(18,19,23,0.094),transparent 46%)!important}
+html:not(.ca-dark) .ca-spot:hover{border-top-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ca-spot:hover{border-right-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ca-spot:hover{border-bottom-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ca-spot:hover{border-left-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ca-spot:hover{box-shadow:rgba(0, 0, 0, 0.45) 0px 18px 50px, transparent 0px 0px 0px 1px!important}
+html:not(.ca-dark) #miert .ca-tl-fill{background-image:linear-gradient(90deg, rgba(18,19,23,0.000), rgba(18,19,23,.35) 30%, rgba(18,19,23,.35))!important}
+html:not(.ca-dark) #miert .ca-tl-fill{box-shadow:rgba(18,19,23,0.270) 0px 0px 12px 1px!important}
+html:not(.ca-dark) #miert .ca-tl-fill::after{background-image:radial-gradient(circle, rgb(255, 255, 255) 0px, rgba(18,19,23,.35) 35%, rgba(18,19,23,0.000) 72%)!important}
+html:not(.ca-dark) #miert .ca-tl-fill::after{box-shadow:rgba(18,19,23,0.193) 0px 0px 22px 6px!important}
+html:not(.ca-dark) #miert .ca-tl-dot.on{box-shadow:transparent 0px 0px 0px 4px, rgba(18,19,23,0.245) 0px 0px 14px!important}
+html:not(.ca-dark) #miert .card.ca-on .ic-num{box-shadow:transparent 0px 0px 0px 6px, rgba(18,19,23,0.175) 0px 8px 26px!important}
+html:not(.ca-dark) section.hero .ca-trust i{box-shadow:rgba(18,19,23,0.315) 0px 0px 8px!important}
+html:not(.ca-dark) #rolunk .ca-qpanel{background-image:linear-gradient(rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 22%, rgba(255, 255, 255, 0) 50%), radial-gradient(120% 90% at 0% 0%, rgba(18,19,23,0.088), transparent 55%), none!important}
+html:not(.ca-dark) #rolunk .ca-q::before{box-shadow:rgba(18,19,23,0.245) 0px 0px 16px!important}
+html:not(.ca-dark) #rolunk .ca-vrow > div:hover{box-shadow:rgba(255, 255, 255, 0.45) 1.5px 1.5px 1px inset, rgba(0, 0, 0, 0.5) 0px 28px 60px, rgba(18,19,23,0.108) 0px 0px 40px!important}
+html:not(.ca-dark) #rolunk .ca-vrow svg{background-image:radial-gradient(circle at 35% 30%, rgba(18,19,23,.35), rgba(18,19,23,0.138) 60%, rgba(18,19,23,0.066))!important}
+html:not(.ca-dark) #rolunk .ca-vrow svg{box-shadow:rgba(18,19,23,0.270) 0px 0px 26px, transparent 0px 0px 0px 1px inset, rgba(255, 255, 255, 0.35) 1px 1px 2px inset!important}
+html:not(.ca-dark) .cah .svc-media.ca-stage{background-image:radial-gradient(60% 55% at 50% 20%, rgba(255, 255, 255, 0.1), transparent 70%), radial-gradient(55% 22% at 50% 88%, rgba(18,19,23,0.248), transparent 75%), linear-gradient(rgb(27, 29, 35) 0%, rgb(18, 19, 24) 70%, rgb(15, 16, 20) 100%)!important}
+html:not(.ca-dark) .cah .svc-media.ca-stage::after{box-shadow:rgba(18,19,23,0.210) 0px 0px 14px!important}
+html:not(.ca-dark) .cah .svc-media.ca-stage img{filter:drop-shadow(rgba(0, 0, 0, 0.65) 0px 18px 14px) drop-shadow(rgba(18,19,23,0.108) 0px 0px 30px)!important}
+html:not(.ca-dark) #autoink.ca-show #ca-stg .cf-br.on, html:not(.ca-dark) #autoink.ca-show #ca-stg .cf-br.on:hover{box-shadow:rgba(18,19,23,0.210) 0px 6px 16px, rgba(255, 255, 255, 0.3) 0px 1px 0px inset!important}
+html:not(.ca-dark) #autoink #ca-stg .autok-tab.on{box-shadow:rgba(18,19,23,0.210) 0px 6px 16px, rgba(255, 255, 255, 0.3) 0px 1px 0px inset!important}
+html:not(.ca-dark) #ca-stg .stg-floor{background-image:radial-gradient(50% 45% at 50% 60%, rgba(18,19,23,0.231), transparent 72%)!important}
+html:not(.ca-dark) #ca-stg .stg-floor::after{box-shadow:rgba(18,19,23,0.245) 0px 0px 18px!important}
+html:not(.ca-dark) #ca-stg .stg-card .sub-btn{box-shadow:rgba(18,19,23,0.270) 0px 10px 30px!important}
+html:not(.ca-dark) #ca-stg .stg-card.card .ca-inq{box-shadow:rgba(18,19,23,0.270) 0px 10px 30px!important}
+html:not(.ca-dark) #ca-stg .stg-ar.stg-n{box-shadow:rgba(18,19,23,0.175) 0px 10px 30px!important}
+html:not(.ca-dark) #ca-stg .stg-dot.on{box-shadow:rgba(18,19,23,0.280) 0px 0px 10px!important}
+html:not(.ca-dark) .stg-lb .lb-go{box-shadow:rgba(18,19,23,0.270) 0px 10px 30px!important}
+html:not(.ca-dark) .cav-eb i{box-shadow:rgba(18,19,23,0.350) 0px 0px 12px!important}
+html:not(.ca-dark) .cav-btn{box-shadow:rgba(18,19,23,0.270) 0px 14px 34px!important}
+html:not(.ca-dark) .cav-btn:hover{box-shadow:rgba(18,19,23,0.193) 0px 18px 40px!important}
+html:not(.ca-dark) .cav-screen::before{background-image:radial-gradient(55% 50% at 50% 55%, rgba(18,19,23,0.154), transparent 70%)!important}
+html:not(.ca-dark) .cav-ul li::before{background-color:rgba(18,19,23,0.099)!important}
+html:not(.ca-dark) .cav-ul li::before{border-top-color:rgba(18,19,23,0.220)!important}
+html:not(.ca-dark) .cav-ul li::before{border-right-color:rgba(18,19,23,0.220)!important}
+html:not(.ca-dark) .cav-ul li::before{border-bottom-color:rgba(18,19,23,0.220)!important}
+html:not(.ca-dark) .cav-ul li::before{border-left-color:rgba(18,19,23,0.220)!important}
+html:not(.ca-dark) .cav-film::before{background-image:radial-gradient(50% 45% at 50% 60%, rgba(18,19,23,0.088), transparent 72%)!important}
+html.ca-light:not(.ca-dark) #autoink #ca-stg .autok-tab.on{box-shadow:rgba(18,19,23,0.150) 0px 6px 16px!important}
+html.ca-light:not(.ca-dark) #autoink.ca-show #ca-stg .cf-br.on, html.ca-light:not(.ca-dark) #autoink.ca-show #ca-stg .cf-br.on:hover{box-shadow:rgba(18,19,23,0.150) 0px 6px 16px!important}
+html.ca-light:not(.ca-dark) #autoink #ca-stg .stg-ar.stg-n{box-shadow:rgba(18,19,23,0.180) 0px 8px 20px!important}
+html.ca-light:not(.ca-dark) #rolunk .ca-vrow svg{background-color:rgba(18,19,23,0.039)!important}
+html.ca-light:not(.ca-dark) #szolgaltatasok::after{box-shadow:rgba(18,19,23,0.132) 0px 0px 16px 1px!important}
+html.ca-light:not(.ca-dark) #rolunk::after{box-shadow:rgba(18,19,23,0.132) 0px 0px 16px 1px!important}
+html.ca-light:not(.ca-dark) #velemenyek::after{box-shadow:rgba(18,19,23,0.132) 0px 0px 16px 1px!important}
+html.ca-light:not(.ca-dark) #ca-cta::after{box-shadow:rgba(18,19,23,0.132) 0px 0px 16px 1px!important}
+html.ca-light:not(.ca-dark) #autoink #ca-stg .stg-floor{background-image:radial-gradient(44% 30% at 50% 62%, rgba(18,19,23,0.066), rgba(18, 19, 23, 0.05) 45%, transparent 75%)!important}
+html.ca-light:not(.ca-dark) #autoink #ca-stg .stg-floor::after{background-image:linear-gradient(90deg, transparent, rgba(18,19,23,0.248), transparent)!important}
+html.ca-light:not(.ca-dark) #autoink #ca-stg .stg-floor::after{box-shadow:rgba(18,19,23,0.150) 0px 0px 14px!important}
+html.ca-light:not(.ca-dark) :is(.stg-ar.stg-n, .autok-tab.on, .cf-br.on, .cav-btn, .sub-btn, .ca-inq, .btn-primary, .autok-more a){box-shadow:rgba(255, 255, 255, 0.35) 0px 1px 0px inset, rgba(18,19,23,0.168) 0px 8px 22px!important}
+html.ca-light:not(.ca-dark) .ca-spot::after{background:radial-gradient(380px circle at var(--mx,50%) var(--my,50%),rgba(18,19,23,0.050),transparent 50%)!important}
+html.ca-light:not(.ca-dark) #miert .ca-tl-fill{box-shadow:rgba(18,19,23,0.270) 0px 0px 10px!important}
+html.ca-light:not(.ca-dark) #miert .ic-num{box-shadow:rgba(255, 255, 255, 0.35) 0px 1px 0px inset, rgba(18,19,23,0.150) 0px 8px 18px!important}
+html.ca-light:not(.ca-dark) #rolunk .ca-qpanel{background-image:radial-gradient(60% 90% at 0% 0%, rgba(18,19,23,0.039), transparent 60%), linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.74))!important}
+html.ca-light:not(.ca-dark) #rolunk .ca-vrow svg{background-image:radial-gradient(circle at 35% 30%, rgba(18,19,23,0.121), rgba(18,19,23,0.044))!important}
+html.ca-light:not(.ca-dark) #rolunk .ca-vrow svg{box-shadow:transparent 0px 0px 0px 1px inset!important}
+html.ca-light:not(.ca-dark) .cav-screen::before, html.ca-light:not(.ca-dark) .cav-film::before{background-image:radial-gradient(50% 45% at 50% 70%, rgba(18,19,23,0.055), transparent 72%)!important}
+html.ca-light:not(.ca-dark) .cah .svc-media.ca-stage{background-image:radial-gradient(55% 24% at 50% 86%, rgba(18,19,23,0.055), transparent 75%), radial-gradient(60% 60% at 50% 32%, rgb(255, 255, 255), rgb(239, 239, 235) 80%)!important}
+html.ca-light:not(.ca-dark) .cah .svc-media.ca-stage::after{background-image:linear-gradient(90deg, transparent, rgba(18,19,23,0.220), transparent)!important}
+html.ca-light:not(.ca-dark) .cah .svc-media.ca-stage::after{box-shadow:rgba(18,19,23,0.120) 0px 0px 12px!important}
+html:not(.ca-dark) #ca-contact a.cc-card:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact a.cc-card:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact a.cc-card:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact a.cc-card:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact a.cc-card:hover{box-shadow:rgba(18,19,23,0.072) 0px 12px 30px!important}
+html:not(.ca-dark) #ca-contact .cc-ghost:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact .cc-ghost:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact .cc-ghost:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact .cc-ghost:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #ca-contact .cc-map::after{background-image:radial-gradient(60% 55%, rgba(18,19,23,0.077), transparent 70%)!important}
+html:not(.ca-dark) #ca-contact .cc-pin i{box-shadow:rgba(18,19,23,0.175) 0px 8px 20px!important}
+html:not(.ca-dark) body details > summary::after, html:not(.ca-dark) body #gyik details.ca-more > summary::after, html:not(.ca-dark) body :is(.faq-item, .gyik-item) > summary::after{box-shadow:rgba(18,19,23,0.150) 0px 4px 12px!important}
+html.ca-light:not(.ca-dark) body #autoink.ca-grid .autok-tab.on{box-shadow:rgba(18,19,23,0.150) 0px 6px 16px!important}
+html:not(.ca-dark) .ca-am .am-t::before{background-image:radial-gradient(circle, rgba(18,19,23,0.176), transparent 65%)!important}
+html:not(.ca-dark) .ca-am .am-t:hover, html:not(.ca-dark) .ca-am .am-t:focus-visible, html:not(.ca-dark) .ca-am .am-tiles:not(:hover) .am-t.am-main{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-t:hover, html:not(.ca-dark) .ca-am .am-t:focus-visible, html:not(.ca-dark) .ca-am .am-tiles:not(:hover) .am-t.am-main{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-t:hover, html:not(.ca-dark) .ca-am .am-t:focus-visible, html:not(.ca-dark) .ca-am .am-tiles:not(:hover) .am-t.am-main{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-t:hover, html:not(.ca-dark) .ca-am .am-t:focus-visible, html:not(.ca-dark) .ca-am .am-tiles:not(:hover) .am-t.am-main{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-t:hover, html:not(.ca-dark) .ca-am .am-t:focus-visible, html:not(.ca-dark) .ca-am .am-tiles:not(:hover) .am-t.am-main{box-shadow:transparent 0px 0px 0px 1px, rgba(18,19,23,0.084) 0px 14px 34px!important}
+html:not(.ca-dark) .ca-am .am-t:hover .am-ic, html:not(.ca-dark) .ca-am .am-tiles:not(:hover) .am-t.am-main .am-ic{box-shadow:rgba(18,19,23,0.210) 0px 8px 18px, rgba(255, 255, 255, 0.35) 0px 1px 0px inset!important}
+html:not(.ca-dark) .ca-am .am-chip:hover, html:not(.ca-dark) .ca-am .am-chip.on{border-top-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-chip:hover, html:not(.ca-dark) .ca-am .am-chip.on{border-right-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-chip:hover, html:not(.ca-dark) .ca-am .am-chip.on{border-bottom-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-chip:hover, html:not(.ca-dark) .ca-am .am-chip.on{border-left-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am input[type="range"]::-webkit-slider-thumb{box-shadow:rgba(0, 0, 0, 0.35) 0px 2px 8px, transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .ca-am .am-form select:focus, html:not(.ca-dark) .ca-am .am-form input:focus{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-form select:focus, html:not(.ca-dark) .ca-am .am-form input:focus{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-form select:focus, html:not(.ca-dark) .ca-am .am-form input:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-form select:focus, html:not(.ca-dark) .ca-am .am-form input:focus{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .ca-am .am-rec a:hover{border-top-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-rec a:hover{border-right-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-rec a:hover{border-bottom-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-rec a:hover{border-left-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .mobilepanel .m-sub .am-m a.am-mt.am-main{border-top-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .mobilepanel .m-sub .am-m a.am-mt.am-main{border-right-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .mobilepanel .m-sub .am-m a.am-mt.am-main{border-bottom-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .mobilepanel .m-sub .am-m a.am-mt.am-main{border-left-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .mobilepanel .m-sub .am-m a.am-mt.am-main{box-shadow:rgba(18,19,23,0.072) 0px 10px 24px!important}
+html:not(.ca-dark) .mobilepanel .am-m .am-main .am-ic{box-shadow:rgba(18,19,23,0.180) 0px 6px 14px!important}
+html:not(.ca-dark) .ca-am .am-lg:hover, html:not(.ca-dark) .ca-am .am-lg.on{border-top-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-lg:hover, html:not(.ca-dark) .ca-am .am-lg.on{border-right-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-lg:hover, html:not(.ca-dark) .ca-am .am-lg.on{border-bottom-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .ca-am .am-lg:hover, html:not(.ca-dark) .ca-am .am-lg.on{border-left-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .mm-l.mm-lf{background-image:linear-gradient(135deg, rgb(248,248,250) 0%, rgb(242,242,244) 100%)!important}
+html:not(.ca-dark) .mm-l.mm-lf{box-shadow:transparent 0px 0px 0px 1.5px inset, rgba(18,19,23,0.048) 0px 4px 14px!important}
+html:not(.ca-dark) .mm-l.mm-lf:hover, html:not(.ca-dark) .mm-l.mm-lf:focus-visible{background-image:linear-gradient(135deg, rgb(244,244,246) 0%, rgb(236,236,238) 100%)!important}
+html:not(.ca-dark) .mm-l.mm-lf:hover, html:not(.ca-dark) .mm-l.mm-lf:focus-visible{box-shadow:transparent 0px 0px 0px 1.5px inset, rgba(18,19,23,0.084) 0px 6px 18px!important}
+html:not(.ca-dark) .mm-chip:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-chip:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-chip:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-chip:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car:hover, html:not(.ca-dark) .mm-car:focus-visible{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car:hover, html:not(.ca-dark) .mm-car:focus-visible{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car:hover, html:not(.ca-dark) .mm-car:focus-visible{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car:hover, html:not(.ca-dark) .mm-car:focus-visible{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-ng:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-ng:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-ng:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-ng:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-badge{background-color:rgb(246,246,248)!important}
+html:not(.ca-dark) .mm-badge{border-top-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .mm-badge{border-right-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .mm-badge{border-bottom-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .mm-badge{border-left-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .mm-badge:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-badge:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-badge:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-badge:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-badge:hover{box-shadow:rgba(18,19,23,0.072) 0px 8px 20px!important}
+html:not(.ca-dark) .mm-mini:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-mini:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-mini:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-mini:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car.mm-cta:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car.mm-cta:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car.mm-cta:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .mm-car.mm-cta:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .cac-launch{box-shadow:rgba(18,19,23,0.175) 0px 20px 45px -18px!important}
+html:not(.ca-dark) .cain-form input:focus, html:not(.ca-dark) .cain-form textarea:focus{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .cain-form input:focus, html:not(.ca-dark) .cain-form textarea:focus{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .cain-form input:focus, html:not(.ca-dark) .cain-form textarea:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .cain-form input:focus, html:not(.ca-dark) .cain-form textarea:focus{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .cain-msg.err{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .ab-consent.ab-bad{background-color:rgb(248,248,250)!important}
+html:not(.ca-dark) .ab-tgl.active{box-shadow:rgba(18,19,23,0.150) 0px 4px 12px!important}
+html:not(.ca-dark) .ab-opt.active{background-color:rgba(18,19,23,0.033)!important}
+html:not(.ca-dark) .ab-form input:focus, html:not(.ca-dark) .ab-form textarea:focus{box-shadow:transparent 0px 0px 0px 4px!important}
+html:not(.ca-dark) .ab-msg.err{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) #panel-berelheto .sub-intro::before{background-color:rgba(18,19,23,0.110)!important}
+html:not(.ca-dark) #panel-berelheto .sub-cta{box-shadow:rgba(18,19,23,0.228) 0px 10px 26px!important}
+html:not(.ca-dark) #panel-berelheto .sub-filters select:focus{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #panel-berelheto .sub-filters select:focus{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #panel-berelheto .sub-filters select:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #panel-berelheto .sub-filters select:focus{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) #panel-berelheto .sub-filters select:focus{box-shadow:transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .ca-navwrap .m-sub a:active, html:not(.ca-dark) .ca-navwrap .m-sub a:hover{border-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .filters input:focus, html:not(.ca-dark) .filters select:focus{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .filters input:focus, html:not(.ca-dark) .filters select:focus{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .filters input:focus, html:not(.ca-dark) .filters select:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .filters input:focus, html:not(.ca-dark) .filters select:focus{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .filters input:focus, html:not(.ca-dark) .filters select:focus{box-shadow:transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .soldnote{background-color:rgb(242,242,244)!important}
+html:not(.ca-dark) .soldnote{border-top-color:rgb(222,222,224)!important}
+html:not(.ca-dark) .soldnote{border-right-color:rgb(222,222,224)!important}
+html:not(.ca-dark) .soldnote{border-bottom-color:rgb(222,222,224)!important}
+html:not(.ca-dark) .soldnote{border-left-color:rgb(222,222,224)!important}
+html:not(.ca-dark) #panel-berelheto .ca-rbi{background-color:rgba(18,19,23,0.044)!important}
+html:not(.ca-dark) #panel-berelheto .rb-card.ca-rbx:hover .ca-rbi{box-shadow:rgba(18,19,23,0.192) 0px 10px 22px!important}
+html.ca-sl:not(.ca-dark) body #grid > .card .ca-inq:hover{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-sl:not(.ca-dark) body #grid > .card .ca-inq:hover{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-sl:not(.ca-dark) body #grid > .card .ca-inq:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-sl:not(.ca-dark) body #grid > .card .ca-inq:hover{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-sl:not(.ca-dark) body .ca-more button:hover{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-sl:not(.ca-dark) body .ca-more button:hover{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-sl:not(.ca-dark) body .ca-more button:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-sl:not(.ca-dark) body .ca-more button:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .hero .scrim{background-image:radial-gradient(1100px 460px at 50% -10%, rgba(18,19,23,0.099), transparent 60%), linear-gradient(rgba(8, 8, 10, 0.42), rgba(8, 8, 10, 0.48) 45%, rgba(8, 8, 10, 0.7))!important}
+html:not(.ca-dark) .btn-primary{box-shadow:rgba(18,19,23,0.228) 0px 10px 30px!important}
+html:not(.ca-dark) .eyebrow{background-color:rgb(240,240,242)!important}
+html:not(.ca-dark) .give-card{background-image:radial-gradient(700px 320px at 88% 20%, rgba(18,19,23,0.231), transparent 62%), linear-gradient(rgb(23, 24, 28), rgb(11, 11, 13))!important}
+html:not(.ca-dark) .team-card::before{box-shadow:transparent 0px 0px 0px 1px inset!important}
+html:not(.ca-dark) .tc-photo::after{background-image:linear-gradient(transparent 60%, rgba(18,19,23,0.033))!important}
+html:not(.ca-dark) .tc-role{background-color:rgb(240,240,242)!important}
+html:not(.ca-dark) .tc-chip:hover{box-shadow:rgba(18,19,23,0.072) 0px 8px 20px!important}
+html:not(.ca-dark) .feat .ico{background-color:rgb(240,240,242)!important}
+html:not(.ca-dark) .c-us{background-color:rgb(246,246,248)!important}
+html:not(.ca-dark) .step.full{background-color:rgb(246,246,248)!important}
+html:not(.ca-dark) .step.full{border-top-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .step.full{border-right-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .step.full{border-bottom-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .step.full{border-left-color:rgb(227,227,229)!important}
+html:not(.ca-dark) .close-cta{background-image:radial-gradient(800px 360px at 50% 0%, rgba(18,19,23,0.165), transparent 60%), linear-gradient(rgb(23, 24, 28), rgb(11, 11, 13))!important}
+html:not(.ca-dark) .sf-field input:focus, html:not(.ca-dark) .sf-field select:focus, html:not(.ca-dark) .sf-field textarea:focus, html:not(.ca-dark) .sf-field-select:focus{box-shadow:transparent 0px 0px 0px 4px!important}
+html:not(.ca-dark) .sf-ngo{border-top-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-ngo{border-right-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-ngo{border-bottom-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-ngo{border-left-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-ngo{background-image:linear-gradient(rgb(246,246,248), rgb(255, 255, 255))!important}
+html:not(.ca-dark) .sf-calc{border-top-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-calc{border-right-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-calc{border-bottom-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-calc{border-left-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .sf-calc{background-image:linear-gradient(rgb(246,246,248), rgb(255, 255, 255))!important}
+html:not(.ca-dark) .tb-toc[data-astro-cid-2zgg5vxy] a[data-astro-cid-2zgg5vxy]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .tb-toc[data-astro-cid-2zgg5vxy] a[data-astro-cid-2zgg5vxy]{border-top-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tb-toc[data-astro-cid-2zgg5vxy] a[data-astro-cid-2zgg5vxy]{border-right-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tb-toc[data-astro-cid-2zgg5vxy] a[data-astro-cid-2zgg5vxy]{border-bottom-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tb-toc[data-astro-cid-2zgg5vxy] a[data-astro-cid-2zgg5vxy]{border-left-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tb-note2[data-astro-cid-2zgg5vxy]{background-color:rgb(248,248,250)!important}
+html:not(.ca-dark) .tb-note2[data-astro-cid-2zgg5vxy]{border-top-color:rgb(230,230,232)!important}
+html:not(.ca-dark) .tb-note2[data-astro-cid-2zgg5vxy]{border-right-color:rgb(230,230,232)!important}
+html:not(.ca-dark) .tb-note2[data-astro-cid-2zgg5vxy]{border-bottom-color:rgb(230,230,232)!important}
+html:not(.ca-dark) .tb-note2[data-astro-cid-2zgg5vxy]{border-left-color:rgb(230,230,232)!important}
+html:not(.ca-dark) .tb-cmp[data-astro-cid-2zgg5vxy] .hl[data-astro-cid-2zgg5vxy]{background-color:rgb(248,248,250)!important}
+html:not(.ca-dark) .tb-faq[data-astro-cid-2zgg5vxy] .pl[data-astro-cid-2zgg5vxy]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) body section.tb .ca-rbi{background-color:rgba(18,19,23,0.044)!important}
+html:not(.ca-dark) body section.tb .rb-card.ca-rbx:hover .ca-rbi{box-shadow:rgba(18,19,23,0.192) 0px 10px 22px!important}
+html:not(.ca-dark) body section.tb .tb-steps::before{background-image:linear-gradient(90deg, rgba(18,19,23,0.000), rgba(18,19,23,.35) 12%, rgba(18,19,23,.35) 88%, rgba(18,19,23,0.000))!important}
+html:not(.ca-dark) body section.tb .tb-step .tb-n{box-shadow:rgb(245, 245, 247) 0px 0px 0px 7px, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html:not(.ca-dark) body section.tb .tb-cmp th:last-child, html:not(.ca-dark) body section.tb .tb-cmp td.hl{background-color:rgba(18,19,23,0.033)!important}
+html:not(.ca-dark) body section.tb .tb-rl a:hover{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) body section.tb .tb-rl a:hover{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) body section.tb .tb-rl a:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) body section.tb .tb-rl a:hover{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) body section.tb .tb-cta{background-image:radial-gradient(70% 120% at 100% 0%, rgba(18,19,23,0.209), transparent 60%), linear-gradient(135deg, rgb(23, 24, 29), rgb(14, 15, 18))!important}
+html:not(.ca-dark) body section.tb .tb-cta .btn{box-shadow:rgba(18,19,23,0.210) 0px 10px 24px!important}
+html:not(.ca-dark) .cmp #s1{border-top-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .cmp #s1{border-right-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .cmp #s1{border-bottom-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .cmp #s1{border-left-color:rgba(18,19,23,0.248)!important}
+html:not(.ca-dark) .cmp .band.r{background-color:rgba(18,19,23,0.039)!important}
+html:not(.ca-dark) .cmp .fit.no{background-color:rgb(242,242,244)!important}
+html:not(.ca-dark) body .cmp header.cmp-hero::before{background-image:radial-gradient(50% 70% at 50% 0%, rgba(18,19,23,0.055), transparent 70%)!important}
+html:not(.ca-dark) body .cmp .cmp-kicker{background-color:rgba(18,19,23,0.044)!important}
+html:not(.ca-dark) body .cmp .ca-pk.k1{border-top-color:rgba(18,19,23,0.154)!important}
+html:not(.ca-dark) body .cmp .ca-pk.k1{border-right-color:rgba(18,19,23,0.154)!important}
+html:not(.ca-dark) body .cmp .ca-pk.k1{border-bottom-color:rgba(18,19,23,0.154)!important}
+html:not(.ca-dark) body .cmp .ca-pk.k1{border-left-color:rgba(18,19,23,0.154)!important}
+html:not(.ca-dark) body .cmp .ca-pop .op.on{background-color:rgba(18,19,23,0.044)!important}
+html:not(.ca-dark) .pf-faq[data-astro-cid-btepbh3a] .pl[data-astro-cid-btepbh3a]{background-color:rgb(241,241,243)!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-fact i{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 10px 22px!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-ph button i em{box-shadow:rgba(18,19,23,0.175) 0px 0px 12px!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-st.on .ca-st-n{text-shadow:rgba(18,19,23,0.132) 0px 10px 30px!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-st-tag{background-color:rgba(18,19,23,0.044)!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-st .pf-lnk{box-shadow:rgba(18,19,23,0.150) 0px 8px 20px!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-st .dep-table{background-color:rgba(18,19,23,0.033)!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-st.ca-last{box-shadow:rgba(255, 255, 255, 0.45) 1.5px 1.5px 1px inset, rgba(18,19,23,0.210) 0px 30px 60px!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-tl-f{box-shadow:rgba(18,19,23,0.270) 0px 0px 18px!important}
+html.ca-bfo:not(.ca-dark) body section.pf .ca-tl-dot{box-shadow:transparent 0px 0px 0px 5px, rgba(18,19,23,0.175) 0px 6px 18px!important}
+html.ca-bfo:not(.ca-dark) body section.pf .bf-card .ca-ic{background-color:rgba(18,19,23,0.044)!important}
+html.ca-bfo:not(.ca-dark) body section.pf div.pf-cta{background-image:radial-gradient(70% 45% at 50% 100%, rgba(18,19,23,0.088), rgba(18,19,23,0.000) 72%), linear-gradient(rgb(42, 43, 48) 0%, rgb(27, 28, 33) 48%, rgb(20, 21, 25) 100%)!important}
+html.ca-bfo:not(.ca-dark) body section.pf div.pf-cta .btn{box-shadow:rgba(18,19,23,0.228) 0px 14px 30px!important}
+html.ca-bfo:not(.ca-dark) body section.pf div.pf-cta::before{background-image:radial-gradient(50% 50%, rgba(18,19,23,0.193), transparent 70%)!important}
+html:not(.ca-dark) .bf-steps li:not(:last-child)::after{background-color:rgb(217,217,219)!important}
+html:not(.ca-dark) .bf-no{background-color:rgb(246,246,248)!important}
+html.ca-bft:not(.ca-dark) body .lg .lg-hero{background-image:radial-gradient(60% 90% at 85% 0%, rgba(18,19,23,0.176), transparent 60%), radial-gradient(50% 80% at 0% 100%, rgba(18,19,23,0.077), transparent 65%), linear-gradient(160deg, rgb(18, 19, 23), rgb(29, 31, 37))!important}
+html.ca-bft:not(.ca-dark) body .lg .lg-toc li a.on{background-color:rgba(18,19,23,0.039)!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-no{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 8px 18px!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-sec > ul > li::before{box-shadow:transparent 0px 0px 0px 4px!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-sec .lg-box.warn{background-color:rgba(18,19,23,0.039)!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-sec .lg-box.ex{background-image:linear-gradient(135deg, rgba(18,19,23,0.033), rgba(18,19,23,0.011))!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-bft:not(.ca-dark) body .lg .bf-steps li:hover{background-color:rgba(18,19,23,0.028)!important}
+html.ca-bft:not(.ca-dark) body .lg .bf-steps li::before{box-shadow:rgba(255, 255, 255, 0.4) 1px 1px 1px inset, rgba(18,19,23,0.150) 0px 6px 14px!important}
+html.ca-bft:not(.ca-dark) body .lg .bf-no{background-image:linear-gradient(rgba(18,19,23,0.044), rgba(18,19,23,0.011))!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-end{background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.193), transparent 60%), linear-gradient(160deg, rgb(23, 24, 28), rgb(15, 16, 19))!important}
+html.ca-bft:not(.ca-dark) body .lg .ca-end .lg-btn{box-shadow:rgba(18,19,23,0.228) 0px 14px 30px!important}
+html:not(.ca-dark) .el-faq[data-astro-cid-a7iin7oe] .pl[data-astro-cid-a7iin7oe]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .gyik-search[data-astro-cid-gto5p5xh]:focus{box-shadow:transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .gyik-item[data-astro-cid-gto5p5xh] .pl[data-astro-cid-gto5p5xh]{background-color:rgb(241,241,243)!important}
+html.ca-faq:not(.ca-dark) body .ca-qbar :is(#faqq, #gyikSearch):focus{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-faq:not(.ca-dark) body .ca-qbar :is(#faqq, #gyikSearch):focus{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-faq:not(.ca-dark) body .ca-qbar :is(#faqq, #gyikSearch):focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-faq:not(.ca-dark) body .ca-qbar :is(#faqq, #gyikSearch):focus{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-faq:not(.ca-dark) body :is(.faq-item, .gyik-item)[open]{border-top-color:rgba(18,19,23,0.138)!important}
+html.ca-faq:not(.ca-dark) body :is(.faq-item, .gyik-item)[open]{border-right-color:rgba(18,19,23,0.138)!important}
+html.ca-faq:not(.ca-dark) body :is(.faq-item, .gyik-item)[open]{border-bottom-color:rgba(18,19,23,0.138)!important}
+html.ca-faq:not(.ca-dark) body :is(.faq-item, .gyik-item)[open]{border-left-color:rgba(18,19,23,0.138)!important}
+html.ca-faq:not(.ca-dark) body :is(.faq-item, .gyik-item) > summary::after{box-shadow:rgba(18,19,23,0.150) 0px 4px 12px!important}
+html.ca-faq:not(.ca-dark) body :is(#kapcsolat > .wrap, .el-cta)::before{background-image:radial-gradient(50% 50%, rgba(18,19,23,0.154), transparent 70%)!important}
+html.ca-faq:not(.ca-dark) body :is(#kapcsolat .btn-primary, .el-cta .btn){box-shadow:rgba(18,19,23,0.210) 0px 10px 30px!important}
+html:not(.ca-dark) .egl-mhero-ov{background-image:radial-gradient(1100px 460px at 50% -10%, rgba(18,19,23,0.099), transparent 60%), linear-gradient(rgba(8, 8, 10, 0.42), rgba(8, 8, 10, 0.48) 45%, rgba(8, 8, 10, 0.7))!important}
+html:not(.ca-dark) .egl-tgl.active{box-shadow:rgba(18,19,23,0.150) 0px 4px 12px!important}
+html:not(.ca-dark) .egl-cfgblock input[type="text"]:focus, html:not(.ca-dark) .egl-cfgblock textarea:focus{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-cfgblock input[type="text"]:focus, html:not(.ca-dark) .egl-cfgblock textarea:focus{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-cfgblock input[type="text"]:focus, html:not(.ca-dark) .egl-cfgblock textarea:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-cfgblock input[type="text"]:focus, html:not(.ca-dark) .egl-cfgblock textarea:focus{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-fuelopt.active{background-color:rgba(18,19,23,0.033)!important}
+html:not(.ca-dark) .egl-form input:focus, html:not(.ca-dark) .egl-form textarea:focus{box-shadow:transparent 0px 0px 0px 4px!important}
+html:not(.ca-dark) .egl-fmsg.err{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .egl-seg [data-bt]:focus-visible{outline-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl[data-bt="p"] .egl-npill{background-color:rgb(242,242,244)!important}
+html:not(.ca-dark) .egl-land-ov{background-image:radial-gradient(1100px 460px at 50% -10%, rgba(18,19,23,0.099), transparent 60%), linear-gradient(rgba(8, 8, 10, 0.42), rgba(8, 8, 10, 0.48) 45%, rgba(8, 8, 10, 0.7))!important}
+html:not(.ca-dark) .egl-faq2 .pl{background-color:rgb(241,241,243)!important}
+html.ca-ord:not(.ca-dark) body .ca-oben i{background-color:rgba(18,19,23,0.044)!important}
+html.ca-ord:not(.ca-dark) body .ca-ostp::before{background-image:linear-gradient(90deg, rgba(18,19,23,0.000), rgba(18,19,23,.35) 12%, rgba(18,19,23,.35) 88%, rgba(18,19,23,0.000))!important}
+html.ca-ord:not(.ca-dark) body .ca-ostp em{box-shadow:rgb(245, 245, 247) 0px 0px 0px 7px, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html.ca-ord:not(.ca-dark) body .ca-osav{background-image:radial-gradient(70% 120% at 100% 0%, rgba(18,19,23,0.209), transparent 60%), linear-gradient(135deg, rgb(23, 24, 29), rgb(14, 15, 18))!important}
+html.ca-ord:not(.ca-dark) body .ca-osav .bt a.r{box-shadow:rgba(18,19,23,0.210) 0px 10px 24px!important}
+html:not(.ca-dark) .lk-range[data-astro-cid-ammq5shr]::-webkit-slider-thumb{box-shadow:rgba(18,19,23,0.240) 0px 2px 8px!important}
+html:not(.ca-dark) .fl-faq[data-astro-cid-rz42esbf] .pl[data-astro-cid-rz42esbf]{background-color:rgb(241,241,243)!important}
+html.ca-fin:not(.ca-dark) body section.fl .fl-b i.ca-fi{background-color:rgba(18,19,23,0.044)!important}
+html.ca-fin:not(.ca-dark) body section.fl .fl-steps::before{background-image:linear-gradient(90deg, rgba(18,19,23,0.000), rgba(18,19,23,.35) 12%, rgba(18,19,23,.35) 88%, rgba(18,19,23,0.000))!important}
+html.ca-fin:not(.ca-dark) body section.fl .fl-step .fl-sn{box-shadow:rgb(245, 245, 247) 0px 0px 0px 7px, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html.ca-fin:not(.ca-dark) body section.fl .fl-cta{background-image:radial-gradient(70% 120% at 100% 0%, rgba(18,19,23,0.209), transparent 60%), linear-gradient(135deg, rgb(23, 24, 29), rgb(14, 15, 18))!important}
+html.ca-fin:not(.ca-dark) body section.fl .fl-cta .btn{box-shadow:rgba(18,19,23,0.210) 0px 10px 24px!important}
+html:not(.ca-dark) .ol-table[data-astro-cid-qrmyk3rw] .hl[data-astro-cid-qrmyk3rw]{background-color:rgb(248,248,250)!important}
+html:not(.ca-dark) .ol-faq[data-astro-cid-qrmyk3rw] .pl[data-astro-cid-qrmyk3rw]{background-color:rgb(241,241,243)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-cc.tb{background-image:linear-gradient(rgba(18,19,23,0.033), rgba(18,19,23,0.006)), none!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-cc.tb{box-shadow:transparent 0px 0px 0px 4px, rgba(18,19,23,0.096) 0px 30px 70px!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-badge{box-shadow:rgba(18,19,23,0.210) 0px 6px 16px!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pk:hover{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pk:hover{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pk:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pk:hover{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pl input:focus{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pl input:focus{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pl input:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pl input:focus{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-pl button:hover, html.ca-ol:not(.ca-dark) body section.ol .ca-pl button.sel{background-color:rgba(18,19,23,0.039)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-res{background-image:radial-gradient(70% 60% at 100% 0%, rgba(18,19,23,0.209), transparent 60%), linear-gradient(160deg, rgb(26, 27, 32), rgb(14, 15, 18))!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-res .go{box-shadow:rgba(18,19,23,0.228) 0px 14px 30px!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-res{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-res{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-res{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-res{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-ol:not(.ca-dark) body section.ol .ca-res{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html:not(.ca-dark) .el-faq[data-astro-cid-nfvec6iw] .pl[data-astro-cid-nfvec6iw]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .gyik-search[data-astro-cid-dkda2zdz]:focus{box-shadow:transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .gyik-item[data-astro-cid-dkda2zdz] .pl[data-astro-cid-dkda2zdz]{background-color:rgb(241,241,243)!important}
+html.ca-biz:not(.ca-dark) body .ca-bbar .ca-bq:focus{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-biz:not(.ca-dark) body .ca-bbar .ca-bq:focus{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-biz:not(.ca-dark) body .ca-bbar .ca-bq:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-biz:not(.ca-dark) body .ca-bbar .ca-bq:focus{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-biz:not(.ca-dark) body .ca-bsum{background-color:rgba(18,19,23,0.039)!important}
+html.ca-biz:not(.ca-dark) body .ca-bhow .ey{background-color:rgba(18,19,23,0.044)!important}
+html.ca-biz:not(.ca-dark) body .ca-bsteps::before{background-image:linear-gradient(90deg, rgba(18,19,23,0.000), rgba(18,19,23,.35) 12%, rgba(18,19,23,.35) 88%, rgba(18,19,23,0.000))!important}
+html.ca-biz:not(.ca-dark) body .ca-bsteps .n{box-shadow:rgb(245, 245, 247) 0px 0px 0px 7px, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html.ca-biz:not(.ca-dark) body .ca-bcta::before{background-image:radial-gradient(50% 50%, rgba(18,19,23,0.154), transparent 70%)!important}
+html.ca-biz:not(.ca-dark) body .ca-bcta a.a1{box-shadow:rgba(18,19,23,0.210) 0px 10px 30px!important}
+html:not(.ca-dark) .bizhero .overlay{background-image:radial-gradient(1100px 460px at 50% -10%, rgba(18,19,23,0.099), transparent 60%), linear-gradient(rgba(8, 8, 10, 0.42), rgba(8, 8, 10, 0.48) 45%, rgba(8, 8, 10, 0.7))!important}
+html:not(.ca-dark) .biz-filters input:focus, html:not(.ca-dark) .biz-filters select:focus{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .biz-filters input:focus, html:not(.ca-dark) .biz-filters select:focus{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .biz-filters input:focus, html:not(.ca-dark) .biz-filters select:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .biz-filters input:focus, html:not(.ca-dark) .biz-filters select:focus{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .biz-filters input:focus, html:not(.ca-dark) .biz-filters select:focus{box-shadow:transparent 0px 0px 0px 3px!important}
+html.ca-sell:not(.ca-dark) body #sellForm :is(input, select, textarea):focus{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body #sellForm :is(input, select, textarea):focus{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body #sellForm :is(input, select, textarea):focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body #sellForm :is(input, select, textarea):focus{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body #sellForm :is(input, select, textarea):focus{box-shadow:transparent 0px 0px 0px 3px!important}
+html.ca-sell:not(.ca-dark) body .ca-up:hover{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .ca-up:hover{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .ca-up:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .ca-up:hover{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .ca-up:hover{background-color:rgba(18,19,23,0.017)!important}
+html.ca-sell:not(.ca-dark) body .ca-up i{background-color:rgba(18,19,23,0.044)!important}
+html.ca-sell:not(.ca-dark) body .ca-follow a:hover{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .ca-follow a:hover{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .ca-follow a:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .ca-follow a:hover{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-sell:not(.ca-dark) body .step-grid::before{background-color:rgba(18,19,23,0.248)!important}
+html.ca-sell:not(.ca-dark) body .step-grid .step .n{box-shadow:rgb(245, 245, 247) 0px 0px 0px 7px, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html:not(.ca-dark) .jot-stat[data-astro-cid-kpghxw4m]{box-shadow:rgba(18,19,23,0.168) 0px 20px 50px!important}
+html:not(.ca-dark) .jot-num[data-astro-cid-kpghxw4m]{background-color:rgb(240,240,242)!important}
+html:not(.ca-dark) .jot-cta-btn[data-astro-cid-kpghxw4m]{box-shadow:rgba(18,19,23,0.228) 0px 10px 30px!important}
+html.ca-jot:not(.ca-dark) body .jot-steps::before{background-image:linear-gradient(90deg, rgba(18,19,23,0.000), rgba(18,19,23,.35) 12%, rgba(18,19,23,.35) 88%, rgba(18,19,23,0.000))!important}
+html.ca-jot:not(.ca-dark) body .jot-step .jot-num{box-shadow:rgb(245, 245, 247) 0px 0px 0px 7px, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html.ca-jot:not(.ca-dark) body section.jot-cta::before{background-image:radial-gradient(50% 50%, rgba(18,19,23,0.154), transparent 70%)!important}
+html.ca-ef:not(.ca-dark) body #lepesek .tl-tag{background-color:rgba(18,19,23,0.039)!important}
+html.ca-ef:not(.ca-dark) body .fee-table tbody tr:hover{background-color:rgba(18,19,23,0.022)!important}
+html.ca-ef:not(.ca-dark) body .fee-table td:nth-child(2) b{background-color:rgba(18,19,23,0.044)!important}
+html.ca-ef:not(.ca-dark) body #jotekonysag .chip.cta{border-top-color:rgba(18,19,23,0.220)!important}
+html.ca-ef:not(.ca-dark) body #jotekonysag .chip.cta{border-right-color:rgba(18,19,23,0.220)!important}
+html.ca-ef:not(.ca-dark) body #jotekonysag .chip.cta{border-bottom-color:rgba(18,19,23,0.220)!important}
+html.ca-ef:not(.ca-dark) body #jotekonysag .chip.cta{border-left-color:rgba(18,19,23,0.220)!important}
+html.ca-ef:not(.ca-dark) body #kapcsolat > .wrap::before{background-image:radial-gradient(50% 50%, rgba(18,19,23,0.154), transparent 70%)!important}
+html.ca-ef:not(.ca-dark) body #kapcsolat .btn-primary{box-shadow:rgba(18,19,23,0.210) 0px 10px 30px!important}
+html:not(.ca-dark) .tl::before{background:linear-gradient(180deg,var(--red),rgba(18,19,23,0.083))!important}
+html:not(.ca-dark) .tl-num{box-shadow:rgba(18,19,23,0.192) 0px 8px 22px!important}
+html:not(.ca-dark) .imp-eyebrow[data-astro-cid-kwivusqf]{background-color:rgba(18,19,23,0.088)!important}
+html:not(.ca-dark) .imp-tag[data-astro-cid-kwivusqf]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .imp-afa[data-astro-cid-kwivusqf] .hl[data-astro-cid-kwivusqf]{background-color:rgb(244,244,246)!important}
+html:not(.ca-dark) .imp-cmp-h[data-astro-cid-kwivusqf] .hl[data-astro-cid-kwivusqf], html:not(.ca-dark) .imp-cmp-r[data-astro-cid-kwivusqf] .b[data-astro-cid-kwivusqf]{background-color:rgb(244,244,246)!important}
+html:not(.ca-dark) .imp-team-card[data-astro-cid-kwivusqf] .role[data-astro-cid-kwivusqf]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .imp-faq[data-astro-cid-kwivusqf] .pl[data-astro-cid-kwivusqf]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .imp-cost[data-astro-cid-kwivusqf] .ic-n[data-astro-cid-kwivusqf]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .kw-chip[data-astro-cid-6u5oyy63] input[data-astro-cid-6u5oyy63]:checked + span[data-astro-cid-6u5oyy63]{box-shadow:transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .kw-opt[data-astro-cid-6u5oyy63]:has(input:checked){box-shadow:transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .ik[data-astro-cid-6u5oyy63] .ik-gocell[data-astro-cid-6u5oyy63] .ik-go[data-astro-cid-6u5oyy63]{box-shadow:rgba(18,19,23,0.132) 0px 8px 18px!important}
+html:not(.ca-dark) .ik[data-astro-cid-6u5oyy63] .sf-field[data-astro-cid-6u5oyy63].ik-err select[data-astro-cid-6u5oyy63]{box-shadow:transparent 0px 0px 0px 3px!important}
+html:not(.ca-dark) .ik-go[data-astro-cid-6u5oyy63]{box-shadow:rgba(18,19,23,0.144) 0px 12px 26px!important}
+html.ca-imp:not(.ca-dark) body section.imp .ic-card .ic-n{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.210) 0px 10px 22px!important}
+html.ca-imp:not(.ca-dark) body section.imp .ic-cta::before{background-image:radial-gradient(50% 50%, rgba(18,19,23,0.165), transparent 70%)!important}
+html.ca-imp:not(.ca-dark) body section.imp .ic-btn{box-shadow:rgba(18,19,23,0.210) 0px 10px 26px!important}
+html.ca-imp:not(.ca-dark) body section.imp .imp-faq details[open]{border-top-color:rgba(18,19,23,0.154)!important}
+html.ca-imp:not(.ca-dark) body section.imp .imp-faq details[open]{border-right-color:rgba(18,19,23,0.154)!important}
+html.ca-imp:not(.ca-dark) body section.imp .imp-faq details[open]{border-bottom-color:rgba(18,19,23,0.154)!important}
+html.ca-imp:not(.ca-dark) body section.imp .imp-faq details[open]{border-left-color:rgba(18,19,23,0.154)!important}
+html:not(.ca-dark) .pf-faq[data-astro-cid-35xz73v4] .pl[data-astro-cid-35xz73v4]{background-color:rgb(241,241,243)!important}
+html.ca-bf:not(.ca-dark) body section.pf .ca-ch-wrap.ca-foc .ca-row.ca-in.ca-f{box-shadow:rgba(18,19,23,0.350) 3px 0px 0px inset, rgba(18, 19, 23, 0.05) 0px 1px 2px, rgba(18, 19, 23, 0.13) 0px 26px 56px!important}
+html.ca-bf:not(.ca-dark) body section.pf .ca-ch-ic{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html.ca-bf:not(.ca-dark) body section.pf .ca-ch-r{background-color:rgba(18,19,23,0.044)!important}
+html.ca-bf:not(.ca-dark) body section.pf .pf-time-n{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.180) 0px 18px 40px!important}
+html.ca-bf:not(.ca-dark) body section.pf div.pf-cta::before{background-image:radial-gradient(50% 50%, rgba(18,19,23,0.165), transparent 70%)!important}
+html.ca-bf:not(.ca-dark) body section.pf div.pf-cta .btn{box-shadow:rgba(18,19,23,0.210) 0px 10px 30px!important}
+html:not(.ca-dark) #ca-kalk .ca-eyebrow{background-color:rgb(240,240,242)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-eyebrow{background-color:rgba(18,19,23,0.044)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-in:focus{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-in:focus{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-in:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-in:focus{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-in:focus{box-shadow:transparent 0px 0px 0px 4px!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-result{background-image:radial-gradient(70% 60% at 100% 0%, rgba(18,19,23,0.066), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-result{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-result{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-result{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-result{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-result{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-row.lk-total{background-color:rgba(18,19,23,0.039)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .lk-cta{box-shadow:rgba(18,19,23,0.216) 0px 14px 30px!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .scroll tbody tr.ca-me td{background-color:rgba(18,19,23,0.044)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .ca-eyebrow, html.ca-calc:not(.ca-dark) body #ca-kalk .ca-eyebrow2{background-color:rgba(18,19,23,0.044)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .ca-sn{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 10px 22px!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .cta{background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.066), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .cta{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .cta{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .cta{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .cta{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .cta{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html.ca-calc:not(.ca-dark) body #ca-kalk .cta .ca-cb a.r{box-shadow:rgba(18,19,23,0.210) 0px 12px 26px!important}
+html:not(.ca-dark) .el-faq[data-astro-cid-27og3bjp] .pl[data-astro-cid-27og3bjp]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .ev-badge[data-astro-cid-vbvcyk57]{box-shadow:rgba(18,19,23,0.180) 0px 6px 16px!important}
+html:not(.ca-dark) .ev-cell[data-astro-cid-vbvcyk57].ev-with{background-color:rgb(245,245,247)!important}
+html:not(.ca-dark) .ev-head[data-astro-cid-vbvcyk57] .ev-with[data-astro-cid-vbvcyk57]{background-color:rgb(240,240,242)!important}
+html:not(.ca-dark) .ev-x[data-astro-cid-vbvcyk57]{background-color:rgb(242,242,244)!important}
+html:not(.ca-dark) .ev-row[data-astro-cid-vbvcyk57]:not(.ev-head):hover .ev-cell[data-astro-cid-vbvcyk57].ev-with{background-color:rgb(240,240,242)!important}
+html:not(.ca-dark) .ev-faq[data-astro-cid-vbvcyk57] .pl[data-astro-cid-vbvcyk57]{background-color:rgb(241,241,243)!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-table::after{background-image:linear-gradient(rgba(18,19,23,0.033), rgba(18,19,23,0.006)), none!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-table::after{box-shadow:transparent 0px 0px 0px 4px, rgba(18,19,23,0.090) 0px 30px 70px!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-num{background-color:rgba(18,19,23,0.044)!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-badge{box-shadow:rgba(18,19,23,0.210) 0px 6px 16px!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-ic.ev-x{background-color:rgba(18,19,23,0.055)!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-cta{background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.066), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-cta{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-cta{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-cta{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-cta{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-cta{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html.ca-ev:not(.ca-dark) body section.ev .ev-cta .btn{box-shadow:rgba(18,19,23,0.216) 0px 14px 30px!important}
+html:not(.ca-dark) .ref .ref-more{box-shadow:rgba(18,19,23,0.168) 0px 8px 22px!important}
+html.ca-rol:not(.ca-dark) body main .eyebrow{background-color:rgba(18,19,23,0.044)!important}
+html.ca-rol:not(.ca-dark) body main :is(.mm-stat-i, .mm-check-ic, .zz-ico, .tq-ico, .mm-ico){box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 8px 18px!important}
+html.ca-rol:not(.ca-dark) body main :is(.zz-num, .tq-card-n){box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 8px 18px!important}
+html.ca-rol:not(.ca-dark) body main .tq-steps > li::before, html.ca-rol:not(.ca-dark) body main .tq-steps .n, html.ca-rol:not(.ca-dark) body main .tq-steps > li > span:first-child{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 8px 18px!important}
+html.ca-rol:not(.ca-dark) body main .tq-flow-c.hl{box-shadow:transparent 0px 0px 0px 4px, rgba(18,19,23,0.084) 0px 24px 60px!important}
+html.ca-rol:not(.ca-dark) body main .tq-no{background-image:linear-gradient(rgba(18,19,23,0.044), rgba(18,19,23,0.011))!important}
+html.ca-rol:not(.ca-dark) body main .tq-callout{background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.066), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-rol:not(.ca-dark) body main .tq-callout{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main .tq-callout{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main .tq-callout{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main .tq-callout{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main .tq-callout{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html.ca-rol:not(.ca-dark) body main .mm-cmp :is(th, td):nth-child(2){background-color:rgba(18,19,23,0.033)!important}
+html.ca-rol:not(.ca-dark) body main :is(.el-cta, .tq-cta, .ref-cta){background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.066), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-rol:not(.ca-dark) body main :is(.el-cta, .tq-cta, .ref-cta){border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main :is(.el-cta, .tq-cta, .ref-cta){border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main :is(.el-cta, .tq-cta, .ref-cta){border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main :is(.el-cta, .tq-cta, .ref-cta){border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-rol:not(.ca-dark) body main :is(.el-cta, .tq-cta, .ref-cta){box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html.ca-rol:not(.ca-dark) body main .el-cta :is(.btn-white, .btn-light){box-shadow:rgba(18,19,23,0.210) 0px 12px 26px!important}
+html:not(.ca-dark) .zz-ico[data-astro-cid-eetfdvgl]{background-color:rgb(242,242,244)!important}
+html:not(.ca-dark) .mm-stat-i[data-astro-cid-eetfdvgl]{background-color:rgb(242,242,244)!important}
+html:not(.ca-dark) .mm-cmp[data-astro-cid-eetfdvgl] td[data-astro-cid-eetfdvgl].us{background-color:rgb(248,248,250)!important}
+html:not(.ca-dark) .tq-toc a{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .tq-toc a{border-top-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-toc a{border-right-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-toc a{border-bottom-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-toc a{border-left-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-ico{background-color:rgb(242,242,244)!important}
+html:not(.ca-dark) .tq-co-role{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .tq-flow-c.hl{border-top-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-flow-c.hl{border-right-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-flow-c.hl{border-bottom-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-flow-c.hl{border-left-color:rgb(218,218,220)!important}
+html:not(.ca-dark) .tq-flow-c.hl{background-color:rgb(250,250,252)!important}
+html:not(.ca-dark) .tq-steps li::after{background-color:rgb(224,224,226)!important}
+html:not(.ca-dark) .tq-faq .pl{background-color:rgb(241,241,243)!important}
+html.ca-md:not(.ca-dark) body section.md .md-cta{background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.066), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-md:not(.ca-dark) body section.md .md-cta{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-md:not(.ca-dark) body section.md .md-cta{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-md:not(.ca-dark) body section.md .md-cta{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-md:not(.ca-dark) body section.md .md-cta{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-md:not(.ca-dark) body section.md .md-cta{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html.ca-md:not(.ca-dark) body section.md .md-cta .btn{box-shadow:rgba(18,19,23,0.210) 0px 12px 26px!important}
+html:not(.ca-dark) .bl-cat-tile[data-astro-cid-b4mpjmb3].is-active{box-shadow:transparent 0px 0px 0px 2px!important}
+html:not(.ca-dark) .bl-cat-ico[data-astro-cid-b4mpjmb3]{background-color:rgb(242,242,244)!important}
+html.ca-blog:not(.ca-dark) body .bl-cat-tile.is-on, html.ca-blog:not(.ca-dark) body .bl-cat-tile[aria-pressed="true"]{box-shadow:transparent 0px 0px 0px 4px, rgba(18,19,23,0.084) 0px 24px 60px!important}
+html.ca-blog:not(.ca-dark) body .bl-cat-ico{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 10px 22px!important}
+html.ca-blog:not(.ca-dark) body .bl-news{background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.066), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-blog:not(.ca-dark) body .bl-news{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-blog:not(.ca-dark) body .bl-news{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-blog:not(.ca-dark) body .bl-news{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-blog:not(.ca-dark) body .bl-news{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-blog:not(.ca-dark) body .bl-news{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.072) 0px 30px 70px!important}
+html:not(.ca-dark) .acct-hero{background-image:radial-gradient(1200px 400px at 85% -10%, rgba(18,19,23,0.154), transparent 60%), linear-gradient(135deg, rgb(11, 11, 13), rgb(27, 29, 36))!important}
+html:not(.ca-dark) .ac-ic{background-color:rgb(240,240,242)!important}
+html:not(.ca-dark) .ac-btn-red{box-shadow:rgba(18,19,23,0.150) 0px 8px 20px!important}
+html:not(.ca-dark) .ac-offer{background-image:linear-gradient(135deg, rgb(255, 255, 255) 0px, rgb(248,248,250) 100%)!important}
+html:not(.ca-dark) .ac-offer{border-top-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-offer{border-right-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-offer{border-bottom-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-offer{border-left-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-offer{box-shadow:rgba(18,19,23,0.048) 0px 10px 24px!important}
+html:not(.ca-dark) .ac-steps li.cur .dot{box-shadow:transparent 0px 0px 0px 5px!important}
+html:not(.ca-dark) .ac-stat.bad{border-top-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-stat.bad{border-right-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-stat.bad{border-bottom-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-stat.bad{border-left-color:rgba(18,19,23,0.193)!important}
+html:not(.ca-dark) .ac-stat.bad{background-color:rgb(248,248,250)!important}
+html:not(.ca-dark) .ac-chip.over{background-color:rgb(240,240,242)!important}
+html.ca-kap:not(.ca-dark) body .kap .kaphero-h1::after{box-shadow:rgba(18,19,23,0.210) 0px 4px 18px!important}
+html.ca-kap:not(.ca-dark) body .kap .kaphero-cta .kaphero-btn.red{box-shadow:rgba(18,19,23,0.240) 0px 10px 28px!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-addr .ic{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.180) 0px 10px 22px!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-steps span.done i{background-color:rgba(18,19,23,0.077)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-cal button:hover:not(:disabled){border-top-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-cal button:hover:not(:disabled){border-right-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-cal button:hover:not(:disabled){border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-cal button:hover:not(:disabled){border-left-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-cal button.sel{box-shadow:rgba(18,19,23,0.180) 0px 10px 22px!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-slots button:hover:not(:disabled){border-top-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-slots button:hover:not(:disabled){border-right-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-slots button:hover:not(:disabled){border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-slots button:hover:not(:disabled){border-left-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-sum{background-color:rgba(18,19,23,0.033)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-f input:focus, html.ca-kap:not(.ca-dark) body .kap .ca-f textarea:focus{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-f input:focus, html.ca-kap:not(.ca-dark) body .kap .ca-f textarea:focus{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-f input:focus, html.ca-kap:not(.ca-dark) body .kap .ca-f textarea:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-f input:focus, html.ca-kap:not(.ca-dark) body .kap .ca-f textarea:focus{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-f input:focus, html.ca-kap:not(.ca-dark) body .kap .ca-f textarea:focus{box-shadow:transparent 0px 0px 0px 4px!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-send{box-shadow:rgba(18,19,23,0.192) 0px 14px 30px!important}
+html.ca-kap:not(.ca-dark) body .kap .ca-done .when{background-color:rgba(18,19,23,0.044)!important}
+html:not(.ca-dark) .kap-map .county[data-rep="zsombor"]{fill:rgb(234,234,236)!important}
+html:not(.ca-dark) .kap-map .county[data-rep="zsombor"]:hover{fill:rgb(202,202,204)!important}
+html:not(.ca-dark) .kaphero-ov{background-image:radial-gradient(1100px 460px at 50% -10%, rgba(18,19,23,0.088), transparent 60%), linear-gradient(rgba(10, 10, 12, 0.62), rgba(10, 10, 12, 0.66) 45%, rgba(10, 10, 12, 0.8))!important}
+html:not(.ca-dark) .cd-ov[data-astro-cid-mpvqbwv3]{background-image:radial-gradient(1100px 460px at 50% -10%, rgba(18,19,23,0.099), transparent 60%), linear-gradient(rgba(8, 8, 10, 0.42), rgba(8, 8, 10, 0.48) 45%, rgba(8, 8, 10, 0.7))!important}
+html:not(.ca-dark) .cd-i[data-astro-cid-mpvqbwv3]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .cd-plus[data-astro-cid-mpvqbwv3]{background-color:rgb(241,241,243)!important}
+html:not(.ca-dark) .egl-tgl[data-astro-cid-mpvqbwv3].active{box-shadow:rgba(18,19,23,0.150) 0px 4px 12px!important}
+html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] input[data-astro-cid-mpvqbwv3][type="text"]:focus, html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] textarea[data-astro-cid-mpvqbwv3]:focus{border-top-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] input[data-astro-cid-mpvqbwv3][type="text"]:focus, html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] textarea[data-astro-cid-mpvqbwv3]:focus{border-right-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] input[data-astro-cid-mpvqbwv3][type="text"]:focus, html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] textarea[data-astro-cid-mpvqbwv3]:focus{border-bottom-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] input[data-astro-cid-mpvqbwv3][type="text"]:focus, html:not(.ca-dark) .egl-cfgblock[data-astro-cid-mpvqbwv3] textarea[data-astro-cid-mpvqbwv3]:focus{border-left-color:rgba(18,19,23,.35)!important}
+html:not(.ca-dark) .egl-form[data-astro-cid-mpvqbwv3] input[data-astro-cid-mpvqbwv3]:focus, html:not(.ca-dark) .egl-form[data-astro-cid-mpvqbwv3] textarea[data-astro-cid-mpvqbwv3]:focus{box-shadow:transparent 0px 0px 0px 4px!important}
+html:not(.ca-dark) .egl-fmsg[data-astro-cid-mpvqbwv3].err{background-color:rgb(241,241,243)!important}
+html.ca-cd:not(.ca-dark) body .cd-chip.cd-chip-year{box-shadow:rgba(18,19,23,0.180) 0px 8px 18px!important}
+html.ca-cd:not(.ca-dark) body .cd-nav-links a:hover, html.ca-cd:not(.ca-dark) body .cd-nav-links a.ca-on{background-color:rgba(18,19,23,0.044)!important}
+html.ca-cd:not(.ca-dark) body .cd-hl .cd-i{box-shadow:rgba(18,19,23,0.180) 0px 8px 18px!important}
+html.ca-cd:not(.ca-dark) body .cd-cmp thead th{background-color:rgba(18,19,23,0.033)!important}
+html.ca-cd:not(.ca-dark) body .cd-cmp thead th{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-cd:not(.ca-dark) body .cd-cmp tbody tr:hover td{background-color:rgba(18,19,23,0.019)!important}
+html.ca-cd:not(.ca-dark) body .cd-band{background-image:radial-gradient(70% 90% at 100% 0%, rgba(18,19,23,0.055), transparent 60%), linear-gradient(125deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)), none!important}
+html.ca-cd:not(.ca-dark) body .cd-band{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-cd:not(.ca-dark) body .cd-band{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-cd:not(.ca-dark) body .cd-band{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-cd:not(.ca-dark) body .cd-band{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-cd:not(.ca-dark) body .cd-band{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.060) 0px 30px 70px!important}
+html.ca-cd:not(.ca-dark) body .cd-band .cd-btn{box-shadow:rgba(18,19,23,0.180) 0px 12px 26px!important}
+html.ca-lgl:not(.ca-dark) body .lg .lg-hero{background-image:radial-gradient(60% 90% at 85% 0%, rgba(18,19,23,0.176), transparent 60%), radial-gradient(50% 80% at 0% 100%, rgba(18,19,23,0.077), transparent 65%), linear-gradient(160deg, rgb(18, 19, 23), rgb(29, 31, 37))!important}
+html.ca-lgl:not(.ca-dark) body .lg .lg-toc li a.on{background-color:rgba(18,19,23,0.039)!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-no{box-shadow:rgba(255, 255, 255, 0.45) 1px 1px 1px inset, rgba(18,19,23,0.168) 0px 8px 18px!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec > ul > li::before{box-shadow:transparent 0px 0px 0px 4px!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec .lg-box.warn{background-color:rgba(18,19,23,0.039)!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec .lg-box.ex{background-image:linear-gradient(135deg, rgba(18,19,23,0.033), rgba(18,19,23,0.011))!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-top-color:rgba(18,19,23,0.193)!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-right-color:rgba(18,19,23,0.193)!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-bottom-color:rgba(18,19,23,0.193)!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec .lg-box.ex{border-left-color:rgba(18,19,23,0.193)!important}
+html.ca-lgl:not(.ca-dark) body .lg .bf-steps li:hover{background-color:rgba(18,19,23,0.028)!important}
+html.ca-lgl:not(.ca-dark) body .lg .bf-steps li::before{box-shadow:rgba(255, 255, 255, 0.4) 1px 1px 1px inset, rgba(18,19,23,0.150) 0px 6px 14px!important}
+html.ca-lgl:not(.ca-dark) body .lg .bf-no{background-image:linear-gradient(rgba(18,19,23,0.044), rgba(18,19,23,0.011))!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-end{background-image:radial-gradient(60% 120% at 100% 0%, rgba(18,19,23,0.193), transparent 60%), linear-gradient(160deg, rgb(23, 24, 28), rgb(15, 16, 19))!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-end .lg-btn{box-shadow:rgba(18,19,23,0.228) 0px 14px 30px!important}
+html.ca-lgl:not(.ca-dark) body .lg .lg-tabs a.on{box-shadow:rgba(18,19,23,0.210) 0px 10px 24px!important}
+html.ca-lgl:not(.ca-dark) body .lg .ca-sec > h2:not(:has(.ca-no))::before{box-shadow:transparent 0px 0px 0px 5px!important}
+html.ca-lgl:not(.ca-dark) body .lg .lg-btn{box-shadow:rgba(18,19,23,0.150) 0px 8px 18px!important}
+html.ca-au:not(.ca-dark) body .wrap .side > .panel:first-child{border-top-color:rgba(18,19,23,0.165)!important}
+html.ca-au:not(.ca-dark) body .wrap .side > .panel:first-child{border-right-color:rgba(18,19,23,0.165)!important}
+html.ca-au:not(.ca-dark) body .wrap .side > .panel:first-child{border-bottom-color:rgba(18,19,23,0.165)!important}
+html.ca-au:not(.ca-dark) body .wrap .side > .panel:first-child{border-left-color:rgba(18,19,23,0.165)!important}
+html.ca-au:not(.ca-dark) body .wrap .side > .panel:first-child{box-shadow:rgba(255, 255, 255, 0.95) 2px 2px 1px inset, transparent 0px 0px 0px 4px, rgba(18,19,23,0.060) 0px 30px 70px!important}
+html.ca-au:not(.ca-dark) body .wrap .side .btn-primary{box-shadow:rgba(18,19,23,0.180) 0px 14px 30px!important}
+html.ca-au:not(.ca-dark) body .wrap .side .btn-soft:hover{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .side .btn-soft:hover{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .side .btn-soft:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .side .btn-soft:hover{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .why .wc{box-shadow:rgba(18,19,23,0.150) 0px 5px 12px!important}
+html.ca-au:not(.ca-dark) body .wrap .iconrow .dot{background-color:rgba(18,19,23,0.050)!important}
+html.ca-au:not(.ca-dark) body .wrap .showmore:hover{border-top-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .showmore:hover{border-right-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .showmore:hover{border-bottom-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .showmore:hover{border-left-color:rgba(18,19,23,.35)!important}
+html.ca-au:not(.ca-dark) body .wrap .soldnote{border-top-color:rgba(18,19,23,0.165)!important}
+html.ca-au:not(.ca-dark) body .wrap .soldnote{border-right-color:rgba(18,19,23,0.165)!important}
+html.ca-au:not(.ca-dark) body .wrap .soldnote{border-bottom-color:rgba(18,19,23,0.165)!important}
+html.ca-au:not(.ca-dark) body .wrap .soldnote{border-left-color:rgba(18,19,23,0.165)!important}
+@media (min-width: 721px){html:not(.ca-dark) body #autoink.ca-grid .cg-pb .cg-pn2{box-shadow:rgba(18,19,23,0.168) 0px 10px 24px!important}}
+@media (max-width: 860px){html:not(.ca-dark) body section.tb .tb-steps::before{background-color:rgba(18,19,23,0.248)!important}html.ca-ord:not(.ca-dark) body .ca-ostp::before{background-color:rgba(18,19,23,0.248)!important}html.ca-fin:not(.ca-dark) body section.fl .fl-steps::before{background-color:rgba(18,19,23,0.248)!important}html.ca-jot:not(.ca-dark) body .jot-steps::before{background-color:rgba(18,19,23,0.248)!important}html.ca-ev:not(.ca-dark) body section.ev .ev-cell.ev-with{background-color:rgba(18,19,23,0.033)!important}}
+@media (max-width: 900px){html.ca-bft:not(.ca-dark) body .lg .ca-mt-l a.on{background-color:rgba(18,19,23,0.039)!important}html.ca-lgl:not(.ca-dark) body .lg .ca-mt-l a.on{background-color:rgba(18,19,23,0.039)!important}}
+@media (max-width: 760px){html.ca-biz:not(.ca-dark) body .ca-bsteps::before{background-color:rgba(18,19,23,0.248)!important}}
+@media (max-width: 820px){html:not(.ca-dark) .ev-cell[data-astro-cid-vbvcyk57].ev-with{background-color:rgb(245,245,247)!important}}

@@ -30,6 +30,24 @@ const BRAND = "CarAdvance";
 const CONTACT_EMAIL = "info@caradvance.hu";
 const DEFAULT_RATE = 402; // EUR->HUF fallback if live rate can't be fetched at build time
 
+// A Google-tábla olvasása: GOOGLE_SHEETS_SA (service account JSON) titokkal hitelesítve, ha be van állítva —
+// így a tábla nyilvános megosztása kikapcsolható (Mr. Job SK lista 2026-11-24, 15. pont). Nélküle a nyilvános cím.
+async function fetchSheet(url) {
+  if (process.env.GOOGLE_SHEETS_SA) {
+    const { fileURLToPath, pathToFileURL } = await import("node:url");
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const { existsSync } = await import("node:fs");
+    const cand = [path.join(here, "caradvance-astro", "lib", "sheet-src.js"), path.join(here, "..", "lib", "sheet-src.js"), path.join(process.cwd(), "lib", "sheet-src.js")];
+    const lib = cand.find((p) => existsSync(p));
+    if (lib) {
+      const { fetchGviz } = await import(pathToFileURL(lib).href);
+      return fetchGviz(process.env, url.split("?")[1], { cache: "no-store" });
+    }
+    console.warn("generate: GOOGLE_SHEETS_SA be van állítva, de a lib/sheet-src.js nem található — nyilvános cím");
+  }
+  return fetch(url, { cache: "no-store" });
+}
+
 // --------------------------------------------------------------- helpers
 const esc = (s) =>
   String(s == null ? "" : s)
@@ -1455,7 +1473,7 @@ async function main() {
   const csvArg = args.includes("--csv") ? args[args.indexOf("--csv") + 1] : null;
   let csv;
   if (csvArg) { csv = await fs.readFile(csvArg, "utf8"); console.log("Using local CSV:", csvArg); }
-  else { console.log("Fetching sheet…"); const raw = await (await fetch(SHEET_CSV_URL, { cache: "no-store" })).text(); csv = gvizJsonToCsv(raw); }
+  else { console.log("Fetching sheet…"); const raw = await (await fetchSheet(SHEET_CSV_URL)).text(); csv = gvizJsonToCsv(raw); }
   const cars = parseCSV(csv);
   for (const ec of EXTRA_CARS) if (!cars.some((c) => slugify(c.modell) === slugify(ec.modell))) cars.push(ec);
   const rate = await getRate();
