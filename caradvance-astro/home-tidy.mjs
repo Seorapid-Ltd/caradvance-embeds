@@ -88,7 +88,7 @@ const CSS = '<style id="ca-dark-tidy-css">'
   + '@media(max-width:640px){#ca-cta .card.ca-cta-card{padding:28px 22px}}'
   // Így dolgozunk (világos): nincs üveg-hatás a kártyákon (a piros pontok színe nem szűrődik át), nincs udvar a pontok körül
   + 'html:not(.ca-dark) body #miert .card.value{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background-color:#fff!important}html:not(.ca-dark) body #miert .ca-tl .ca-tl-dot,html:not(.ca-dark) body #miert .ca-tl .ca-tl-dot.on{box-shadow:none!important}html:not(.ca-dark) body #miert .ca-tl .ca-tl-fill{box-shadow:none!important}html:not(.ca-dark) body #miert .ca-tl .ca-tl-fill::after{display:none!important}'
-  + '.stat-logos:has(.ca-hahu){flex-direction:column!important;gap:12px!important}.stat-logos img.ca-hahu{height:17px!important;width:auto!important;max-width:100%;border-radius:0!important}.stat-logos img.ca-hahu-d{display:none!important}html.ca-dark .stat-logos img.ca-hahu-l{display:none!important}html.ca-dark .stat-logos img.ca-hahu-d{display:block!important;height:32px!important;margin:-6px 0}'
+  + '.stat-logos:has(.ca-hahu){flex-direction:column!important;gap:12px!important}.stat-logos img.ca-hahu{height:17px!important;width:auto!important;max-width:100%;border-radius:0!important}.stat-logos img.ca-hahu-d{display:none!important}html.ca-dark .stat-logos img.ca-hahu-l{display:none!important}html.ca-dark .stat-logos img.ca-hahu-d{display:block!important}'
   + '</style>';
 
 function findAll(node, pred, out = []) {
@@ -197,7 +197,7 @@ try {
         ['toyota-rav4-hybrid-hasznaltauto-eladas-cut.webp', 'bmw-x2-m-eladjuk-az-autodat.webp', 'Fehér BMW X2 M — eladjuk az autódat'],
       ]) h = h.replace(new RegExp('<div class="svc-media ca-stage"><img src="/' + from.replace(/[.?]/g, '\\$&') + '" alt="[^"]*"'), '<div class="svc-media ca-stage ca-photo"><img src="/' + to + '" alt="' + alt + '"');
       // számsáv „5000+” kártya: mobile.de alatt a Használtautó.hu logó is (világos: sötét felirat, sötét mód: fehér felirat)
-      h = h.replace('<img src="/mobile-de.webp" alt="mobile.de" style="height:32px;width:auto;border-radius:5px">', '<img src="/mobile-de.webp" alt="mobile.de" class="ca-mde" style="height:28px;width:auto;border-radius:5px"><img class="ca-hahu ca-hahu-l" src="/hasznaltauto-hu-dark.png" alt="Használtautó.hu" width="532" height="60"><img class="ca-hahu ca-hahu-d" src="/hasznaltauto-hu.png" alt="Használtautó.hu" width="560" height="101">');
+      h = h.replace('<img src="/mobile-de.webp" alt="mobile.de" style="height:32px;width:auto;border-radius:5px">', '<img src="/mobile-de.webp" alt="mobile.de" class="ca-mde" style="height:28px;width:auto;border-radius:5px"><img class="ca-hahu ca-hahu-l" src="/hasznaltauto-hu-logo-sotet.svg" alt="Használtautó.hu" width="699" height="82"><img class="ca-hahu ca-hahu-d" src="/hasznaltauto-hu-logo-feher.svg" alt="Használtautó.hu" width="699" height="82">');
       h = h.replace('</head>', CSS + '</head>');
       fs.writeFileSync(FILE, h);
       console.log('[home-tidy] letisztult főoldal: ' + edits.length + ' módosítás');
