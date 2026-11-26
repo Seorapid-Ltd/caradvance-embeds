@@ -480,7 +480,7 @@ async function offerDecision(request, env, ctx) {
 /* ---------------- Kapcsolat: internal messages between the team (D1) ----------------
  * desk_contacts: the people you can write to (Marc, Karoly, Alexander, Kevin by default; email/phone filled in later).
  * desk_msgs: one row per message. A message reaches a person by email (if known) or by their contact key. */
-const DEFAULT_CONTACTS = [['marc', 'Marc Némethy', 'marc.nemethy@bhgeu.com', '', 1], ['karoly', 'Tóth Károly', 'import@caradvance.de', '+36302146989', 2], ['alexander', 'Alexander Röther', 'a.roether@caradvance.de', '', 3], ['kevin', 'Kevin', '', '', 4],
+const DEFAULT_CONTACTS = [['marc', 'Marc Némethy', 'marc.nemethy@bhgeu.com', '+36706240563', 1], ['karoly', 'Tóth Károly', 'import@caradvance.de', '+36302146989', 2], ['alexander', 'Alexander Röther', 'a.roether@caradvance.de', '', 3], ['kevin', 'Kevin', '', '', 4],
   ['pavel', 'Pavel Horemuž', '', '+421915410555', 5], ['veronika', 'Veronika Diničová', '', '+421918700722', 6], ['andreas', 'Andreas Horemuž', '', '+421917222122', 7]];
 // Who each site's Help page shows (people added later by an admin show on every site; PL/RO show everyone)
 const CONTACT_MARKETS = { hu: ['marc', 'karoly'], sk: ['pavel', 'veronika', 'andreas'], cz: ['pavel', 'veronika', 'andreas'], eu: ['alexander', 'kevin'], ch: ['alexander', 'kevin'] };
