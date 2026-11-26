@@ -176,11 +176,13 @@ if (existsSync(rob)) {
   }
 }
 
-// ---------- _routes.json: a függvény csak ott fusson, ahol kell ----------
-const include = new Set(['/api/*', '/_np/*', '/', '/rent-data.js', '/biz-data.js']);
-for (const d of dirs) if (d) { include.add('/' + d); include.add('/' + d + '/*'); }
-const inc = [...include];
-if (inc.length > 100) throw new Error('_routes.json: túl sok szabály (' + inc.length + ')');
+// ---------- _routes.json: a Functions/middleware minden útvonalon fusson ----------
+// Korábban minden oldal-mappát felsoroltunk az include-ban (hogy az ország-ár middleware a
+// lapokon fusson). Ez túllépte a Cloudflare 100-szabályos _routes.json korlátját, és néma 404-et
+// okozott a /api/* végpontokon (az Értékesítési pult „adatbázis nem tölt be" hibája). Egyetlen
+// /* include mindenhol futtatja a függvényt; a statikus fájlokat a middleware azonnal továbbengedi,
+// így a többletterhelés elhanyagolható, viszont a /api/* biztosan mindig elérhető marad.
+const inc = ['/*'];
 await writeFile(path.join(ROOT, '_routes.json'), JSON.stringify({ version: 1, include: inc, exclude: [] }, null, 2));
 
-console.log(`[noprice] ${pages} oldal + ${Object.keys(DATA).length} adatfájl → _np/ · _routes.json: ${inc.length} szabály`);
+console.log(`[noprice] ${pages} oldal + ${Object.keys(DATA).length} adatfájl → _np/ · _routes.json: /* (minden útvonal)`);
