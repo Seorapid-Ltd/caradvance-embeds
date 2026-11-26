@@ -346,6 +346,7 @@ async function makeOffer(request, env, ctx) {
 const VAT_F = 1 + VAT;
 const CC_BY_TLD = { hu: 'HU', sk: 'SK', cz: 'CZ', pl: 'PL', ch: 'CH', de: 'DE', at: 'AT', ro: 'RO' };
 const CC_BY_LANG = { hu: 'HU', sk: 'SK', cs: 'CZ', pl: 'PL', de: 'DE', en: '' };
+const TEAM_DE = { hu: 'Ungarn', sk: 'Slowakei', cz: 'Tschechien', pl: 'Polen', ch: 'Schweiz', eu: 'Europa', ro: 'Rumänien' };
 const COUNTRY_DE = { HU: 'Ungarn', SK: 'Slowakei', CZ: 'Tschechien', PL: 'Polen', CH: 'Schweiz', DE: 'Deutschland', AT: 'Österreich', RO: 'Rumänien' };
 export function countryOf(host, lang) {
   const tld = String(host || '').split('.').pop().toLowerCase();
@@ -378,7 +379,7 @@ async function linkSig(env, id) {
   const s = await crypto.subtle.sign('HMAC', k, new TextEncoder().encode('offer-check|' + id));
   return [...new Uint8Array(s)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
 }
-function germanCheck(offer, car, rk, base, sig) {
+function germanCheck(offer, car, rk, base, sig, from) {
   // 2 lines: where the offer comes from · model + year · our price vs offer · link to the car · accept / reject
   const p = parseOffer(offer);
   const land = COUNTRY_DE[p.country] || p.country || '—';
@@ -388,10 +389,11 @@ function germanCheck(offer, car, rk, base, sig) {
   const carUrl = `${base}/sales/#car=${encodeURIComponent(car.id)}`;
   const dec = `${base}/api/desk/offer-decision?id=${encodeURIComponent(offer.id)}&sig=${sig}`;
   const l1 = `Angebot aus ${land}: ${car.model || ''} (EZ ${year}) – unser Preis ${eurDe(ours)} ${vat}, Angebot ${eurDe(p.price)} ${vat}.`;
-  const l2 = `Fahrzeug: ${carUrl} · Annehmen/Ablehnen: ${dec}`;
+  const by = from && from.name ? `Gesendet von ${from.name}${from.team ? ', ' + from.team : ''} · ` : '';
+  const l2 = `${by}Fahrzeug: ${carUrl} · Annehmen/Ablehnen: ${dec}`;
   const subject = `Angebot ${car.id} aus ${land}: ${eurDe(p.price)} – annehmen?`;
   const btn = (t, d, bg) => `<a href="${dec}&d=${d}" style="display:inline-block;margin:0 6px 0 0;padding:8px 18px;border-radius:999px;background:${bg};color:#fff;font-weight:bold;text-decoration:none">${t}</a>`;
-  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519">Angebot aus <b>${escH(land)}</b>: <a href="${carUrl}" style="color:#e30613;font-weight:bold">${escH(car.model || '')} (EZ ${escH(year)})</a> – unser Preis ${eurDe(ours)} ${vat}, Angebot <b>${eurDe(p.price)} ${vat}</b>.<div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519">Angebot aus <b>${escH(land)}</b>: <a href="${carUrl}" style="color:#e30613;font-weight:bold">${escH(car.model || '')} (EZ ${escH(year)})</a> – unser Preis ${eurDe(ours)} ${vat}, Angebot <b>${eurDe(p.price)} ${vat}</b>.${from && from.name ? `<div style="margin-top:4px;font-size:13px;color:#5a6270">Gesendet von <b style="color:#141519">${escH(from.name)}</b>${from.team ? ' · ' + escH(from.team) : ''}</div>` : ''}<div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
   return { subject, text: l1 + '\n' + l2, html };
 }
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -427,7 +429,9 @@ async function offerAction(request, env, ctx, me) {
   const cat = await fetch(new URL('/sales/catalogue.json', request.url)).then(r => r.ok ? r.json() : {}).catch(() => ({}));
   const ex = cat[car.id] || {}; const photo = [...(ex.real_photos || []), ...(ex.photos || [])][0];
   const base = new URL(request.url).origin;
-  const mail = germanCheck(offer, { ...car, photo }, rankFor(all, offer), base, await linkSig(env, offer.id));
+  const mk = deskMarketOf(new URL(request.url).hostname);
+  const team = `Team ${TEAM_DE[mk] || mk.toUpperCase()} (caradvance.${mk})`;
+  const mail = germanCheck(offer, { ...car, photo }, rankFor(all, offer), base, await linkSig(env, offer.id), { name: who, team });
   // Default decision maker: Alexander (has the authority to accept) — his email from Kapcsolat contacts, else DESK_CHECK_EMAIL
   let alex = '';
   if (env.DB) { try { await ensureMsg(env); const r = await env.DB.prepare("SELECT email FROM desk_contacts WHERE k = 'alexander'").first(); alex = (r && r.email) || ''; } catch (e) {} }
