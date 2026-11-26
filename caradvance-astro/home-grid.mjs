@@ -97,6 +97,29 @@ const CSS = '<style id="ca-grid-css">'
   + S + ' .cg-sw{display:flex;justify-content:center;gap:6px;margin-top:14px}' + S + ' .cg-sw i{width:18px;height:3px;border-radius:2px;background:rgba(18,19,23,.18);transition:width .3s,background .3s}' + S + ' .cg-sw i.on{width:36px;background:#E2001A}'
   + 'html.ca-dark body #autoink.ca-grid .cg-sw i{background:rgba(255,255,255,.22)}html.ca-dark body #autoink.ca-grid .cg-sw i.on{background:#E2001A}}'
   + '@media(min-width:721px){' + S + ' .cg-sw{display:none}}'
+  // bérelhető kártyák: BMW-stílus (fehér kártya, címkék fent, vékony cím, kisebb autókép)
+  + S + ' .cg-c.cg-bmw{background:#fff;border:1px solid #E4E4E8;border-radius:6px;padding:22px 22px 20px;transition:box-shadow .25s,border-color .25s}'
+  + S + ' .cg-c.cg-bmw:hover{box-shadow:0 14px 34px rgba(18,19,23,.08);border-color:#D6D6DB}'
+  + S + ' .cg-bmw .cg-tags{order:1;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}'
+  + S + ' .cg-bmw .cg-tg{font-size:12.5px;font-weight:500;line-height:1.2;padding:4px 8px;border-radius:2px;background:#EFEFF1;color:#3A3A3F}'
+  + S + ' .cg-bmw .cg-tg.now{background:#121317;color:#fff}'
+  + S + ' .cg-bmw .cg-hd{order:2;display:block;margin-top:0}'
+  + S + ' .cg-bmw .cg-cat{display:none}'
+  + S + ' .cg-bmw .cg-t{font-size:26px;font-weight:400;letter-spacing:-.015em;line-height:1.15;margin-top:0;min-height:2.3em}'
+  + S + ' .cg-bmw .cg-r{text-align:left;margin-top:6px}'
+  + S + ' .cg-bmw .cg-p{display:inline;font-size:16px;font-weight:600;letter-spacing:0;margin-top:0;color:#3A3A3F}'
+  + S + ' .cg-bmw .cg-pn{display:inline;margin-left:6px;font-size:13px}'
+  + S + ' .cg-bmw .cg-ph{order:3;aspect-ratio:auto;height:170px;margin:12px -6px 6px;border-radius:0;background:transparent!important}'
+  + S + ' .cg-bmw .cg-ph img.cg-cut{padding:2% 13%;filter:drop-shadow(0 10px 10px rgba(18,19,23,.14))}'
+  + S + ' .cg-bmw .cg-bd{display:none}'
+  + S + ' .cg-bmw .cg-f{order:4;margin-top:0;padding-top:14px;border-top:1px solid #EDEDF0;font-size:14px}'
+  + S + ' .cg-bmw .cg-cw{order:5;margin-top:16px}'
+  + S + ' .cg-bmw .cg-cta{height:46px;border-radius:2px;background:transparent;border:1px solid #121317;font-size:15px;font-weight:600}'
+  + S + ' .cg-bmw .cg-cta:hover{background:#121317;color:#fff}'
+  + 'html.ca-dark body #autoink.ca-grid .cg-c.cg-bmw{background:#17181B;border-color:rgba(255,255,255,.1)}html.ca-dark body #autoink.ca-grid .cg-c.cg-bmw:hover{border-color:rgba(255,255,255,.2);box-shadow:0 14px 34px rgba(0,0,0,.4)}'
+  + 'html.ca-dark body #autoink.ca-grid .cg-bmw .cg-tg{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8)}html.ca-dark body #autoink.ca-grid .cg-bmw .cg-tg.now{background:#fff;color:#121317}'
+  + 'html.ca-dark body #autoink.ca-grid .cg-bmw .cg-p{color:rgba(255,255,255,.85)!important}html.ca-dark body #autoink.ca-grid .cg-bmw .cg-f{border-top-color:rgba(255,255,255,.1)}'
+  + 'html.ca-dark body #autoink.ca-grid .cg-bmw .cg-cta{background:transparent;border-color:rgba(255,255,255,.6);color:#fff}html.ca-dark body #autoink.ca-grid .cg-bmw .cg-cta:hover{background:#fff;color:#121317}'
   + '</style>';
 
 const JS = '<script id="ca-grid-js">window.__caGrid=1;' + String.raw`(function(){
@@ -129,6 +152,7 @@ c.appendChild(ph);
 var hd=el("div","cg-hd",'<div class="cg-l"><span class="cg-cat">'+esc(o.cat)+'</span><a class="cg-t" href="'+esc(o.href||"#")+'" title="'+esc(o.full||o.title)+'">'+esc(o.title)+'</a></div><div class="cg-r"><b class="cg-p">'+esc(o.price)+'</b><span class="cg-pn">'+esc(o.note)+'</span></div>');c.appendChild(hd);
 var f=el("div","cg-f");(o.facts||[]).filter(Boolean).forEach(function(x){f.appendChild(el("span",null,esc(x)))});c.appendChild(f);
 if(o.extra)c.appendChild(el("div","cg-x",esc(o.extra)));
+if(o.cut){c.classList.add("cg-bmw");var tg=el("div","cg-tags");if(o.badge)tg.appendChild(el("span","cg-tg now",esc(o.badge)));if(o.cat)tg.appendChild(el("span","cg-tg",esc(o.cat)));c.insertBefore(tg,c.firstChild)}
 var cw=el("div","cg-cw"),cta=el("button","cg-cta",'<span>'+esc(o.ctaText||"Érdeklődöm")+'</span>'+ARR);cta.type="button";cta.addEventListener("click",function(e){e.preventDefault();o.inq()});cw.appendChild(cta);c.appendChild(cw);
 // képlapozás a fotón belül
 if(o.gal&&o.href){var L=null,ix=0,p=el("button","cg-a cg-ap","&#8249;"),n=el("button","cg-a cg-an","&#8250;");p.type=n.type="button";p.setAttribute("aria-label","Előző kép");n.setAttribute("aria-label","Következő kép");ph.appendChild(p);ph.appendChild(n);

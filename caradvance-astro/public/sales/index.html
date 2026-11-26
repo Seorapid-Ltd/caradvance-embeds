@@ -1710,6 +1710,7 @@ Ready when you are.</h1>
 </form></dialog>
 <dialog id="lb" aria-label="Photo viewer"><div class="lbtop"><span id="lbCap"></span><div class="lbtools"><button type="button" id="lbFs" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fs-on" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-off" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button><button type="button" id="lbX" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div><div class="lbstage"><button type="button" id="lbPrev" class="lbnav prev" aria-label="Previous photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><img id="lbImg" alt=""><button type="button" id="lbNext" class="lbnav next" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></dialog>
 <dialog id="dlb" aria-label="Damage photo"><button type="button" id="dlbX" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img id="dlbImg" alt=""></dialog>
+<script src="desk-skcz.js?v=1127"></script>
 <script src="desk-shim.js"></script>
 <script>
 /* Telefonos kártyanézethez: minden cella megkapja az oszlop nevét (a fejlécből). */
@@ -1726,6 +1727,7 @@ Ready when you are.</h1>
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eur=n=>n==null||n===''||isNaN(n)?'—':new Intl.NumberFormat(window.__loc||'en-GB',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Math.round(Number(n)));
+const b2c=c=>window.__skczB2C?window.__skczB2C(c):c.dealer_gross,b2cTag=c=>window.__skczTag?window.__skczTag(c):'',b2bTag=c=>window.__skczB2B?window.__skczB2B(c):'';
 const S={raw:[],ext:{},cars:[],dealers:[],logs:[],open:null,db:null,canWrite:true};
 const todayMs=Date.now();
 const daysLeft=d=>d?Math.round((new Date(d+'T12:00:00')-todayMs)/864e5):null;
@@ -1849,10 +1851,10 @@ const langOf=d=>{const l=String(d?.language||'').toLowerCase().replace('cz','cs'
 const mailOf=d=>d?.email||d?.contact_email||'';
 function offerSum(v,L){const C=S.cars.filter(c=>(!v||c.category===v)&&(c.status||'Available')==='Available');const net=C.reduce((s,c)=>s+(Number(c.dealer_net)||0),0);
   const w={en:'net',hu:'nettó',de:'netto',sk:'bez DPH',cs:'bez DPH',pl:'netto'}[L];return pl(C.length,'cars',L)+(net?' · '+eur(net)+' '+w:'');}
-function fillMsg(){const d=S.dealers.find(x=>x.id===$('#mDealer').value),L=$('#mLang').value,o=OFFERS[Number($('#mOffer').value)||0],T=MSG[L];
+function fillMsg(){const d=S.dealers.find(x=>x.id===$('#mDealer').value),L=$('#mLang').value,o=OFFERS[Number($('#mOffer').value)||0],T=(window.__skczMsg&&window.__skczMsg(L))||MSG[L];
   const from=$('#mFrom').value.trim()||'—',cn=d?.contact_name||'';
   const hi={en:cn||'Sir or Madam',hu:cn||'Hölgyem/Uram',de:'',sk:'',cs:'',pl:''}[L];const hi2=cn?(L==='de'?', sehr geehrte/r '+cn:' '+cn):'';
-  const r=s=>s.replaceAll('{offer}',o.n[L]).replaceAll('{sum}',offerSum(o.v,L)).replaceAll('{from}',from).replaceAll('{hi}',hi).replaceAll('{hi2}',L==='de'&&cn?'':hi2);
+  const r=s=>s.replaceAll('{offer}',o.n[L]).replaceAll('{sum}',offerSum(o.v,L)).replaceAll('{count}',offerSum(o.v,L).split(' · ')[0]).replaceAll('{from}',from).replaceAll('{hi}',hi).replaceAll('{hi2}',L==='de'&&cn?'':hi2);
   $('#mSubj').value=r(T.s);$('#mBody').value=r(T.b).replace('Sehr geehrte Damen und Herren,',cn?'Sehr geehrte/r '+cn+',':'Sehr geehrte Damen und Herren,');
   $('#mNote').textContent=d&&!mailOf(d)?t('m_noemail'):(d?mailOf(d)+(d.phone?' · '+d.phone:''):'');}
 function openMsg(dealerId){const D=[...S.dealers].sort((a,b)=>(b.score||0)-(a.score||0)||String(a.name).localeCompare(b.name));
@@ -2029,7 +2031,7 @@ function renderStock(){
     <td><div class="carcell">${pics(c).length?((c.status||'Available')==='Sold'?`<span class="soldw" data-sold="${esc(t('sold_x'))}"><img class="thumb" loading="lazy" decoding="async" src="img/t/${esc(pics(c)[0])}" alt=""></span>`:`<img class="thumb" loading="lazy" decoding="async" src="img/t/${esc(pics(c)[0])}" alt="">`):'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span>${gone?`<span class="gonechip">${esc(t('sl_gone'))}</span>`:''}${dOpen?`<span class="dmgchip">⚠ ${dOpen} ${esc(t('dm_open'))} ${esc(t('dm_word'))}</span>`:''}${mde?`<a class="mdelink" href="${esc(mde)}" target="_blank" rel="noopener" title="mobile.de">mobile.de${c.mde_price!=null&&c.mde_price!==''?' · '+eur(c.mde_price):''} ↗</a>`:''}<span class="sub mmeta">${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||''),c.power].filter(Boolean).join(' · '))}</span>${soon?`<span class="chips"><span class="chip warn">Ending soon · ${dl} d</span></span>`:''}</div></div></td>
     <td class="hide-s"><span class="mono">${esc(c.vin||c.plate||'no plate yet')}</span><br><span class="sub">${esc(c.first_reg||'')} · ${c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':esc(c.km_text||'km on request')}</span></td>
     <td class="pcol">${eur(c.dealer_net)}${c.asking_price!=null&&c.asking_price!==''?`<span class="sub">${esc(t('th_ask').replace(/\s*€$/,''))}: ${eur(c.asking_price)}</span>`:''}</td>
-    <td class="pcol b2c">${eur(c.dealer_gross)}</td>
+    <td class="pcol b2c">${eur(b2c(c))}${b2cTag(c)}</td>
     <td class="stcol"><select class="st ${esc(c.status||'Available')}" data-f="status" data-id="${esc(c.id)}" aria-label="Status">${['Available','Under offer','Reserved','Sold'].map(s=>`<option${(c.status||'Available')===s?' selected':''}>${s}</option>`).join('')}</select></td></tr>`;
     if(S.open===c.id){
       const dd=(l,v)=>v!=null&&v!==''?`<dt>${l}</dt><dd>${esc(v)}</dd>`:'';const xd=dd;
@@ -2050,7 +2052,7 @@ function renderStock(){
         ${(c.highlights||[]).length?`<section class="vds"><h4>${esc(t('vd_eqh'))}</h4><ul class="vdhl">${c.highlights.map(x=>`<li>${vi('chk')}${esc(x)}</li>`).join('')}</ul></section>`:''}
         ${EQ.length?`<section class="vds"><h4>${esc(t('vd_eqall'))} <span class="sub">(${EQ.length})</span></h4><ul class="vdeq">${(eqOpen?EQ:EQ.slice(0,EQN)).map(x=>`<li>${vi('chk')}${esc(x)}</li>`).join('')}</ul>${EQ.length>EQN?`<button type="button" class="vdall" data-eqall="${esc(c.id)}">${esc(t(eqOpen?'vd_less':'vd_all'))} ${eqOpen?'':'('+EQ.length+')'}</button>`:''}</section>`:''}
       </div><aside class="vdside">
-        <section class="vds vdprices"><h4>${esc(t('vd_prices'))}</h4><dl>${dd('List price gross',c.msrp_gross?eur(c.msrp_gross):'')}${c.dealer_net?`<dt class="p-b2b">Business to Business (B2B)</dt><dd class="p-b2b big">${eur(c.dealer_net)}</dd>`:''}${c.dealer_gross?`<dt class="p-b2c">Business to Customer (B2C)</dt><dd class="p-b2c big">${eur(c.dealer_gross)}</dd>`:''}${dd('vs list',c.pct_vs_list!=null?c.pct_vs_list+'%':'')}${dd('Status changed',c.status_changed)}${dd('Price source',c.price_source||c.source)}${dd('Note',c.match_note)}${c.mde_url?`<dt>mobile.de</dt><dd><a href="${esc(c.mde_url)}" target="_blank" rel="noopener">${c.mde_price!=null?eur(c.mde_price):'ad'}${c.mde_km!=null?' · '+Number(c.mde_km).toLocaleString(loc)+' km':''} ↗</a></dd>`:''}</dl></section>
+        <section class="vds vdprices"><h4>${esc(t('vd_prices'))}</h4><dl>${dd('List price gross',c.msrp_gross?eur(c.msrp_gross):'')}${c.dealer_net?`<dt class="p-b2b">Business to Business (B2B)</dt><dd class="p-b2b big">${eur(c.dealer_net)}${b2bTag(c)}</dd>`:''}${c.dealer_gross?`<dt class="p-b2c">Business to Customer (B2C)</dt><dd class="p-b2c big">${eur(b2c(c))}${b2cTag(c)}</dd>`:''}${dd('vs list',c.pct_vs_list!=null?c.pct_vs_list+'%':'')}${dd('Status changed',c.status_changed)}${dd('Price source',c.price_source||c.source)}${dd('Note',c.match_note)}${c.mde_url?`<dt>mobile.de</dt><dd><a href="${esc(c.mde_url)}" target="_blank" rel="noopener">${c.mde_price!=null?eur(c.mde_price):'ad'}${c.mde_km!=null?' · '+Number(c.mde_km).toLocaleString(loc)+' km':''} ↗</a></dd>`:''}</dl></section>
         <section class="vds vdint"><div class="pricebox"><label class="f"><span>Asking price €</span><input class="price" inputmode="decimal" data-f="asking_price" data-id="${esc(c.id)}" value="${esc(c.asking_price??'')}" placeholder="—"></label><label class="f"><span>Minimum price € (internal)</span><input class="price" inputmode="decimal" data-f="min_price" data-id="${esc(c.id)}" value="${esc(c.min_price??'')}" placeholder="—"></label></div><label class="f">Reserved for / offered to<select data-f="reserved_for" data-id="${esc(c.id)}"><option value="">—</option>${dOpts}</select></label>
         <label class="f">Notes<textarea data-f="notes" data-id="${esc(c.id)}">${esc(c.notes||'')}</textarea></label></section>
       </aside></div></div></td></tr>`;
@@ -2306,7 +2308,7 @@ function renderLeads(){
     const meta=[c.id,c.first_reg,km,c.power,c.colour].filter(Boolean);
     return `<article class="ofcar"><div class="ofhead" data-car="${esc(c.id)}">${ph?`<img src="img/t/${esc(ph)}" alt="" loading="lazy">`:'<div class="noimg"></div>'}
       <div class="ofhtitle"><h3>${esc(c.model||c.id)}${c.status&&c.status!=='Available'?` <span class="ofst ${c.status==='Under offer'?'acc':c.status==='Sold'?'dec':'chk'}">${esc(trStr?trStr(c.status):c.status)}</span>`:''}</h3><div class="ofmeta">${meta.map(m=>`<span>${esc(m)}</span>`).join('')}</div><span class="ofcount">${g.L.length} ${esc(t('l_offers'))}</span></div>
-      <div class="oflisted"><div><small>${esc(t('of_lb2b'))}</small><b>${eur(c.dealer_net)}</b></div><div><small>${esc(t('of_lb2c'))}</small><b>${eur(c.dealer_gross)}</b></div></div></div>
+      <div class="oflisted"><div><small>${esc(t('of_lb2b'))}</small><b>${eur(c.dealer_net)}</b></div><div><small>${esc(t('of_lb2c'))}</small><b>${eur(b2c(c))}</b>${b2cTag(c)}</div></div></div>
       <div class="ofrows">${g.L.map(x=>{const p=x.p,b2b=p.type==='b2b',ours=b2b?c.dealer_net:c.dealer_gross,d=ours&&p.price?Math.round((p.price/ours-1)*1000)/10:null;
         const open=OPEN.has(x.o.id),cmp=d==null?'':d===0?`<span class="ofcmp eq">${esc(t('of_same'))}</span>`:`<span class="ofcmp ${d>0?'up':'down'}">${oic(d>0?'up':'down')}${Math.abs(d).toLocaleString(window.__loc||'en-GB')}% ${esc(t(d>0?'of_above':'of_below'))}</span>`;
         const vat=b2b?t('of_vatex'):t('of_vatin');
@@ -2619,7 +2621,7 @@ function wireCarPicker(){
   list.addEventListener('mousedown',e=>{const a=e.target.closest('[data-add]');if(!a)return;e.preventDefault();toggle(a.dataset.add);search.value='';if(single){list.hidden=true}else{renderDrop();search.focus()}});
   chips.addEventListener('click',e=>{const r=e.target.closest('[data-rm]');if(!r)return;sel=sel.filter(x=>x!==r.dataset.rm);sync();});
   const fmtkm=c=>c.km_text||(c.mileage!=null&&c.mileage!==''?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':'');
-  const cardHtml=c=>{const ph=pics(c)[0];return `<div class="bpcard" data-car="${esc(c.id)}">${ph?`<img class="bpthumb" src="img/t/${esc(ph)}" alt="" loading="lazy">`:'<span class="bpthumb noimg"></span>'}<div class="bpci"><div class="bpcm">${esc(c.model||c.id)}</div><div class="bpcs">${esc(c.id)}${c.colour?' · '+esc(c.colour):''} <span class="pill ${stCls(c.status)}">${esc(c.status||'Available')}</span></div></div><div class="bpreg"><b>${esc(c.first_reg||'—')}</b>${esc(fmtkm(c))}</div><div class="bpnum">${eur(c.dealer_net)}<span class="u">B2B</span></div><div class="bpnum b2c">${eur(c.dealer_gross)}<span class="u">B2C</span></div><button type="button" class="bpadd${inSel(c.id)?' on':''}" data-add="${esc(c.id)}" aria-label="Add">${inSel(c.id)?'✓':'＋'}</button></div>`;};
+  const cardHtml=c=>{const ph=pics(c)[0];return `<div class="bpcard" data-car="${esc(c.id)}">${ph?`<img class="bpthumb" src="img/t/${esc(ph)}" alt="" loading="lazy">`:'<span class="bpthumb noimg"></span>'}<div class="bpci"><div class="bpcm">${esc(c.model||c.id)}</div><div class="bpcs">${esc(c.id)}${c.colour?' · '+esc(c.colour):''} <span class="pill ${stCls(c.status)}">${esc(c.status||'Available')}</span></div></div><div class="bpreg"><b>${esc(c.first_reg||'—')}</b>${esc(fmtkm(c))}</div><div class="bpnum">${eur(c.dealer_net)}<span class="u">B2B</span></div><div class="bpnum b2c">${eur(b2c(c))}<span class="u">B2C</span>${b2cTag(c)}</div><button type="button" class="bpadd${inSel(c.id)?' on':''}" data-add="${esc(c.id)}" aria-label="Add">${inSel(c.id)?'✓':'＋'}</button></div>`;};
   const renderBrowse=()=>{if(!bpList)return;const q=(bpSearch&&bpSearch.value||'').trim().toLowerCase();
     const show=priced.filter(c=>!q||`${c.id} ${c.model||''} ${c.colour||''}`.toLowerCase().includes(q));
     bpList.innerHTML=show.length?`<div class="bphcols"><span></span><span>Car</span><span>Reg · km</span><span>B2B</span><span>B2C</span><span></span></div>`+show.map(cardHtml).join(''):`<div class="cpempty">No priced cars yet</div>`;};
@@ -2639,7 +2641,7 @@ function wireCarPicker(){
     bpDetail.innerHTML=`<button type="button" class="bpback" data-back="1">← ${esc(L.back||'Back')}</button>`+gal
       +`<h3 class="bpdt">${esc(c.model||c.id)}</h3><div class="bpds">${esc(c.id)}${c.colour?' · '+esc(c.colour):''} <span class="pill ${stCls(c.status)}">${esc(c.status||'Available')}</span></div>`
       +tilesHtml
-      +`<div class="bpsec"><h4 class="bpsech">${esc(t('vd_prices'))}</h4><div class="bpprices"><div class="bpp b2b"><span>${esc(L.b2b||'B2B')}</span><b>${eur(c.dealer_net)}</b></div><div class="bpp"><span>${esc(L.b2c||'B2C')}</span><b>${eur(c.dealer_gross)}</b></div></div>`+((arak.length||mdeRow)?`<div class="bparak">`+arak.map(([l,v])=>`<div class="bparakrow"><span>${esc(l)}</span><b>${esc(v)}</b></div>`).join('')+mdeRow+`</div>`:'')+`</div>`
+      +`<div class="bpsec"><h4 class="bpsech">${esc(t('vd_prices'))}</h4><div class="bpprices"><div class="bpp b2b"><span>${esc(L.b2b||'B2B')}</span><b>${eur(c.dealer_net)}</b></div><div class="bpp"><span>${esc(L.b2c||'B2C')}</span><b>${eur(b2c(c))}</b>${b2cTag(c)}</div></div>`+((arak.length||mdeRow)?`<div class="bparak">`+arak.map(([l,v])=>`<div class="bparakrow"><span>${esc(l)}</span><b>${esc(v)}</b></div>`).join('')+mdeRow+`</div>`:'')+`</div>`
       +(spec.length?`<div class="bpsec"><h4 class="bpsech">${esc(t('vd_tech'))}</h4><div class="bpdl">`+spec.map(([l,v])=>`<div class="bpdlrow"><span>${esc(l)}</span><b>${esc(String(v))}</b></div>`).join('')+`</div></div>`:'')
       +dmgSec
       +(hl.length?`<div class="bpsec"><h4 class="bpsech">${esc(t('vd_eqh'))}</h4><div class="bpeq">`+hl.map(x=>`<span class="bpeqc">${esc(x)}</span>`).join('')+`</div></div>`:'')
@@ -2730,7 +2732,7 @@ function openOffer(id){
   const c=(S.cars||[]).find(x=>x.id===id);if(!c)return;const o=OFR();
   const cat=$('#sCat').value,def=cat==='priv'?'b2c':cat==='b2b'?'b2b':'';
   const html=`<div class="offhead">${pics(c)[0]?`<img src="img/t/${esc(pics(c)[0])}" alt="">`:''}<div><b>${esc(c.model||'')}</b><span class="sub">${esc(c.id)} · ${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':''].filter(Boolean).join(' · '))}</span>
-    <span class="sub">${esc(o.listed)}: <b>${eur(c.dealer_net)}</b> ${esc(o.vat0)} · <b>${eur(c.dealer_gross)}</b> ${esc(o.vat1)}</span></div></div>
+    <span class="sub">${esc(o.listed)}: <b>${eur(c.dealer_net)}</b> ${esc(o.vat0)} · <b>${eur(b2c(c))}</b> ${window.__skczNote&&window.__skczNote(c)?esc(window.__skczNote(c)):esc(o.vat1)}</span></div></div>
     <input type="hidden" name="car" value="${esc(c.id)}"><input name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
     <label class="f"><span>${esc(o.name)}</span><input name="name" required autocomplete="name" maxlength="100"></label>
     <label class="f"><span>${esc(o.company)}</span><input name="company" autocomplete="organization" maxlength="120"></label>
@@ -2814,7 +2816,7 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
     <div class="hc-body"><i class="cc-bar"></i><div class="hc-top"><span>${esc(c.id)}</span><span>${esc(c.category||'')}</span><span class="hc-st ${esc(st)}">${esc(st)}</span></div>
     <b class="hc-name">${esc(c.model||'')}</b><div class="hc-col">${esc([c.colour,c.interior].filter(Boolean).join(' · '))}</div>
     <div class="hc-grid">${cell(tx[4],c.first_reg)}${cell(tx[5],km).replace('<div>','<div class="hc-km">')}${cell(tx[6],c.power)}${cell(tx[7],c.fuel)}${cell(tx[8],c.transmission)}${cell(tx[9],c.drive)}${c.available_until?cell(tx[11],c.available_until):''}</div>
-    <div class="hc-price"><div><small>${esc(tx[0])}</small><b>${eur(c.dealer_net)}</b><small>${esc(tx[1])}</small></div><div><small>${esc(tx[2])}</small><b>${eur(c.dealer_gross)}</b><small>${esc(tx[3])}</small></div></div>
+    <div class="hc-price"><div><small>${esc(tx[0])}</small><b>${eur(c.dealer_net)}</b><small>${esc(tx[1])}</small></div><div><small>${esc(tx[2])}</small><b>${eur(b2c(c))}</b><small>${esc(window.__skczNote&&window.__skczNote(c)||tx[3])}</small></div></div>
     ${c.asking_price!=null&&c.asking_price!==''?`<div class="hc-ask">${esc(tx[10])}: <b>${eur(c.asking_price)}</b></div>`:''}
     ${hl?`<div class="hc-hl">${hl}</div>`:''}</div>`;
   }
@@ -2889,7 +2891,7 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
       <h3>${esc(c.model||'')}</h3><p class="sub">${esc(f.ref)} ${esc(c.id)} · <b class="hc-st ${esc(st)}">${esc(t(st)!==st?t(st):st)}</b></p>
       <dl>${row(f.model,[c.make,c.model].filter(Boolean).join(' · '))}${row(f.cat,c.category)}${row(f.colour,c.colour)}${row(f.interior,c.interior)}${row(f.body,c.body)}${row(f.wheels,c.wheels)}
       ${row(f.reg,c.first_reg)}${row(f.km,km)}${row(f.power,c.power)}${row(f.fuel,c.fuel)}${row(f.gear,c.transmission)}${row(f.drive,c.drive)}${nrow(f.owners,c.prev_owners)}${nrow(f.cond,c.condition)}${nrow(f.trim,c.trim)}${nrow(f.paint,c.paint)}${nrow(f.seats,[c.seats,c.doors].filter(v=>v!=null&&v!=='').join(' / '))}${nrow(f.cc,c.engine_cc?Number(c.engine_cc).toLocaleString(window.__loc||'en-GB')+' cm³':'')}${nrow(f.clim,c.climate)}${nrow(f.park,c.park_assist)}${row(f.vin,c.vin)}${row(f.until,c.available_until)}</dl>
-      <dl class="cs-prices">${c.dealer_net!=null&&c.dealer_net!==''?`<dt class="p-b2b">${esc(f.b2b)}</dt><dd class="p-b2b">${eur(c.dealer_net)}</dd>`:''}${c.dealer_gross!=null&&c.dealer_gross!==''?`<dt class="p-b2c">${esc(f.b2c)}</dt><dd class="p-b2c">${eur(c.dealer_gross)}</dd>`:''}${row(f.msrp,c.msrp_gross?eur(c.msrp_gross):'')}${row(f.vs,c.pct_vs_list!=null&&c.pct_vs_list!==''?c.pct_vs_list+'%':'')}</dl>
+      <dl class="cs-prices">${c.dealer_net!=null&&c.dealer_net!==''?`<dt class="p-b2b">${esc(f.b2b)}</dt><dd class="p-b2b">${eur(c.dealer_net)}${b2bTag(c)}</dd>`:''}${c.dealer_gross!=null&&c.dealer_gross!==''?`<dt class="p-b2c">${esc(f.b2c)}</dt><dd class="p-b2c">${eur(b2c(c))}${b2cTag(c)}</dd>`:''}${row(f.msrp,c.msrp_gross?eur(c.msrp_gross):'')}${row(f.vs,c.pct_vs_list!=null&&c.pct_vs_list!==''?c.pct_vs_list+'%':'')}</dl>
       <h4>${esc(f.eq)}</h4>${hl.length?`<ul class="cs-eq">${hl.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>`:(eqa.length?'':`<p class="sub">${esc(f.none)}</p>`)}
       ${eqa.length?`<h4>${esc(f.eqall)} <span class="sub">(${eqa.length})</span></h4><ul class="cs-eqall">${eqa.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>`:''}
       ${c.mde_url||c.mde_price!=null?`<div class="cs-team"><h4>${esc(f.team)}</h4><dl>${row(f.mprice,c.mde_price!=null&&c.mde_price!==''?eur(c.mde_price):'')}${row(f.mkm,c.mde_km!=null&&c.mde_km!==''?Number(c.mde_km).toLocaleString(window.__loc||'en-GB')+' km':'')}${row(f.mchk,c.mde_checked)}</dl>${c.mde_url?`<p><a href="${esc(c.mde_url)}" target="_blank" rel="noopener">${esc(f.mlink)} ↗</a></p>`:''}${c.mde_desc?`<details><summary>${esc(f.mdesc)}</summary><pre>${esc(c.mde_desc)}</pre></details>`:''}</div>`:''}</section>`;
@@ -2899,9 +2901,9 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
   function text(c){
     const km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'');
     const pm=document.documentElement.classList.contains('pm-b2b')?'b2b':document.documentElement.classList.contains('pm-b2c')?'b2c':'';
-    const price=pm==='b2b'?`Business to Business: ${eur(c.dealer_net)} (${w(5)})`:pm==='b2c'?`Business to Customer: ${eur(c.dealer_gross)} (${w(6)})`:`Business to Business: ${eur(c.dealer_net)} (${w(5)})\n💶 Business to Customer: ${eur(c.dealer_gross)} (${w(6)})`;
+    const price=pm==='b2b'?`Business to Business: ${eur(c.dealer_net)} (${w(5)})`:pm==='b2c'?`Business to Customer: ${eur(b2c(c))} (${window.__skczNote&&window.__skczNote(c)||w(6)})`:`Business to Business: ${eur(c.dealer_net)} (${w(5)})\n💶 Business to Customer: ${eur(b2c(c))} (${window.__skczNote&&window.__skczNote(c)||w(6)})`;
     return [`🚗 ${c.model||''}`,[c.colour,c.interior].filter(Boolean).join(' · '),[c.first_reg,km,c.power,c.fuel,c.transmission].filter(Boolean).join(' · '),
-      (c.highlights||[]).slice(0,4).join(' · '),'',`💶 ${price}`,'',`🔗 ${location.origin}/sales/#car=${encodeURIComponent(c.id)}`,'',`CarAdvance · ${site()} · ${w(7)} ${c.id}`].filter((l,i,a)=>l!==''||(a[i-1]&&a[i-1]!=='')).join('\n').trim();
+      (c.highlights||[]).slice(0,4).join(' · '),'',`💶 ${price}`,'',`🔗 ${location.origin}/sales/#car=${encodeURIComponent(c.id)}`,'',`CarAdvance · ${site()} · ${w(7)} ${c.id}`,...(window.__skczFoot?['',window.__skczFoot()]:[])].filter((l,i,a)=>l!==''||(a[i-1]&&a[i-1]!=='')).join('\n').trim();
   }
   async function share(c){
     const msg=text(c);const p=pics(c)[0];

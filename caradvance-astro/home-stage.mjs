@@ -271,7 +271,7 @@ try {
       const dir = path.join('dist', 'elado-cut');
       const cuts = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)) : [];
       h = h.replace('<a class="btn btn-white" href="mailto:info@caradvance.hu?subject=Aut%C3%B3%20elad%C3%A1sa%20%E2%80%93%20bizom%C3%A1ny">Add el az autód</a>',
-        '<a class="btn btn-white ca-hb-imp" href="/auto-rendeles/">Autó import</a><a class="btn btn-white" href="mailto:info@caradvance.hu?subject=Aut%C3%B3%20elad%C3%A1sa%20%E2%80%93%20bizom%C3%A1ny">Add el az autód</a>');
+        '<a class="btn btn-white ca-hb-imp" href="/auto-rendeles/">Autó import</a><a class="btn btn-white" href="/eladom/">Add el az autód</a>'); // „Add el az autód” → eladási oldal (mailto helyett)
       // Google-csillagok: szöveges ★ helyett éles, aranyszínű SVG csillagok
       const STARS = '<span class="ca-stars" role="img" aria-label="5 csillagból 5">' + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.83 6.07 6.64.73-4.95 4.5 1.36 6.55L12 17.1l-5.88 3.35 1.36-6.55-4.95-4.5 6.64-.73z"/></svg>'.repeat(5) + '</span>';
       h = h.replace(/<(div|span) class="gstars">★★★★★<\/\1>/g, (m, t) => '<' + t + ' class="gstars ca-gs">' + STARS + '</' + t + '>');
