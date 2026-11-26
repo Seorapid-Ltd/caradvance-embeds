@@ -704,6 +704,7 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 #carSheet .cs-act .wa{background:#25D366;border-color:#25D366;color:#fff}
 #carSheet .cs-act .wide{grid-column:1/-1}
 @media(max-width:700px){#carSheet[open]{width:100vw;margin:auto 0 0!important;border-radius:24px 24px 0 0;max-height:94dvh}}
+@media(max-width:700px){
   /* Kereskedők és napló: soronként kártya, a mezők neve a cella előtt */
   #v-dealers .tbl,#v-outreach .tbl{background:transparent;border:0;box-shadow:none;overflow:visible;border-radius:0}
   #v-dealers thead,#v-outreach thead{display:none}
@@ -1023,6 +1024,71 @@ tr.det .offerrow{margin:0}
 .subnav a[data-s=outreach]:hover{background:var(--red-dark,#B80015)}
 .subnav a[data-s=outreach].on{background:var(--red-dark,#B80015);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
 .subnav a[data-s=outreach] span{background:rgba(255,255,255,.22);color:#fff}
+
+/* ---- Dealers (B2B) list ---- */
+.dlrhead{display:flex;align-items:baseline;gap:14px;margin:4px 0 16px}
+.dlrh1{font-size:30px;font-weight:800;letter-spacing:-.01em;margin:0}
+.dlrcount{margin:0;color:var(--muted);font-size:16px;font-weight:600}.dlrcount b{color:var(--ink);font-weight:800}
+.dlrpanel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin:0 0 16px;display:flex;flex-direction:column;gap:12px}
+.dlrsearch{display:flex;align-items:center;gap:10px;padding:0 14px;height:48px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.dlrsearch svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
+.dlrsearch input{flex:1;border:0;background:none;font:inherit;font-size:15px;color:var(--ink);outline:none;min-width:0}
+.dlrfilters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.dlrfilters select{height:44px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:0 36px 0 14px}
+.dlrfilters .pri,.dlrfilters #csv{height:44px;padding:0 18px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.dlrfilters .pri{background:var(--red);border-color:var(--red);color:#fff;margin-left:auto}
+.dlrfilters .pri:hover{background:var(--red-dark,#B80015)}
+.dlrfilters .pri svg,.dlrfilters #csv svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dlrtbl{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.dlrtbl table{width:100%;border-collapse:collapse}
+.dlrtbl thead th{text-align:left;padding:16px 16px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+.dlrtbl thead th.num{text-align:center}.dlrtbl thead th.dact{text-align:right}
+.dlrtbl tbody td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.dlrtbl tbody tr:last-child td{border-bottom:0}
+.dlrtbl tbody tr.row{cursor:pointer}
+.dlrtbl tbody tr.row:hover{background:color-mix(in srgb,var(--soft) 60%,transparent)}
+.dchk{width:40px}.dchk input{width:18px;height:18px;accent-color:var(--red);cursor:pointer}
+.ddealer{min-width:220px}.ddealer .dwrap{display:flex;align-items:center;gap:12px}
+.davatar{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:15px;background:hsl(var(--h),68%,93%);color:hsl(var(--h),55%,42%)}
+html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--h),75%,78%)}
+.dinfo{min-width:0;display:flex;flex-direction:column}.dinfo b{font-size:15px;font-weight:800;line-height:1.25}.dinfo .sub{font-size:13px;color:var(--muted)}
+.dcountry .dwrap{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}.dflag{font-size:20px;line-height:1}.dcc{font-weight:700}
+.pill{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.pill.tier{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.pill.score{background:color-mix(in srgb,var(--navy) 10%,transparent);color:var(--navy);font-weight:800;min-width:34px;justify-content:center;padding:0 10px}
+.num .pill.score{margin:0 auto}
+.pill.stat{background:var(--soft);color:var(--ink)}
+.pill.stat .sdot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.pill.stat.s-new{background:color-mix(in srgb,#16a34a 14%,transparent);color:#15803d}
+.pill.stat.s-contacted{background:color-mix(in srgb,#2563eb 14%,transparent);color:#1d4ed8}
+.pill.stat.s-interested{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.pill.stat.s-no{background:var(--soft);color:var(--muted)}
+.pill.stat.s-dnc{background:color-mix(in srgb,#b91c1c 14%,transparent);color:#b91c1c}
+.dact{text-align:right;width:56px}
+.dmenu{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer;display:inline-grid;place-items:center}
+.dmenu svg{width:20px;height:20px;fill:currentColor}
+.dmenu:hover{background:var(--soft);border-color:var(--line);color:var(--ink)}
+@media(max-width:900px){.dlrfilters select{flex:1 1 140px}.dlrfilters .pri{margin-left:0}}
+@media(max-width:700px){
+  .dlrh1{font-size:24px}
+  .dlrtbl{border:0;background:transparent;box-shadow:none;overflow:visible}
+  .dlrtbl thead{display:none}
+  .dlrtbl table,.dlrtbl tbody{display:block;width:100%}
+  #dRows tr.row{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin:0 0 12px}
+  #dRows tr.row>td{display:block;padding:0!important;border:0!important}
+  #dRows .dchk{grid-row:1;grid-column:1;align-self:center}
+  #dRows .ddealer{grid-row:1;grid-column:2}
+  #dRows .dact{grid-row:1;grid-column:3;justify-self:end}
+  /* labelled fields stack full-width below the header row */
+  #dRows .dcountry,#dRows .dtier,#dRows td[data-label]:not(.dchk):not(.ddealer):not(.dact){grid-column:1/-1;display:flex;align-items:center;gap:8px}
+  #dRows td[data-label]:not(.dchk):not(.ddealer):not(.dact)::before{content:attr(data-label)": ";font-size:12px;font-weight:700;color:var(--muted)}
+  #dRows .dcountry::before{content:"Country: ";font-size:12px;font-weight:700;color:var(--muted)}
+  #dRows td[data-label] .pill{flex:0 0 auto;align-self:center}
+  #dRows .num{justify-content:flex-start}#dRows .num .pill.score{margin:0}
+  /* the dealer, checkbox and actions cells never get an auto-label */
+  #dRows .dchk::before,#dRows .ddealer::before,#dRows .dact::before{content:none!important;display:none!important}
+  #dRows td.empty{display:block;grid-column:1/-1;background:var(--card);border-radius:18px;padding:24px!important;text-align:center}
+}
 
 /* „Már nem eladó” — szürkített kártya */
 .slc{position:relative}
@@ -1365,20 +1431,22 @@ Ready when you are.</h1>
 
   <section class="view" id="v-dealers">
     <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
-    <div class="kpis" id="dkpis"></div>
-    <div class="bar">
-      <input type="search" id="dq" placeholder="Search company, city, contact…" aria-label="Search dealers">
-      <select id="dCountry" aria-label="Country"><option value="">All countries</option><option>HU</option><option>SK</option><option>CZ</option><option>AT</option><option>PL</option><option>RO</option></select>
-      <select id="dTier" aria-label="Tier"><option value="">All tiers</option><option value="1">Tier 1 – BMW/MINI dealer</option><option value="2">Tier 2 – premium used</option><option value="3">Tier 3 – trader/exporter</option></select>
-      <select id="dScore" aria-label="Score"><option value="">Any score</option><option value="4">Score 4+</option><option value="3">Score 3+</option></select>
-      <select id="dStat" aria-label="Outreach status"><option value="">Any status</option><option>New</option><option>Contacted</option><option>Interested</option><option>Not interested</option><option>Do not contact</option></select>
-      <button class="pri" id="addDealer">Add dealer</button>
-      <button id="csv">Export CSV</button>
-      <span class="count" id="dCount"></span>
+    <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
+    <div id="dkpis" hidden style="display:none"></div>
+    <div class="dlrpanel">
+      <label class="dlrsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" id="dq" placeholder="Search company, city or contact…" aria-label="Search dealers"></label>
+      <div class="dlrfilters">
+        <select id="dCountry" aria-label="Country"><option value="">All countries</option><option>HU</option><option>SK</option><option>CZ</option><option>AT</option><option>PL</option><option>RO</option></select>
+        <select id="dTier" aria-label="Tier"><option value="">All tiers</option><option value="1">Tier 1 – BMW/MINI dealer</option><option value="2">Tier 2 – premium used</option><option value="3">Tier 3 – trader/exporter</option></select>
+        <select id="dScore" aria-label="Score"><option value="">Any score</option><option value="4">Score 4+</option><option value="3">Score 3+</option></select>
+        <select id="dStat" aria-label="Outreach status"><option value="">Any status</option><option>New</option><option>Contacted</option><option>Interested</option><option>Not interested</option><option>Do not contact</option></select>
+        <button class="pri" id="addDealer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add dealer</span></button>
+        <button id="csv"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"/></svg><span>Export CSV</span></button>
+      </div>
     </div>
-    <div class="tbl"><table>
-      <thead><tr><th>Dealer</th><th>Country</th><th class="hide-s">Type</th><th>Contact</th><th class="num">Score</th><th>Status</th><th class="hide-s">Owner</th></tr></thead>
-      <tbody id="dRows"><tr><td colspan="7" class="empty">Loading dealers…</td></tr></tbody>
+    <div class="dlrtbl"><table>
+      <thead><tr><th class="dchk"><input type="checkbox" id="dAll" aria-label="Select all"></th><th>Dealer</th><th>Country</th><th>Tier</th><th class="num">Score</th><th>Status</th><th class="hide-s">Account owner</th><th class="dact">Actions</th></tr></thead>
+      <tbody id="dRows"><tr><td colspan="8" class="empty">Loading dealers…</td></tr></tbody>
     </table></div>
     <div id="rulesNote" class="foot"></div>
   </section>
@@ -1816,19 +1884,29 @@ function renderDealers(){
   const q=$('#dq').value.trim().toLowerCase(),co=$('#dCountry').value,ti=$('#dTier').value,sc=$('#dScore').value,st=$('#dStat').value;
   const L=S.dealers.filter(d=>(!co||d.country===co)&&(!ti||String(d.tier)===ti)&&(!sc||Number(d.score)>=Number(sc))&&(!st||(d.status||'New')===st)&&
     (!q||[d.name,d.city,d.contact_name,d.email,d.brands].join(' ').toLowerCase().includes(q))).sort((a,b)=>(a.country||'').localeCompare(b.country||'')||(Number(b.score)||0)-(Number(a.score)||0)||(a.name||'').localeCompare(b.name||''));
-  $('#dCount').textContent=L.length+' of '+S.dealers.length;document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;
-  const by={};S.dealers.forEach(d=>{by[d.country]=(by[d.country]||0)+1});
-  const CN={HU:'Hungary',SK:'Slovakia',CZ:'Czech Republic',AT:'Austria',PL:'Poland',RO:'Romania',HR:'Croatia',SI:'Slovenia',DE:'Germany'},curC=$('#dCountry').value;
-  $('#dkpis').innerHTML=['HU','SK','CZ','AT','PL','RO'].map(c=>`<button type="button" class="kpi cbtn${curC===c?' on':''}${by[c]?'':' zero'}" data-c="${c}" aria-pressed="${curC===c}"><span class="tag">${c}</span><span class="v">${by[c]||0}</span><span class="l">${CN[c]} · ${by[c]?'dealers':'not researched yet'}</span></button>`).join('');
-  const link=u=>/^https:\/\//.test(u||'')?`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https:\/\/(www\.)?/,'').replace(/\/$/,''))}</a>`:esc(u);
-  $('#dRows').innerHTML=L.length?L.map(d=>`<tr class="row" data-id="${esc(d.id)}"><td class="car"><b>${esc(d.name)}</b><span class="sub">${esc(d.city)}${d.website?' · ':''}</span><span class="sub">${link(d.website)}</span></td>
-   <td>${esc(d.country)}</td><td class="hide-s">${d.tier?`<span class="chip${d.tier==1?' red':''}">Tier ${esc(d.tier)}</span>`:''}<br><span class="sub">${esc(d.brands)}</span></td>
-   <td>${d.contact_name?`<b>${esc(d.contact_name)}</b> <span class="sub">${esc(d.contact_title)}</span><br>`:''}<span class="sub">${esc(d.contact_email||d.email)}</span><br><span class="sub">${esc(d.contact_phone||d.phone)}</span></td>
-   <td class="num">${esc(d.score)}</td><td><span class="chip${d.status==='Interested'?' red':d.status==='Do not contact'?' warn':''}">${esc(d.status||'New')}</span></td><td class="hide-s">${esc(d.owner)}</td></tr>`).join('')
-   :`<tr><td colspan="7" class="empty">${S.dealers.length?'No dealers match these filters.':'No dealers yet — Claude is researching them country by country (Hungary first). You can also add one yourself.'}</td></tr>`;
+  const flt=!!(q||co||ti||sc||st);
+  $('#dCount').textContent=flt?`${L.length} / ${S.dealers.length}`:String(S.dealers.length);
+  document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;
+  const FLAG_E=c=>/^[A-Za-z]{2}$/.test(c||'')?c.toUpperCase().replace(/./g,ch=>String.fromCodePoint(127397+ch.charCodeAt(0))):'';
+  const ini=n=>String(n||'?').replace(/[^\p{L}\p{N} ]/gu,'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';
+  const hue=n=>{let h=0;for(const ch of String(n||''))h=(h*31+ch.charCodeAt(0))%360;return h};
+  const ST={New:['new','New'],Contacted:['contacted','Contacted'],Interested:['interested','Interested'],'Not interested':['no','Not interested'],'Do not contact':['dnc','Do not contact']};
+  $('#dRows').innerHTML=L.length?L.map(d=>{const h=hue(d.name),st0=d.status||'New',sm=ST[st0]||['new',st0];
+    const sub=d.city||d.contact_name||d.brands||'';
+    return `<tr class="row" data-id="${esc(d.id)}"><td class="dchk"><input type="checkbox" class="drchk" aria-label="${esc(d.name)}"></td>
+    <td class="ddealer"><span class="dwrap"><span class="davatar" style="--h:${h}">${esc(ini(d.name))}</span><span class="dinfo"><b>${esc(d.name)}</b>${sub?`<span class="sub">${esc(sub)}</span>`:''}</span></span></td>
+    <td class="dcountry" data-label="Country">${d.country?`<span class="dwrap"><span class="dflag">${FLAG_E(d.country)}</span><span class="dcc">${esc(d.country)}</span></span>`:'<span class="sub">—</span>'}</td>
+    <td data-label="Tier">${d.tier?`<span class="pill tier">Tier ${esc(d.tier)}</span>`:'<span class="sub">—</span>'}</td>
+    <td class="num" data-label="Score">${d.score!=null&&d.score!==''?`<span class="pill score">${esc(d.score)}</span>`:'<span class="sub">—</span>'}</td>
+    <td data-label="Status"><span class="pill stat s-${sm[0]}"><i class="sdot"></i>${esc(sm[1])}</span></td>
+    <td class="hide-s" data-label="Account owner">${d.owner?esc(d.owner):'<span class="sub">—</span>'}</td>
+    <td class="dact"><button type="button" class="dmenu" data-dmenu="${esc(d.id)}" aria-label="Actions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button></td></tr>`}).join('')
+   :`<tr><td colspan="8" class="empty">${S.dealers.length?'No dealers match these filters.':'No dealers yet — Claude is researching them country by country (Hungary first). You can also add one yourself.'}</td></tr>`;
+  const all=$('#dAll');if(all)all.checked=false;
 }
 ['#dq','#dCountry','#dTier','#dScore','#dStat'].forEach(s=>$(s).addEventListener('input',renderDealers));
-$('#dRows').addEventListener('click',e=>{if(e.target.closest('a'))return;const r=e.target.closest('tr.row');if(r)openDealer(S.dealers.find(d=>d.id===r.dataset.id))});
+$('#dRows').addEventListener('click',e=>{if(e.target.closest('a,input'))return;const r=e.target.closest('tr.row');if(r)openDealer(S.dealers.find(d=>d.id===r.dataset.id))});
+$('#dAll')&&$('#dAll').addEventListener('change',e=>{document.querySelectorAll('#dRows .drchk').forEach(c=>{c.checked=e.target.checked})});
 $('#addDealer').addEventListener('click',()=>openDealer(null));
 
 /* dialog */
@@ -2058,6 +2136,9 @@ $('#ofList').addEventListener('click',async e=>{
     catch(e){if(!SL.data)$('#slRows').innerHTML=`<div class="empty slerr"><p>${esc(t('sl_loaderr')||'Could not load the stock list.')}</p><button type="button" class="pri" data-slretry>${esc(t('sl_retry')||'Try again')}</button></div>`}finally{SL.loading=false}}
   window.__slOpen=()=>{if(SL.data)render();else load()};
   document.addEventListener('click',e=>{if(e.target.closest('[data-slretry]'))load()});
+  // On a fresh load/refresh directly on #list, show() already ran before this code defined __slOpen,
+  // so it couldn't trigger the load — do it now so the list appears without clicking away first.
+  if((location.hash||'')==='#list'&&!document.documentElement.classList.contains('public'))load();
   const NT={en:{'same month':'same month','same power':'same power','same colour':'same colour','mo':'mo'},hu:{'same month':'azonos hónap','same power':'azonos teljesítmény','same colour':'azonos szín','mo':'hó'},de:{'same month':'gleicher Monat','same power':'gleiche Leistung','same colour':'gleiche Farbe','mo':'Mon.'},sk:{'same month':'rovnaký mesiac','same power':'rovnaký výkon','same colour':'rovnaká farba','mo':'mes.'},cs:{'same month':'stejný měsíc','same power':'stejný výkon','same colour':'stejná barva','mo':'měs.'},pl:{'same month':'ten sam miesiąc','same power':'ta sama moc','same colour':'ten sam kolor','mo':'mies.'},ro:{'same month':'aceeași lună','same power':'aceeași putere','same colour':'aceeași culoare','mo':'luni'}};
   const IC={cal:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',road:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3 4 21M16 3l4 18M12 4v3M12 10v3M12 16v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'};
   const sg=(v,u)=>v==null?'':(v===0?'':` (${v>0?'+':'−'}${Math.abs(v).toLocaleString(window.__loc||'en-GB')}${u})`);
