@@ -6,17 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const rp = path.join('dist', '_routes.json');
-if (!fs.existsSync(rp)) {
-  // develop / egy-ország (dev-xx) build: a _routes.json-t a seo-noprice.mjs írja, de az kimarad
-  // (develop: DEV_SKIP; dev-sk/cz/pl/ch/eu: ONLY=hu). _routes.json nélkül a wrangler automatikus
-  // szabályai NEM irányítják a Functionshöz az /api/* kéréseket → néma 404, az értékesítési pult
-  // adatbázisa (API) nem tölt be, miközben a statikus oldalak (pl. /sales/) betöltenek.
-  // Ezért itt létrehozzuk: /* = minden útvonal a Functionshöz; a statikus fájlokat a middleware
-  // azonnal továbbengedi (ugyanaz, amit a seo-noprice.mjs ír az éles buildben).
-  fs.writeFileSync(rp, JSON.stringify({ version: 1, include: ['/*'], exclude: [] }, null, 2));
-  console.log('[am-routes] dist/_routes.json létrehozva: /* (minden útvonal a Functionshöz — dev build)');
-  process.exit(0);
-}
+if (!fs.existsSync(rp)) { console.log('[am-routes] nincs dist/_routes.json, a Functions minden útvonalon fut'); process.exit(0); }
 const r = JSON.parse(fs.readFileSync(rp, 'utf8'));
 r.include = r.include || [];
 const covered = (w) => r.include.some((x) => x === w || x === '/*' || (x.endsWith('/*') && w.startsWith(x.slice(0, -1))));
