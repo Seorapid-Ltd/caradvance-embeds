@@ -36,3 +36,7 @@ html.ca-dark body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-meta .sub
 html.ca-dark body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .ca-pbox{border-top-color:rgba(255,255,255,.1)!important}
 html.ca-dark body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-actions .sub-det{color:#fff!important;border-color:rgba(255,255,255,.6)!important}
 html.ca-dark body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-actions .sub-det:hover{background:#fff!important;color:#121317!important}
+html body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-title{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.3em!important}
+html body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-actions{margin-top:14px!important;padding-top:0!important}
+html body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-actions :is(.sub-det,.ca-cmp){height:48px!important;min-height:0!important;padding-top:0!important;padding-bottom:0!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important}
+html body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-actions{display:flex!important;gap:8px!important;align-items:stretch!important}html body:is(#ca-x1,body):is(#ca-x2,body) .sub-card.ca-gl .sub-actions > .sub-det{flex:1 1 auto!important}

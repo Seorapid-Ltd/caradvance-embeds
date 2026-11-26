@@ -196,6 +196,8 @@ try {
         ['autoszallitas-autoimport-nemetorszagbol-cut.webp', 'autoszallitas-autoimport-nemetorszagbol-studio.webp', 'Autószállító — autóimport Németországból'],
         ['toyota-rav4-hybrid-hasznaltauto-eladas-cut.webp', 'bmw-x2-m-eladjuk-az-autodat.webp', 'Fehér BMW X2 M — eladjuk az autódat'],
       ]) h = h.replace(new RegExp('<div class="svc-media ca-stage"><img src="/' + from.replace(/[.?]/g, '\\$&') + '" alt="[^"]*"'), '<div class="svc-media ca-stage ca-photo"><img src="/' + to + '" alt="' + alt + '"');
+      // hero „Add el az autód” gomb: e-mail (mailto) helyett az eladási oldalra visz (/eladom/)
+      h = h.replace('<a class="btn btn-white" href="mailto:info@caradvance.hu?subject=Aut%C3%B3%20elad%C3%A1sa%20%E2%80%93%20bizom%C3%A1ny">Add el az autód</a>', '<a class="btn btn-white" href="/eladom/">Add el az autód</a>');
       // számsáv „5000+” kártya: mobile.de alatt a Használtautó.hu logó is (világos: sötét felirat, sötét mód: fehér felirat)
       h = h.replace('<img src="/mobile-de.webp" alt="mobile.de" style="height:32px;width:auto;border-radius:5px">', '<img src="/mobile-de.webp" alt="mobile.de" class="ca-mde" style="height:28px;width:auto;border-radius:5px"><img class="ca-hahu ca-hahu-l" src="/hasznaltauto-hu-logo-sotet.svg" alt="Használtautó.hu" width="699" height="82"><img class="ca-hahu ca-hahu-d" src="/hasznaltauto-hu-logo-feher.svg" alt="Használtautó.hu" width="699" height="82">');
       h = h.replace('</head>', CSS + '</head>');
