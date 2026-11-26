@@ -1042,6 +1042,12 @@ li.op .dmgst{background:var(--red);color:#fff}li.fx .dmgst{background:color-mix(
 html.public .dmgbox,html.public .dmgchip,html.public .vddmg{display:none!important}
 tr.row.gone>td{opacity:.5}tr.row.gone img{filter:grayscale(1)}
 
+/* Telefon/iPad: nincs háttérgörgetés nyitott ablaknál; űrlapmezők 16px (nem nagyít rá az iOS) */
+html.dlg-open,html.dlg-open body{overscroll-behavior:none}
+dialog{overscroll-behavior:contain}
+dialog .db,dialog .cs-scroll,#ofDlg .db{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media(max-width:1024px),(hover:none){input,select,textarea{font-size:16px!important}}
+
 /* Kapcsolat — belső üzenetek */
 .msgwrap{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start;width:100%}
 .msgside,.msgmain{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
@@ -1613,7 +1619,7 @@ $('#brands').addEventListener('click',e=>{if(e.target.closest('.more'))return;co
 /* ---------- STOCK ---------- */
 const pics=c=>[...(Array.isArray(c.real_photos)?c.real_photos:[]),...(Array.isArray(c.photos)?c.photos:[])].filter(p=>typeof p==='string'&&/^[\w.-]+\.jpg$/.test(p));
 let lbCar=null,lbI=0;
-const lbShow=()=>{const p=pics(lbCar);$('#lbImg').src='img/'+p[lbI];$('#lbCap').textContent=`${lbCar.model}${lbCar.colour?' · '+lbCar.colour:''} — ${lbI+1} / ${p.length}`;$('#lb').classList.toggle('single',p.length<2)};
+const lbShow=()=>{const p=pics(lbCar);$('#lbImg').src='img/'+p[lbI];$('#lbCap').textContent=`${lbCar.model}${lbCar.colour?' · '+lbCar.colour:''} — ${lbI+1} / ${p.length}`;$('#lb').classList.toggle('single',p.length<2);[lbI+1,lbI-1].forEach(i=>{const f=p[(i+p.length)%p.length];if(f){const im=new Image();im.src='img/'+f}})};
 $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-lb]');if(!b)return;e.stopPropagation();lbCar=S.cars.find(c=>c.id===b.dataset.lb);lbI=Number(b.dataset.i);lbShow();$('#lb').showModal()},true);
 $('#lbPrev').onclick=()=>{const n=pics(lbCar).length;lbI=(lbI-1+n)%n;lbShow()};
 $('#lbNext').onclick=()=>{lbI=(lbI+1)%pics(lbCar).length;lbShow()};
@@ -1639,7 +1645,7 @@ const XTRA={off:new Set(),ld:false};
 window.__setOffDesk=(id,on)=>{on?XTRA.off.add(id):XTRA.off.delete(id);try{renderStock()}catch(e){}};
 function loadXtra(){if(XTRA.ld||document.documentElement.classList.contains('public'))return;XTRA.ld=true;
   Promise.all([fetch('/api/desk/damages',{credentials:'same-origin'}).then(r=>r.ok?r.json():{}).catch(()=>({})),fetch('/api/desk/stocklist',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).catch(()=>null)])
-  .then(([d,sl])=>{window.__dmg=(d&&d.damages)||{};if(sl&&sl.cars)XTRA.off=new Set(sl.cars.filter(c=>c.off&&c.desk).map(c=>c.desk));renderStock()})}
+  .then(([d,sl])=>{window.__dmg=(d&&d.damages)||{};if(sl&&sl.cars){XTRA.off=new Set(sl.cars.filter(c=>c.off&&c.desk).map(c=>c.desk));window.__slPre=sl}renderStock()})}
 function renderStock(){
   loadXtra();
   S.cars=S.raw.map(v=>Object.assign({},S.ext[v.id]||{},v));
@@ -1659,7 +1665,7 @@ function renderStock(){
     const flags=0,mde=c.mde_url||'';
     const gone=XTRA.off.has(c.id),dL=dmgList(c.vin),dOpen=dL?dL.filter(d=>!d.f).length:0;
     let h=`<tr class="row${(c.status||'Available')==='Sold'?' sold':''}${gone?' gone':''}" data-id="${esc(c.id)}"><td class="sub idc">${esc(c.id)}</td>
-    <td><div class="carcell">${pics(c).length?((c.status||'Available')==='Sold'?`<span class="soldw" data-sold="${esc(t('sold_x'))}"><img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt=""></span>`:`<img class="thumb" loading="lazy" src="img/t/${esc(pics(c)[0])}" alt="">`):'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span>${gone?`<span class="gonechip">${esc(t('sl_gone'))}</span>`:''}${dOpen?`<span class="dmgchip">⚠ ${dOpen} ${esc(t('dm_open'))} ${esc(t('dm_word'))}</span>`:''}${mde?`<a class="mdelink" href="${esc(mde)}" target="_blank" rel="noopener" title="mobile.de">mobile.de${c.mde_price!=null&&c.mde_price!==''?' · '+eur(c.mde_price):''} ↗</a>`:''}<span class="sub mmeta">${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||''),c.power].filter(Boolean).join(' · '))}</span>${soon?`<span class="chips"><span class="chip warn">Ending soon · ${dl} d</span></span>`:''}</div></div></td>
+    <td><div class="carcell">${pics(c).length?((c.status||'Available')==='Sold'?`<span class="soldw" data-sold="${esc(t('sold_x'))}"><img class="thumb" loading="lazy" decoding="async" src="img/t/${esc(pics(c)[0])}" alt=""></span>`:`<img class="thumb" loading="lazy" decoding="async" src="img/t/${esc(pics(c)[0])}" alt="">`):'<span class="nophoto">no photo yet</span>'}<div class="car"><b>${esc(c.model)}</b><span class="sub">${esc(c.colour||'')}</span>${gone?`<span class="gonechip">${esc(t('sl_gone'))}</span>`:''}${dOpen?`<span class="dmgchip">⚠ ${dOpen} ${esc(t('dm_open'))} ${esc(t('dm_word'))}</span>`:''}${mde?`<a class="mdelink" href="${esc(mde)}" target="_blank" rel="noopener" title="mobile.de">mobile.de${c.mde_price!=null&&c.mde_price!==''?' · '+eur(c.mde_price):''} ↗</a>`:''}<span class="sub mmeta">${esc([c.first_reg,c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||''),c.power].filter(Boolean).join(' · '))}</span>${soon?`<span class="chips"><span class="chip warn">Ending soon · ${dl} d</span></span>`:''}</div></div></td>
     <td class="hide-s"><span class="mono">${esc(c.vin||c.plate||'no plate yet')}</span><br><span class="sub">${esc(c.first_reg||'')} · ${c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':esc(c.km_text||'km on request')}</span></td>
     <td class="pcol">${eur(c.dealer_net)}${c.asking_price!=null&&c.asking_price!==''?`<span class="sub">${esc(t('th_ask').replace(/\s*€$/,''))}: ${eur(c.asking_price)}</span>`:''}</td>
     <td class="pcol b2c">${eur(c.dealer_gross)}</td>
@@ -1771,6 +1777,13 @@ $('#csv').addEventListener('click',async()=>{
 });
 
 /* ---------- OUTREACH ---------- */
+
+/* Háttérgörgetés tiltása, amíg ablak (dialog) nyitva van — telefonon és iPaden is */
+(()=>{let y=0,locked=false;const H=document.documentElement,B=document.body;
+  const sync=()=>{const any=!!document.querySelector('dialog[open]');if(any===locked)return;locked=any;
+    if(any){y=scrollY;B.style.position='fixed';B.style.top=-y+'px';B.style.left='0';B.style.right='0';B.style.width='100%';H.classList.add('dlg-open')}
+    else{B.style.position='';B.style.top='';B.style.left='';B.style.right='';B.style.width='';H.classList.remove('dlg-open');scrollTo(0,y)}};
+  new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:['open'],childList:true});})();
 function renderLeads(){
   const box=$('#ofList');if(!box)return;
   const VATF=1.19,isOffer=o=>o&&(/^OFFER:/m.test(o.notes||'')||(o.direction==='Incoming'&&o.channel==='Website'));
@@ -1922,11 +1935,14 @@ $('#ofList').addEventListener('click',async e=>{
   const SL={data:null,open:null,loading:false};
   const n0=v=>v==null||v===''?null:Number(v);
   const kmf=v=>v==null||v===''?'—':(isNaN(+v)?esc(v):Number(v).toLocaleString(window.__loc||'en-GB')+' km');
+  async function getAll(){const [j,ph,dj]=await Promise.all([
+      window.__slPre?Promise.resolve(window.__slPre):fetch('/api/desk/stocklist',{credentials:'same-origin'}).then(async r=>{const x=await r.json();if(!r.ok)throw new Error(x.error||r.status);return x}),
+      fetch('stockphotos.json').then(x=>x.ok?x.json():{}).catch(()=>({})),
+      window.__dmg?Promise.resolve(null):fetch('/api/desk/damages',{credentials:'same-origin'}).then(x=>x.ok?x.json():{}).catch(()=>({}))]);
+    window.__slPre=null;if(dj)window.__dmg=dj.damages||{};
+    (j.cars||[]).forEach(c=>{const L=ph[c.id];if(L&&L.length&&!(c.photos&&c.photos.length)){c.photos=L;if(!c.photo)c.photo=L[0]}});return j}
   async function load(){if(SL.loading||document.documentElement.classList.contains('public'))return;SL.loading=true;
-    try{const r=await fetch('/api/desk/stocklist',{credentials:'same-origin'});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
-      try{if(!window.__dmg){const dj=await fetch('/api/desk/damages',{credentials:'same-origin'}).then(x=>x.ok?x.json():{});window.__dmg=dj.damages||{}}}catch(e){}
-      try{const ph=await fetch('stockphotos.json',{cache:'no-cache'}).then(x=>x.ok?x.json():{});(j.cars||[]).forEach(c=>{const L=ph[c.id];if(L&&L.length&&!(c.photos&&c.photos.length)){c.photos=L;if(!c.photo)c.photo=L[0]}})}catch(e){}
-      SL.data=j;document.documentElement.classList.toggle('sl-admin',!!j.admin);render()}
+    try{const j=await getAll();SL.data=j;document.documentElement.classList.toggle('sl-admin',!!j.admin);render()}
     catch(e){$('#slRows').innerHTML=`<p class="empty">${esc(e.message)}</p>`}finally{SL.loading=false}}
   window.__slOpen=()=>{if(SL.data)render();else load()};
   const NT={en:{'same month':'same month','same power':'same power','same colour':'same colour','mo':'mo'},hu:{'same month':'azonos hónap','same power':'azonos teljesítmény','same colour':'azonos szín','mo':'hó'},de:{'same month':'gleicher Monat','same power':'gleiche Leistung','same colour':'gleiche Farbe','mo':'Mon.'},sk:{'same month':'rovnaký mesiac','same power':'rovnaký výkon','same colour':'rovnaká farba','mo':'mes.'},cs:{'same month':'stejný měsíc','same power':'stejný výkon','same colour':'stejná barva','mo':'měs.'},pl:{'same month':'ten sam miesiąc','same power':'ta sama moc','same colour':'ten sam kolor','mo':'mies.'},ro:{'same month':'aceeași lună','same power':'aceeași putere','same colour':'aceeași culoare','mo':'luni'}};
@@ -1974,7 +1990,7 @@ $('#ofList').addEventListener('click',async e=>{
       const comps=c.comp||[];const avg=comps.length?comps.reduce((a,x)=>a+(x.price||0),0)/comps.length:null;
       const det=[['VIN',c.vin],[t('sl_plate'),c.plate],[t('sl_list'),c.list?eur(c.list):''],[t('sl_fuel'),c.fuel],[t('sl_gear'),c.gear],[t('sl_drive'),c.drive],[t('sl_int'),c.interior],[t('sl_owners'),c.owners],[t('sl_rent'),c.rent?eur(c.rent)+' / '+t('sl_month'):''],[t('sl_src'),c.net_from],[t('sl_mdeq'),c.comp_q?`${c.comp_q} · ${c.comp_total} ${t('sl_hits')}`:''],[t('sl_feats'),(c.feats||[]).join(', ')],[t('sl_chosenby'),c.chosen?`${c.chosen.by} · ${c.chosen.at} (${t('sl_prev')} ${c.chosen.prev?eur(c.chosen.prev):'—'})`:'']].filter(x=>x[1]!=null&&x[1]!=='');
       return `<article class="slc${c.off?' off':''}" data-id="${esc(c.id)}">${c.off?`<span class="slofftag">${esc(t('sl_offtag'))}</span>`:''}
-      <aside class="slcl">${c.photo?`<button type="button" class="slph" data-ph="${esc(c.id)}" aria-label="${esc(t('sl_photos'))}"><img src="img/t/${esc(c.photo)}" alt="" loading="lazy">${n>1?`<span class="slpn">${n}</span>`:''}</button>`:'<div class="slph noimg"></div>'}
+      <aside class="slcl">${c.photo?`<button type="button" class="slph" data-ph="${esc(c.id)}" aria-label="${esc(t('sl_photos'))}"><img src="img/t/${esc(c.photo)}" alt="" loading="lazy" decoding="async">${n>1?`<span class="slpn">${n}</span>`:''}</button>`:'<div class="slph noimg"></div>'}
         <span class="slid">${esc(c.id)}${c.desk?' · '+esc(c.desk):''}</span><h3 class="slmodel">${esc(String(c.model||'').replace(/^(BMW|MINI|Mercedes-Benz|Audi|Tesla) (?=\1)/,''))}</h3>${c.aka&&c.aka!==c.model?`<span class="sub">${esc(c.aka)}</span>`:''}<span class="sub">${esc(c.colour||'')}</span>
         <div class="slmeta"><span>${IC.cal}${esc(c.reg||'—')}</span><span>${IC.road}${kmf(c.km)}</span></div>
         <div class="slpb give"><small>${esc(t('sl_give'))}</small>${net?`<b>${eur(net)}</b><span class="sub">B2B · ${esc(t('l_net'))}</span><b>${eur(c.gross)}</b><span class="sub">B2C · ${esc(t('l_gross'))}</span>`:`<span class="sub">${esc(t('sl_noprice'))}</span>`}${c.chosen?`<span class="slok">✓ ${esc(c.chosen.by||t('sl_chosen'))}</span>`:''}</div>
