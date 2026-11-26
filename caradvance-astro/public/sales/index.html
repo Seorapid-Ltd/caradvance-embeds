@@ -365,9 +365,9 @@ header .herobottom .brands{margin:0;padding:0}
 .herostats .stat small{color:#AEB6C4}
 /* hero stat: car icon · red divider · big red number · white label */
 .herostats .stat{gap:18px;align-items:center}
-.herostats .stat>svg{width:44px!important;height:44px!important;opacity:1!important}
-.herostats .stat>div{border-left:3px solid var(--red);padding-left:20px;display:flex;flex-direction:column;gap:2px;line-height:1}
-.herostats .stat b.red{color:#ff2a3f;font-size:clamp(40px,5.4vw,66px)!important;font-weight:900;letter-spacing:-.03em;line-height:.92}
+.herostats .stat>svg{width:clamp(40px,4.6vw,56px)!important;height:clamp(40px,4.6vw,56px)!important;opacity:1!important}
+.herostats .stat>div{align-self:stretch;border-left:3px solid var(--red);padding-left:20px;display:flex;flex-direction:column;justify-content:center;gap:2px;line-height:1}
+.herostats .stat b.red{color:#ff2a3f;font-size:clamp(40px,5.4vw,60px)!important;font-weight:900;letter-spacing:-.03em;line-height:.92}
 .herostats .stat span{color:#fff!important;font-size:clamp(15px,1.5vw,20px)!important;font-weight:800!important}
 .herostats .stat small{color:#AEB6C4;margin-top:4px}
 #kpis.kpis{grid-template-columns:1fr 1fr}
@@ -1040,12 +1040,10 @@ tr.det .offerrow{margin:0}
 .subnav a[data-s=outreach]:hover{background:var(--red-dark,#B80015)}
 .subnav a[data-s=outreach].on{background:var(--red-dark,#B80015);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
 .subnav a[data-s=outreach] span{background:rgba(255,255,255,.22);color:#fff}
-/* Tail-light beam between the Leads and Activity buttons: low, static, white->red */
-.subnav .subarrow{flex:1 1 auto;min-width:0;align-self:center;height:6px;margin:0 4px;border-radius:999px;pointer-events:none;
-  background:linear-gradient(90deg,rgba(255,255,255,0) 0%,#ffffff 10%,#ffc7cd 32%,#ff7b88 58%,#ff2f43 84%,#e60012 100%);
-  box-shadow:0 0 5px rgba(255,47,67,.45),0 0 13px rgba(230,0,18,.3)}
-.subnav a[data-s=outreach]{margin-left:0}
-@media(prefers-color-scheme:dark){.subnav .subarrow{background:linear-gradient(90deg,rgba(255,255,255,0) 0%,#ffe2e5 12%,#ff9aa4 36%,#ff5565 62%,#ff2030 86%,#e60012 100%)}}
+/* subnav: empty flex spacer keeps the two buttons at the edges; clock icon on Activity */
+.subnav .subarrow{flex:1 1 auto;min-width:0;pointer-events:none}
+.subnav a[data-s=outreach]{margin-left:0;gap:8px}
+.subnav a .subic{width:17px;height:17px;flex:none}
 
 /* ---- Dealers (B2B) list ---- */
 .dlrhead{display:flex;align-items:baseline;gap:14px;margin:4px 0 16px}
@@ -1509,7 +1507,7 @@ Ready when you are.</h1>
   </section>
 
   <section class="view" id="v-dealers">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"></span><a href="#outreach" data-s="outreach"><svg class="subic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
     <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
     <div id="dkpis" hidden style="display:none"></div>
     <div class="dlrpanel">
@@ -1576,7 +1574,7 @@ Ready when you are.</h1>
   <dialog id="ofDlg"><form method="dialog" id="ofForm"><div class="dh"><h2 id="ofDlgT"></h2><button value="cancel" type="button" id="ofDlgX" aria-label="Close">✕</button></div><div class="db" id="ofDlgB"></div><div class="df" id="ofDlgF"></div></form></dialog>
 
   <section class="view" id="v-outreach">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"></span><a href="#outreach" data-s="outreach"><svg class="subic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
     <div class="bar"><button class="pri" id="addLog">Log a call or email</button><span class="count" id="oCount"></span></div>
     <div class="tbl"><table>
       <thead><tr><th>Date</th><th>Dealer</th><th>Cars</th><th>Channel</th><th class="hide-s">Team member</th><th>Outcome</th></tr></thead>
