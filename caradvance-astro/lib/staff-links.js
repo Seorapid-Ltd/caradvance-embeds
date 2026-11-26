@@ -51,11 +51,11 @@ function originFor(origin, markets) {
 }
 const TXT = {
   en: { place: 'the CarAdvance Sales Desk', place2: 'the CarAdvance staff area', sTitle: 'Your sign-in link', sLead: (n, p) => `Hi ${n}, click the button to sign in to ${p}. No password needed.`, sBtn: 'Sign in', sFoot: m => `The link works once and is valid for ${m} minutes. If you didn't ask for it, you can ignore this e-mail.`, sSubj: 'Your CarAdvance sign-in link',
-        iTitle: p => `You're invited to ${p}`, iLead: (n, w, p) => `Hi ${n}, ${w} has given you access to ${p}. Click the button to sign in. No password needed.`, iBtn: 'Open the Sales Desk', iFoot: (d, host, e) => `This button is valid for ${d} days and works once. Later you can sign in any time at ${host}/admin/: enter your e-mail (${e}) and choose "E-mail me a sign-in link".`, iSubj: p => `Your access to ${p}`, team: 'the CarAdvance team' },
+        iTitle: p => `You're invited to ${p}`, iLead: (n, w, p) => `Hi ${n}, ${w} has given you access to ${p}. Click the button to sign in. No password needed.`, iBtn: 'Open the Sales Desk', iFoot: (d, host, e) => `This button is valid for ${d} days and works once. Later you can sign in any time at ${host}/admin/ with your e-mail (${e}): choose "Sign in with a code from e-mail".`, iSubj: p => `Your access to ${p}`, team: 'the CarAdvance team' },
   sk: { place: 'CarAdvance Sales Desk', place2: 'internej zóny CarAdvance', sTitle: 'Váš prihlasovací odkaz', sLead: (n, p) => `Dobrý deň ${n}, kliknutím na tlačidlo sa prihlásite do ${p}. Heslo nie je potrebné.`, sBtn: 'Prihlásiť sa', sFoot: m => `Odkaz funguje raz a platí ${m} minút. Ak ste oň nežiadali, tento e-mail môžete ignorovať.`, sSubj: 'Váš prihlasovací odkaz do CarAdvance',
-        iTitle: p => `Pozvánka do ${p}`, iLead: (n, w, p) => `Dobrý deň ${n}, ${w} vám udelil prístup do ${p}. Prihlásite sa kliknutím na tlačidlo. Heslo nie je potrebné.`, iBtn: 'Otvoriť Sales Desk', iFoot: (d, host, e) => `Tlačidlo platí ${d} dní a funguje raz. Neskôr sa môžete kedykoľvek prihlásiť na ${host}/admin/: zadajte svoj e-mail (${e}) a zvoľte „Poslať prihlasovací odkaz e-mailom“.`, iSubj: p => `Váš prístup do ${p}`, team: 'tím CarAdvance' },
+        iTitle: p => `Pozvánka do ${p}`, iLead: (n, w, p) => `Dobrý deň ${n}, ${w} vám udelil prístup do ${p}. Prihlásite sa kliknutím na tlačidlo. Heslo nie je potrebné.`, iBtn: 'Otvoriť Sales Desk', iFoot: (d, host, e) => `Tlačidlo platí ${d} dní a funguje raz. Neskôr sa môžete kedykoľvek prihlásiť na ${host}/admin/ svojím e-mailom (${e}): zvoľte „Prihlásenie kódom z e-mailu“.`, iSubj: p => `Váš prístup do ${p}`, team: 'tím CarAdvance' },
   cs: { place: 'CarAdvance Sales Desk', place2: 'interní zóny CarAdvance', sTitle: 'Váš přihlašovací odkaz', sLead: (n, p) => `Dobrý den ${n}, kliknutím na tlačítko se přihlásíte do ${p}. Heslo není potřeba.`, sBtn: 'Přihlásit se', sFoot: m => `Odkaz funguje jednou a platí ${m} minut. Pokud jste o něj nežádali, tento e-mail můžete ignorovat.`, sSubj: 'Váš přihlašovací odkaz do CarAdvance',
-        iTitle: p => `Pozvánka do ${p}`, iLead: (n, w, p) => `Dobrý den ${n}, ${w} vám udělil přístup do ${p}. Přihlásíte se kliknutím na tlačítko. Heslo není potřeba.`, iBtn: 'Otevřít Sales Desk', iFoot: (d, host, e) => `Tlačítko platí ${d} dní a funguje jednou. Později se můžete kdykoli přihlásit na ${host}/admin/: zadejte svůj e-mail (${e}) a zvolte „Poslat přihlašovací odkaz e-mailem“.`, iSubj: p => `Váš přístup do ${p}`, team: 'tým CarAdvance' }
+        iTitle: p => `Pozvánka do ${p}`, iLead: (n, w, p) => `Dobrý den ${n}, ${w} vám udělil přístup do ${p}. Přihlásíte se kliknutím na tlačítko. Heslo není potřeba.`, iBtn: 'Otevřít Sales Desk', iFoot: (d, host, e) => `Tlačítko platí ${d} dní a funguje jednou. Později se můžete kdykoli přihlásit na ${host}/admin/ svým e-mailem (${e}): zvolte „Přihlášení kódem z e-mailu“.`, iSubj: p => `Váš přístup do ${p}`, team: 'tým CarAdvance' }
 };
 
 /** Only our own pages; anything else falls back to the Sales Desk. */
@@ -127,8 +127,13 @@ async function sendInviteMail(env, user, url, next, inviter) {
   return sendMail(env, user.email, T.iSubj(place), html, `${T.iLead(user.name, who, place)}\n${url}\n\n${T.iFoot(INVITE_DAYS, host, user.email)}`);
 }
 
-function page(title, body) {
-  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+const PG = {
+  en: { signIn: 'Sign in', as: 'Sign in as', expT: 'Link expired', exp: 'This sign-in link has expired or was already used.', newL: 'Sign in again' },
+  sk: { signIn: 'Prihlásiť sa', as: 'Prihlásiť sa ako', expT: 'Odkaz vypršal', exp: 'Platnosť tohto prihlasovacieho odkazu vypršala alebo už bol použitý.', newL: 'Prihlásiť sa znova' },
+  cs: { signIn: 'Přihlásit se', as: 'Přihlásit se jako', expT: 'Odkaz vypršel', exp: 'Platnost tohoto přihlašovacího odkazu vypršela nebo už byl použit.', newL: 'Přihlásit se znovu' }
+};
+function page(title, body, lang = 'en') {
+  return new Response(`<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>${esc(title)} · CarAdvance</title></head>
 <body style="margin:0;min-height:100vh;background:#101216;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;color:#fff">
 <div style="background:#17181c;border:1px solid #2a2c33;border-radius:14px;padding:28px;width:340px;max-width:calc(100vw - 32px);text-align:center">
@@ -145,9 +150,10 @@ async function findLink(env, t) {
   return row;
 }
 
-function expiredPage() {
-  return page('Link expired', `<p style="color:#c9ced8;font-size:14px;margin:14px 0 0">This sign-in link has expired or was already used.</p>
-<a href="/admin/?next=/sales/" style="${BTN}">Get a new link</a>`);
+function expiredPage(lang = 'en') {
+  const P = PG[lang] || PG.en;
+  return page(P.expT, `<p style="color:#c9ced8;font-size:14px;margin:14px 0 0">${P.exp}</p>
+<a href="/admin/?next=/sales/" style="${BTN}">${P.newL}</a>`, lang);
 }
 
 /** Handles /link, /link/open and /admin/invite. Returns null for other paths. */
@@ -178,18 +184,19 @@ export async function handleStaffLinks(path, request, env, getSessionUser) {
   }
 
   if (path === '/link/open' && method === 'GET') {
+    const lang = langOf(origin), P = PG[lang];
     const t = new URL(request.url).searchParams.get('t') || '';
     const row = await findLink(env, t);
-    if (!row) return expiredPage();
-    return page('Sign in', `<p style="color:#c9ced8;font-size:14px;margin:14px 0 0">Sign in as<br><b style="color:#fff">${esc(row.name)}</b><br><span style="font-size:12px;color:#8b93a7">${esc(row.email)}</span></p>
-<form method="POST" action="/api/belso/link/open"><input type="hidden" name="t" value="${esc(t)}"><button type="submit" style="${BTN}">Sign in</button></form>`);
+    if (!row) return expiredPage(lang);
+    return page(P.signIn, `<p style="color:#c9ced8;font-size:14px;margin:14px 0 0">${P.as}<br><b style="color:#fff">${esc(row.name)}</b><br><span style="font-size:12px;color:#8b93a7">${esc(row.email)}</span></p>
+<form method="POST" action="/api/belso/link/open"><input type="hidden" name="t" value="${esc(t)}"><button type="submit" style="${BTN}">${P.signIn}</button></form>`, lang);
   }
 
   if (path === '/link/open' && method === 'POST') {
     const f = await request.formData().catch(() => null);
     const t = f ? String(f.get('t') || '') : '';
     const row = await findLink(env, t);
-    if (!row) return expiredPage();
+    if (!row) return expiredPage(langOf(origin));
     await env.DB.prepare(`DELETE FROM login_links WHERE token_hash = ?`).bind(row.token_hash).run();
     const token = randomHex(32);
     const expiresAt = new Date(Date.now() + SESSION_DAYS * 86400 * 1000).toISOString().slice(0, 19);
