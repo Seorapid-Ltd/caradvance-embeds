@@ -54,6 +54,13 @@ const CSS = '<style id="ca-video-css">'
   + '.cav-lb .cav-x{position:absolute;right:20px;top:18px;width:48px;height:48px;border-radius:50%;cursor:pointer;color:#fff;font-size:18px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08)}'
   + '.cav-lb .cav-cta{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);display:none}.cav-lb.end .cav-cta{display:inline-flex}'
   + '@media(max-width:900px){.cav-sec{padding:64px 0 24px}.cav-ai{grid-template-columns:1fr;gap:32px}.cav-screen{order:-1}.cav-film .cav-ov{padding:16px 18px}.cav-film .cav-ovt span{display:none}.cav-play{width:58px;height:58px;top:38%}.cav-film .cav-ovt b{font-size:15px}.cav-play svg{width:22px;height:22px}.cav-len{display:none}}'
+  // gépen a SZÖVEG igazodik a videóhoz: a videó a saját 16:9-es méretében marad (nincs vágás, nincs sáv),
+  // a szövegoszlop pontosan a videó magasságát kapja — a felirat a videó tetejével, a gomb a videó aljával egy vonalban
+  + '@media(min-width:901px){.cav-ai,.cav-fl{align-items:stretch}.cav-ai>div:first-child,.cav-fl-txt{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start}'
+  + '.cav-ai>div:first-child>*,.cav-fl-txt>*{margin-top:0;margin-bottom:0}.cav-ai .cav-screen,.cav-fl .cav-film{align-self:start}'
+  + '.cav-ai .cav-h{font-size:clamp(28px,2.7vw,40px);line-height:1.06}.cav-ai .cav-p{font-size:15px;line-height:1.5}'
+  + '.cav-ai .cav-chips{flex-wrap:nowrap;gap:6px}.cav-ai .cav-chip{white-space:nowrap;font-size:12.5px;padding:8px 12px}'
+  + '.cav-fl .cav-h3{font-size:clamp(30px,3vw,46px)}.cav-fl .cav-ul{gap:16px}.cav-fl .cav-ul li{font-size:17px}}'
   + '@media(prefers-reduced-motion:reduce){.cav-play::after,.cav-eb i{animation:none}}'
   + '</style>';
 
