@@ -183,7 +183,23 @@ let DESK_COL = false;
 export async function ensureDeskColumn(env) {
   if (DESK_COL || !env.DB) return;
   try { await env.DB.prepare('ALTER TABLE users ADD COLUMN desk_access INTEGER DEFAULT 0').run(); } catch (e) { /* already there */ }
+  // users.desk_markets: which country sites the account may use the Sales Desk on, e.g. "sk,cz". Empty/NULL = every site.
+  try { await env.DB.prepare('ALTER TABLE users ADD COLUMN desk_markets TEXT').run(); } catch (e) { /* already there */ }
   DESK_COL = true;
+}
+
+/** Sales Desk market of a host: caradvance.sk → sk, dev.caradvance.cz → cz, dev-pl.….pages.dev → pl; everything else → hu. */
+export const DESK_MARKETS = ['hu', 'sk', 'cz', 'pl', 'ch', 'eu'];
+export function deskMarketOf(host) {
+  const h = String(host || '').toLowerCase();
+  let m = /(?:^|\.)caradvance\.(hu|sk|cz|pl|ch|eu)$/.exec(h); if (m) return m[1];
+  m = /^dev-(hu|sk|cz|pl|ch|eu)\./.exec(h); if (m) return m[1];
+  return 'hu';
+}
+/** "SK, cz ,xx" → "sk,cz" (only known markets); empty → null (= every site). */
+export function cleanMarkets(v) {
+  const list = (Array.isArray(v) ? v : String(v || '').split(/[\s,;]+/)).map(x => String(x).trim().toLowerCase()).filter(x => DESK_MARKETS.includes(x));
+  return list.length ? [...new Set(list)].join(',') : null;
 }
 
 export async function whoAmI(request, env) {
@@ -191,10 +207,13 @@ export async function whoAmI(request, env) {
   const token = cookie(request, 'ca_session');
   if (!token || !env.DB) throw bad('Sign-in required.', 401);
   await ensureDeskColumn(env);
-  const row = await env.DB.prepare('SELECT u.email, u.name, u.role, u.desk_access, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
+  const row = await env.DB.prepare('SELECT u.email, u.name, u.role, u.desk_access, u.desk_markets, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
   if (!row || new Date(row.expires_at + 'Z').getTime() < Date.now()) throw bad('Sign-in required.', 401);
   // Only the people given Sales Desk access (Admin → Felhasználók → "Sales Desk"), and every "Csak Sales Desk" account.
   if (!(row.role === 'sales_desk' || Number(row.desk_access) === 1)) throw bad('This account has no access to the Sales Desk.', 403);
+  // Country limit (Admin → Felhasználók → "Országok"): e.g. "sk,cz" = only on caradvance.sk and caradvance.cz.
+  const allowed = cleanMarkets(row.desk_markets);
+  if (allowed && !allowed.split(',').includes(deskMarketOf(new URL(request.url).hostname))) throw bad('This account can use the Sales Desk only on: ' + allowed.toUpperCase().split(',').join(', ') + '.', 403);
   return { email: row.email, name: row.name, role: row.role };
 }
 
