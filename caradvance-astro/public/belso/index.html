@@ -318,8 +318,11 @@
       <button type="button" id="lg-toggle" style="position:absolute;right:5px;top:5px;bottom:5px;width:36px;border:0;border-radius:6px;background:transparent;color:#8b93a7;cursor:pointer;font-size:13px;font-weight:700">MUTAT</button>
     </div>
     <button id="lg-btn" style="width:100%;margin-top:14px;padding:11px;border:0;border-radius:9px;background:#E2001A;color:#fff;font-weight:800;font-size:15px;cursor:pointer">Belépés</button>
+    <div style="display:flex;align-items:center;gap:10px;margin:14px 0 0;color:#666e7d;font-size:11px"><span style="flex:1;height:1px;background:#2a2c33"></span>vagy<span style="flex:1;height:1px;background:#2a2c33"></span></div>
+    <button id="lg-link" type="button" style="width:100%;margin-top:12px;padding:11px;border:1px solid #2a2c33;border-radius:9px;background:transparent;color:#fff;font-weight:700;font-size:14px;cursor:pointer">Belépő link küldése e-mailben</button>
     <div id="lg-err" style="color:#ff7a7a;font-size:12px;margin-top:9px;min-height:15px;text-align:center"></div>
-    <div style="text-align:center;font-size:11.5px;color:#666e7d;margin-top:6px">Elfelejtette a jelszavát? Kérjen újat az adminisztrátortól.</div>
+    <div id="lg-ok" style="display:none;color:#7ddc9a;font-size:12.5px;margin-top:4px;text-align:center;line-height:1.5"></div>
+    <div style="text-align:center;font-size:11.5px;color:#666e7d;margin-top:6px">Jelszó nélkül: add meg az e-mail címed, és küldünk egy belépő linket.</div>
   </div>
 </div>
 <script>
@@ -351,6 +354,24 @@
       .catch(function(){btn.disabled=false;btn.textContent='Belépés';err.textContent='Hálózati hiba.';});
   }
   btn.addEventListener('click',doLogin);
+  var linkBtn=document.getElementById('lg-link'),okEl=document.getElementById('lg-ok');
+  function sendLink(){
+    err.textContent='';okEl.style.display='none';
+    var email=emailEl.value.trim();
+    if(!email){err.textContent='Add meg az e-mail címed.';emailEl.focus();return;}
+    var nx=new URLSearchParams(location.search).get('next')||'/admin/';
+    linkBtn.disabled=true;linkBtn.textContent='Küldés…';
+    fetch('/api/belso/link',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:email,next:nx})})
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,body:j};});})
+      .then(function(res){
+        linkBtn.disabled=false;linkBtn.textContent='Belépő link küldése e-mailben';
+        if(!res.ok){err.textContent=(res.body&&res.body.error)||'Nem sikerült elküldeni.';return;}
+        okEl.textContent='Ha van fiók ezzel a címmel, elküldtük a belépő linket. Nézd meg a postafiókod (a spam mappát is). A link 30 percig érvényes.';
+        okEl.style.display='block';
+      })
+      .catch(function(){linkBtn.disabled=false;linkBtn.textContent='Belépő link küldése e-mailben';err.textContent='Hálózati hiba.';});
+  }
+  linkBtn.addEventListener('click',sendLink);
   pwEl.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
   emailEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();pwEl.focus();}});
 })();
@@ -458,13 +479,13 @@
           </div>
           <div class="row2">
             <div class="fld"><label>Szerepkör</label><select id="u-role"><option value="sales_desk">Csak Sales Desk</option><option value="sales_manager">Sales manager (CRM)</option><option value="admin">Admin</option></select><label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="u-desk" checked style="width:auto"> Sales Desk hozzáférés</label></div>
-            <div class="fld"><label>Ideiglenes jelszó</label><input id="u-pw" placeholder="min. 8 karakter"></div>
+            <div class="fld"><label>Jelszó (nem kötelező)</label><input id="u-pw" placeholder="üresen hagyva: belépő linket küldünk"></div>
           </div>
           <div class="row2">
             <div class="fld"><label>Sales Desk országok</label><input id="u-mk" placeholder="pl. sk,cz — üresen: minden oldal"></div>
             <div class="fld"></div>
           </div>
-          <div><button class="btn red sm" onclick="createUser()">Létrehozás</button></div>
+          <div><button class="btn red sm" onclick="createUser()">Létrehozás</button> <span class="hint">Jelszó nélkül a munkatárs e-mailben kap egy belépő linket a Sales Deskhez (7 napig érvényes), utána bármikor kérhet új linket a belépésnél.</span></div>
           <div id="u-err" class="hint" style="color:#c0392b"></div>
         </div>
       </div>
@@ -1153,7 +1174,7 @@ function renderUsers(){
   el.innerHTML=(allUsers||[]).map(function(u){
     var isSelf=currentUser&&u.id===currentUser.id;
     return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+esc(u.role==='admin'?'Admin':u.role==='sales_desk'?'Csak Sales Desk':'Sales manager')+'</td><td>'+(u.role==='sales_desk'?'<span class="hint">mindig</span>':'<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" '+(Number(u.desk_access)===1?'checked ':'')+'onchange="setDeskAccess('+u.id+',this)"> hozzáfér</label>')+'<div class="hint" style="margin-top:3px">'+(u.desk_markets?esc(String(u.desk_markets).toUpperCase().split(',').join(', ')):'minden oldal')+' · <a href="#" onclick="setDeskMarkets('+u.id+');return false">módosít</a></div></td><td>'+esc((u.created_at||'').slice(0,10))+'</td>'
-      +'<td style="white-space:nowrap"><button class="btn ghost sm" onclick="resetUserPassword('+u.id+')">Új jelszó</button> '
+      +'<td style="white-space:nowrap"><button class="btn ghost sm" onclick="sendUserLink('+u.id+')">Belépő link</button> <button class="btn ghost sm" onclick="resetUserPassword('+u.id+')">Új jelszó</button> '
       +(isSelf?'':'<button class="btn ghost sm" onclick="deleteUser('+u.id+')">Törlés</button>')+'</td></tr>';
   }).join('')||'<tr><td colspan="6" style="color:#8a93a2">Nincs felhasználó.</td></tr>';
 }
@@ -1163,8 +1184,16 @@ function createUser(){
   var name=document.getElementById('u-name').value.trim();
   var role=document.getElementById('u-role').value;
   var pw=document.getElementById('u-pw').value;
-  var errEl=document.getElementById('u-err');errEl.textContent='';
-  if(!email||!name||!pw){errEl.textContent='Minden mező kötelező.';return;}
+  var errEl=document.getElementById('u-err');errEl.textContent='';errEl.style.color='';
+  if(!email||!name){errEl.textContent='A név és az e-mail kötelező.';return;}
+  if(!pw){
+    apiFetch('/admin/invite',{method:'POST',body:{email:email,name:name,role:role,desk_access:document.getElementById('u-desk').checked,desk_markets:document.getElementById('u-mk').value,next:'/sales/'}}).then(function(r){
+      ['u-email','u-name','u-pw','u-mk'].forEach(function(id){document.getElementById(id).value='';});
+      errEl.style.color='#1e8e4e';errEl.textContent=(r.created?'Létrehozva. ':'')+(r.mailed?'Belépő link elküldve: '+email:'');showInvite(r,email);
+      return loadUsers();
+    }).catch(function(e){errEl.textContent=(e&&e.error)||'Nem sikerült elküldeni a meghívót.';loadUsers();});
+    return;
+  }
   if(pw.length<8){errEl.textContent='A jelszó legyen legalább 8 karakter.';return;}
   apiFetch('/admin/users',{method:'POST',body:{email:email,name:name,role:role,password:pw,desk_access:document.getElementById('u-desk').checked,desk_markets:document.getElementById('u-mk').value}}).then(function(){
     ['u-email','u-name','u-pw','u-mk'].forEach(function(id){document.getElementById(id).value='';});
@@ -1185,6 +1214,18 @@ function setDeskMarkets(id){
   var v=prompt('Melyik országos oldalakon használhatja a Sales Desket? (hu, sk, cz, pl, ch, eu — vesszővel; üresen: mindegyiken)',u.desk_markets||'');
   if(v===null)return;
   apiFetch('/admin/users/'+id+'/desk',{method:'POST',body:{markets:v}}).then(loadUsers).catch(function(){alert('Nem sikerült menteni.');});
+}
+function showInvite(r,email){
+  if(!r||r.mailed){if(r)alert('Belépő link elküldve e-mailben: '+email);return;}
+  // nincs e-mail küldés ezen az oldalon: a linket az admin továbbítja (WhatsApp, e-mail…)
+  var msg='Ezen az oldalon nincs beállítva e-mail küldés. Másold ki és küldd el ezt a linket neki ('+email+'). Egyszer használható, '+(r.days||7)+' napig érvényes:';
+  try{navigator.clipboard&&navigator.clipboard.writeText(r.link);msg+='\n(a vágólapra másolva)';}catch(e){}
+  prompt(msg,r.link);
+}
+function sendUserLink(id){
+  var u=(allUsers||[]).find(function(x){return x.id===id;});if(!u)return;
+  if(!confirm('Belépő link ehhez: '+u.email+' (Sales Desk, 7 napig érvényes, egyszer használható). Mehet?'))return;
+  apiFetch('/admin/invite',{method:'POST',body:{email:u.email,next:'/sales/'}}).then(function(r){showInvite(r,u.email);}).catch(function(e){alert((e&&e.error)||'Nem sikerült elküldeni.');});
 }
 function deleteUser(id){
   if(!confirm('Biztosan törlöd ezt a felhasználót? A hozzá rendelt ügyek/ügyfelek felszabadulnak.'))return;
