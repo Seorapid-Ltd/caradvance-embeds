@@ -1048,6 +1048,29 @@ dialog{overscroll-behavior:contain}
 dialog .db,dialog .cs-scroll,#ofDlg .db{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 @media(max-width:1024px),(hover:none){input,select,textarea{font-size:16px!important}}
 
+/* Autó adatlap (telefon): teljes adatok alapból, jól látható X, Megosztás gomb */
+#carSheet{position:relative}
+#carSheet .cs-full{display:block!important;padding:6px 18px 20px;border-top:1px solid var(--line)}
+#carSheet .cs-full>h3,#carSheet .cs-full>p.sub:first-of-type{display:none}
+#carSheet .cs-x{position:absolute;top:calc(10px + env(safe-area-inset-top));right:10px;z-index:5;width:44px;height:44px;padding:0;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:rgba(11,11,13,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.35);min-height:0;cursor:pointer}
+#carSheet .cs-x:hover,#carSheet .cs-x:active{background:rgba(11,11,13,.75);color:#fff}
+#carSheet .cs-act .share{background:var(--card);border:1.5px solid var(--line);color:var(--ink);min-height:52px;font-size:15px;font-weight:800}
+#carSheet .cs-act .share:hover,#carSheet .cs-act .share:active{background:var(--soft);color:var(--ink)}
+#carSheet .cs-act .wide{grid-column:1/-1}
+
+/* Admin: három vonalas menü, ha szűk a fejléc (telefon, iPad) */
+.menubtn{display:none;width:46px;height:46px;padding:0;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;place-items:center;cursor:pointer;min-height:0}
+.menubtn svg{width:24px;height:24px}
+.menubtn:hover,.menubtn:active{background:rgba(255,255,255,.16);color:#fff}
+@media(max-width:1024px){
+  html:not(.public) .menubtn{display:grid}
+  html:not(.public) .topbar{position:relative}
+  html:not(.public) .topright nav#tabs{display:none!important}
+  html:not(.public).navopen .topright nav#tabs{display:flex!important;flex-direction:column;align-items:stretch;gap:4px;position:absolute;top:calc(100% + 8px);right:0;left:auto;width:min(320px,calc(100vw - 24px));padding:8px;border-radius:18px;background:var(--card);border:1px solid var(--line);box-shadow:0 18px 40px rgba(8,8,10,.25);z-index:60;overflow:visible}
+  html:not(.public).navopen #tabs a{height:50px;min-height:50px;padding:0 16px;justify-content:space-between;color:var(--ink);font-size:16px;border-radius:12px;display:flex;align-items:center}
+  html:not(.public).navopen #tabs a.on{background:var(--red);color:#fff}
+}
+
 /* Kapcsolat — belső üzenetek */
 .msgwrap{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start;width:100%}
 .msgside,.msgmain{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
@@ -1241,6 +1264,7 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
         <a href="#list" data-v="list"><i data-i18n="nav_list">Stock list</i></a>
       </nav>
       <div class="tools">
+        <button type="button" class="menubtn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="tabs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
         <a class="langbtn loginbtn" id="loginBtn" href="/admin/?next=/sales/"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M12 12q-1.65 0-2.825-1.175T8 8t1.175-2.825T12 4t2.825 1.175T16 8t-1.175 2.825T12 12m-8 8v-2.8q0-.85.438-1.562T5.6 14.55q1.55-.775 3.15-1.162T12 13t3.25.388t3.15 1.162q.725.375 1.163 1.088T20 17.2V20z"/></svg><b data-i18n="login">Login</b></a>
         <div class="langpick" id="langpick"><button type="button" class="langbtn" id="langBtn" aria-haspopup="listbox" aria-expanded="false" title="Language"><span class="flag" id="langFlag"></span><b id="langCode">EN</b><svg viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><ul class="langmenu" id="langMenu" role="listbox" hidden></ul><select id="lang" hidden aria-hidden="true"><option value="en">EN</option><option value="hu">HU</option><option value="sk">SK</option><option value="cs">CZ</option><option value="de">DE</option><option value="pl">PL</option><option value="ro">RO</option></select></div>
         <button type="button" class="iconbtn" id="themeBtn" title="Light / dark" aria-label="Switch light or dark mode"><svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 21q-3.75 0-6.375-2.625T3 12t2.625-6.375T12 3q.35 0 .688.025t.662.075q-1.025.725-1.638 1.888T11.1 7.5q0 2.250 1.575 3.825T16.500 12.900q1.375 0 2.525-.613T20.900 10.650q.05.325.075.662T21 12q0 3.750-2.625 6.375T12 21"/></svg><svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17q-2.075 0-3.537-1.463T7 12t1.463-3.537T12 7t3.538 1.463T17 12t-1.463 3.538T12 17M2 13q-.425 0-.712-.288T1 12t.288-.712T2 11h2q.425 0 .713.288T5 12t-.288.713T4 13zm18 0q-.425 0-.712-.288T19 12t.288-.712T20 11h2q.425 0 .713.288T23 12t-.288.713T22 13zm-8-8q-.425 0-.712-.288T11 4V2q0-.425.288-.712T12 1t.713.288T13 2v2q0 .425-.288.713T12 5m0 18q-.425 0-.712-.288T11 22v-2q0-.425.288-.712T12 19t.713.288T13 20v2q0 .425-.288.713T12 23"/></svg></button>
@@ -1784,6 +1808,14 @@ $('#csv').addEventListener('click',async()=>{
     if(any){y=scrollY;B.style.position='fixed';B.style.top=-y+'px';B.style.left='0';B.style.right='0';B.style.width='100%';H.classList.add('dlg-open')}
     else{B.style.position='';B.style.top='';B.style.left='';B.style.right='';B.style.width='';H.classList.remove('dlg-open');scrollTo(0,y)}};
   new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:['open'],childList:true});})();
+
+/* Három vonalas menü (admin, telefon/iPad) */
+(()=>{const H=document.documentElement,b=document.getElementById('menuBtn');if(!b)return;
+  const set=on=>{H.classList.toggle('navopen',on);b.setAttribute('aria-expanded',on)};
+  b.addEventListener('click',e=>{e.stopPropagation();set(!H.classList.contains('navopen'))});
+  document.getElementById('tabs').addEventListener('click',e=>{if(e.target.closest('a'))set(false)});
+  document.addEventListener('click',e=>{if(H.classList.contains('navopen')&&!e.target.closest('#tabs,#menuBtn'))set(false)});
+  addEventListener('hashchange',()=>set(false));addEventListener('keydown',e=>{if(e.key==='Escape')set(false)});})();
 function renderLeads(){
   const box=$('#ofList');if(!box)return;
   const VATF=1.19,isOffer=o=>o&&(/^OFFER:/m.test(o.notes||'')||(o.direction==='Incoming'&&o.channel==='Website'));
@@ -2194,31 +2226,26 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
 (()=>{
   const touch=matchMedia('(max-width:900px),(hover:none)');
   const dlg=document.createElement('dialog');dlg.id='carSheet';dlg.setAttribute('aria-label','Car');document.body.appendChild(dlg);
-  const W={en:['Share on WhatsApp','Details & edit','Close','Share with a dealer','Share with a private buyer','price excl. VAT','price incl. 19% German VAT','Ref.','Sharing is not available here — the text was copied.'],
-    hu:['Megosztás WhatsAppon','Részletek, szerkesztés','Bezárás','Kereskedőnek küldöm','Magánvevőnek küldöm','ár ÁFA nélkül','ár 19% német ÁFÁ-val','Azonosító','A megosztás itt nem érhető el — a szöveget a vágólapra másoltam.'],
-    sk:['Zdieľať cez WhatsApp','Detaily a úpravy','Zavrieť','Poslať predajcovi','Poslať súkromnému kupujúcemu','cena bez DPH','cena s 19 % nemeckou DPH','Ref.','Zdieľanie tu nie je dostupné — text bol skopírovaný.'],
-    cs:['Sdílet přes WhatsApp','Detaily a úpravy','Zavřít','Poslat prodejci','Poslat soukromému kupci','cena bez DPH','cena s 19% německou DPH','Ref.','Sdílení zde není dostupné — text byl zkopírován.'],
-    de:['Per WhatsApp teilen','Details & bearbeiten','Schließen','An einen Händler','An einen Privatkunden','Preis ohne MwSt.','Preis inkl. 19 % dt. MwSt.','Ref.','Teilen ist hier nicht verfügbar — der Text wurde kopiert.'],
-    pl:['Udostępnij przez WhatsApp','Szczegóły i edycja','Zamknij','Wyślij dealerowi','Wyślij klientowi prywatnemu','cena bez VAT','cena z 19% niem. VAT','Ref.','Udostępnianie niedostępne — tekst skopiowano.'],
-    ro:['Trimite pe WhatsApp','Detalii și editare','Închide','Trimite unui dealer','Trimite unui client privat','preț fără TVA','preț cu 19% TVA germană','Ref.','Partajarea nu este disponibilă aici — textul a fost copiat.']};
+  const W={en:['Share','Details & edit','Close','Share with a dealer','Share with a private buyer','price excl. VAT','price incl. 19% German VAT','Ref.','Sharing is not available here — the text was copied.'],
+    hu:['Megosztás','Részletek, szerkesztés','Bezárás','Kereskedőnek küldöm','Magánvevőnek küldöm','ár ÁFA nélkül','ár 19% német ÁFÁ-val','Azonosító','A megosztás itt nem érhető el — a szöveget a vágólapra másoltam.'],
+    sk:['Zdieľať','Detaily a úpravy','Zavrieť','Poslať predajcovi','Poslať súkromnému kupujúcemu','cena bez DPH','cena s 19 % nemeckou DPH','Ref.','Zdieľanie tu nie je dostupné — text bol skopírovaný.'],
+    cs:['Sdílet','Detaily a úpravy','Zavřít','Poslat prodejci','Poslat soukromému kupci','cena bez DPH','cena s 19% německou DPH','Ref.','Sdílení zde není dostupné — text byl zkopírován.'],
+    de:['Teilen','Details & bearbeiten','Schließen','An einen Händler','An einen Privatkunden','Preis ohne MwSt.','Preis inkl. 19 % dt. MwSt.','Ref.','Teilen ist hier nicht verfügbar — der Text wurde kopiert.'],
+    pl:['Udostępnij','Szczegóły i edycja','Zamknij','Wyślij dealerowi','Wyślij klientowi prywatnemu','cena bez VAT','cena z 19% niem. VAT','Ref.','Udostępnianie niedostępne — tekst skopiowano.'],
+    ro:['Distribuie','Detalii și editare','Închide','Trimite unui dealer','Trimite unui client privat','preț fără TVA','preț cu 19% TVA germană','Ref.','Partajarea nu este disponibilă aici — textul a fost copiat.']};
   const w=i=>(W[LANG]||W.en)[i];
   const site=()=>{const h=location.hostname.replace(/^dev\./,'www.');return /caradvance\./.test(h)?h:'www.caradvance.hu'};
   let cur=null;
   window.__openCarSheet=c=>open(c);
   function open(c){
     cur=c;const ps=pics(c);
-    dlg.innerHTML=`<div class="cs-scroll"><div style="position:relative">${ps.length?`<div class="cs-gal">${ps.map(p=>`<img loading="lazy" src="img/${esc(p)}" alt="">`).join('')}</div>${ps.length>1?`<span class="cs-n">1 / ${ps.length}</span>`:''}`:''}
-      <button type="button" class="cs-x" aria-label="${esc(w(2))}">✕</button></div>
+    dlg.innerHTML=`<button type="button" class="cs-x" aria-label="${esc(w(2))}" title="${esc(w(2))}"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button><div class="cs-scroll"><div style="position:relative">${ps.length?`<div class="cs-gal">${ps.map(p=>`<img loading="lazy" src="img/${esc(p)}" alt="">`).join('')}</div>${ps.length>1?`<span class="cs-n">1 / ${ps.length}</span>`:''}`:''}
+</div>
       <div class="hcard">${window.__carCardHtml(c)}</div></div>
-      <div class="cs-act">${(c.status||'Available')!=='Sold'?`<button type="button" class="offer" data-a="offer">${esc(OFR().title)}</button>`:''}<button type="button" class="wa${(c.status||'Available')==='Sold'?' wide':''}" data-a="share"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15s-.77.96-.94 1.16s-.35.22-.64.07a8.1 8.1 0 0 1-2.38-1.47a9 9 0 0 1-1.65-2.05c-.17-.3 0-.46.13-.6c.13-.14.3-.35.45-.52a2 2 0 0 0 .3-.5a.55.55 0 0 0-.03-.52c-.07-.15-.67-1.62-.92-2.22c-.24-.58-.49-.5-.67-.51h-.57a1.1 1.1 0 0 0-.8.37a3.35 3.35 0 0 0-1.04 2.49a5.8 5.8 0 0 0 1.22 3.1a13.3 13.3 0 0 0 5.1 4.5c.71.31 1.27.5 1.7.63a4.1 4.1 0 0 0 1.88.12a3.08 3.08 0 0 0 2.02-1.42a2.5 2.5 0 0 0 .17-1.42c-.07-.12-.27-.2-.57-.35M12.04 21.5a9.4 9.4 0 0 1-4.8-1.31l-.34-.2l-3.57.93l.95-3.48l-.22-.36a9.43 9.43 0 1 1 7.98 4.42m8.02-17.45A11.3 11.3 0 0 0 2.27 17.66L.67 23.5l5.97-1.57a11.3 11.3 0 0 0 5.4 1.37a11.33 11.33 0 0 0 8.02-19.3"/></svg>WhatsApp</button>
-      <button type="button" data-a="det">${esc(w(1))}</button><button type="button" data-a="close">${esc(w(2))}</button></div>`;
+      <div class="cs-act">${(c.status||'Available')!=='Sold'?`<button type="button" class="offer" data-a="offer">${esc(OFR().title)}</button>`:''}<button type="button" class="share${(c.status||'Available')==='Sold'?' wide':''}" data-a="share"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="18" cy="5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="18" cy="19" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3" fill="none" stroke="currentColor" stroke-width="1.9"/></svg>${esc(w(0))}</button></div>`;
     // Nyilak a fotók között
     if(ps.length>1){const box=dlg.querySelector('.cs-gal').parentNode;box.insertAdjacentHTML('beforeend',`<button type="button" class="cs-arr prev" aria-label="‹"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="cs-arr next" aria-label="›"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`);}
     // Teljes adatlap gomb a Futás mellett, és maga az adatlap
-    const kmCell=dlg.querySelector('.hcard .hc-km')||dlg.querySelector('.hcard .hc-grid>div:nth-child(2)');
-    const fb=`<button type="button" class="cs-fullbtn" data-a="full"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v5h5M9 13h7M9 17h7M9 9h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(F().full)}</span></button>`;
-    if(kmCell){kmCell.classList.add('hc-km');const wrap=document.createElement('div');wrap.className='hc-kmv';while(kmCell.firstChild)wrap.appendChild(kmCell.firstChild);kmCell.appendChild(wrap);kmCell.insertAdjacentHTML('beforeend',fb);}
-    else dlg.querySelector('.hcard .hc-body').insertAdjacentHTML('afterbegin',fb);
     dlg.querySelector('.cs-scroll').insertAdjacentHTML('beforeend',fullHtml(c));
     dlg.classList.remove('full');dlg.classList.toggle('sold',(c.status||'Available')==='Sold');
     if((c.status||'Available')==='Sold'){const gb=dlg.querySelector('.cs-gal');if(gb){const w=document.createElement('div');w.className='soldw big';w.style.display='block';w.dataset.sold=t('sold_x');gb.parentNode.insertBefore(w,gb);w.appendChild(gb);}}
@@ -2244,7 +2271,7 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
     const hasX=[c.prev_owners,c.condition,c.trim,c.paint,c.seats,c.engine_cc,c.climate,c.park_assist].some(v=>v!=null&&v!=='')||(Array.isArray(c.equipment)&&c.equipment.length);
     const st=c.status||'Available';
     const hl=(c.highlights||[]);const eqa=Array.isArray(c.equipment)?c.equipment:[];
-    return `<section class="cs-full"><button type="button" class="cs-back" data-a="back"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>${esc(f.back)}</button>
+    return `<section class="cs-full">
       <h3>${esc(c.model||'')}</h3><p class="sub">${esc(f.ref)} ${esc(c.id)} · <b class="hc-st ${esc(st)}">${esc(t(st)!==st?t(st):st)}</b></p>
       <dl>${row(f.model,[c.make,c.model].filter(Boolean).join(' · '))}${row(f.cat,c.category)}${row(f.colour,c.colour)}${row(f.interior,c.interior)}${row(f.body,c.body)}${row(f.wheels,c.wheels)}
       ${row(f.reg,c.first_reg)}${row(f.km,km)}${row(f.power,c.power)}${row(f.fuel,c.fuel)}${row(f.gear,c.transmission)}${row(f.drive,c.drive)}${nrow(f.owners,c.prev_owners)}${nrow(f.cond,c.condition)}${nrow(f.trim,c.trim)}${nrow(f.paint,c.paint)}${nrow(f.seats,[c.seats,c.doors].filter(v=>v!=null&&v!=='').join(' / '))}${nrow(f.cc,c.engine_cc?Number(c.engine_cc).toLocaleString(window.__loc||'en-GB')+' cm³':'')}${nrow(f.clim,c.climate)}${nrow(f.park,c.park_assist)}${row(f.vin,c.vin)}${row(f.until,c.available_until)}</dl>
