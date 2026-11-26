@@ -663,6 +663,24 @@ export async function handle(request, env, ctx) {
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
+  // --- TEMP key-protected damage-photo import (removed after use). CORS-enabled so the fleet-system page can push. ---
+  if (route === 'dmg-up') {
+    const cors = { 'Access-Control-Allow-Origin': 'https://caradvance.run.lvit.app', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'content-type', 'Access-Control-Max-Age': '86400' };
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    if (request.method === 'POST') {
+      try {
+        const DMG_UP_HASH = 'd79681652c8b5c29ef8a79e491ed54ef92010929703a146424aba8ca0e7be8bc';
+        const key = url.searchParams.get('key') || '';
+        const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key)))].map(b => b.toString(16).padStart(2, '0')).join('');
+        if (h !== DMG_UP_HASH) return new Response(JSON.stringify({ error: 'no' }), { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } });
+        await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_damage_photos (sid INTEGER PRIMARY KEY, vin TEXT, bereich INTEGER, mime TEXT, data TEXT, updated INTEGER)').run();
+        const b = await request.json();
+        await env.DB.prepare('INSERT INTO desk_damage_photos (sid, vin, bereich, mime, data, updated) VALUES (?,?,?,?,?,?) ON CONFLICT(sid) DO UPDATE SET vin=excluded.vin, bereich=excluded.bereich, mime=excluded.mime, data=excluded.data, updated=excluded.updated')
+          .bind(Number(b.sid), String(b.vin || ''), Number(b.bereich || 0), String(b.mime || 'image/jpeg'), String(b.data || ''), Math.floor(Date.now() / 1000)).run();
+        return new Response(JSON.stringify({ ok: true, sid: b.sid }), { headers: { ...cors, 'Content-Type': 'application/json' } });
+      } catch (e) { return new Response(JSON.stringify({ error: String(e.message || e).slice(0, 120) }), { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }); }
+    }
+  }
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
     try {
@@ -680,6 +698,17 @@ export async function handle(request, env, ctx) {
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
     if (request.method === 'GET' && route === 'damages') return json(await damagesList(env));
+    if (request.method === 'GET' && route === 'damage-photos') { // which damages have a photo (signed-in only)
+      try { const rs = (await env.DB.prepare('SELECT sid, vin, bereich FROM desk_damage_photos').all()).results || []; return json({ photos: rs }); }
+      catch (e) { return json({ photos: [] }); }
+    }
+    if (request.method === 'GET' && route.startsWith('damage-photo/')) { // serve one photo, signed-in only
+      const sid = Number(route.split('/')[1]);
+      const row = await env.DB.prepare('SELECT mime, data FROM desk_damage_photos WHERE sid = ?').bind(sid).first();
+      if (!row) return json({ error: 'not found' }, 404);
+      const bytes = Uint8Array.from(atob(row.data), c => c.charCodeAt(0));
+      return new Response(bytes, { headers: { 'Content-Type': row.mime || 'image/jpeg', 'Cache-Control': 'private, max-age=86400', 'X-Robots-Tag': 'noindex, nofollow' } });
+    }
   if (request.method === 'POST' && route === 'stocklist/price') {
       if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
       return json(await stockChoosePrice(request, env, ctx, me));
