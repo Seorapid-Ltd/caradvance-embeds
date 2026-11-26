@@ -2575,6 +2575,7 @@ function wireCarPicker(){
   if(bpSearch)bpSearch.addEventListener('input',renderBrowse);
   if(bpList)bpList.addEventListener('click',e=>{const add=e.target.closest('.bpadd');if(add){e.stopPropagation();toggle(add.dataset.add);return}const card=e.target.closest('[data-car]');if(card&&window.__openCarSheet){const c=cars.find(x=>x.id===card.dataset.car);if(c)window.__openCarSheet(c);}});
   sync();
+  if(panel&&dlg2&&bpList){dlg2.classList.add('dlg-browse');renderBrowse();}
 }
 function openLog(o,preset){
   preset=preset||{};
