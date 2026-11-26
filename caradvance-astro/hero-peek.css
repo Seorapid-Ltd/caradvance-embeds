@@ -1,0 +1,10 @@
+@media(min-width:641px){
+html:is(#ca-p1,html) body section.hero:has(+#autoink){min-height:84vh!important;min-height:84svh!important}
+html:is(#ca-p1,html) body :is(section,div).ca-hero:has(.scrolldown,.bizhero-scroll,.egl-mhero-scroll),html:is(#ca-p1,html) body .cd-hero,html:is(#ca-p1,html) body .kaphero,html:is(#ca-p1,html) body main>section.hero.hero-calc{min-height:72vh!important;min-height:72svh!important}
+html:is(#ca-p1,html) body section.tb section.hero.ca-hero.ca-tfs{min-height:calc(72vh - var(--tbx,120px))!important;min-height:calc(72svh - var(--tbx,120px))!important}
+}
+@media(max-width:640px){
+html:is(#ca-p1,html) body section.hero:has(+#autoink){min-height:76vh!important;min-height:76svh!important}
+html:is(#ca-p1,html) body .kaphero,html:is(#ca-p1,html) body main>section.hero.hero-calc{min-height:70vh!important;min-height:70svh!important}
+}
+html:is(#ca-p1,html) body :is(.scrolldown,.bizhero-scroll,.egl-mhero-scroll,.ca-tsd){display:none!important}
