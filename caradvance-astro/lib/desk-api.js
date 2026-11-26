@@ -480,14 +480,25 @@ async function offerDecision(request, env, ctx) {
 /* ---------------- Kapcsolat: internal messages between the team (D1) ----------------
  * desk_contacts: the people you can write to (Marc, Karoly, Alexander, Kevin by default; email/phone filled in later).
  * desk_msgs: one row per message. A message reaches a person by email (if known) or by their contact key. */
-const DEFAULT_CONTACTS = [['marc', 'Marc', '', '', 1], ['karoly', 'Tóth Károly', 'import@caradvance.de', '', 2], ['alexander', 'Alexander Röther', 'a.roether@caradvance.de', '', 3], ['kevin', 'Kevin', '', '', 4]];
+const DEFAULT_CONTACTS = [['marc', 'Marc Némethy', 'marc.nemethy@bhgeu.com', '', 1], ['karoly', 'Tóth Károly', 'import@caradvance.de', '+36302146989', 2], ['alexander', 'Alexander Röther', 'a.roether@caradvance.de', '', 3], ['kevin', 'Kevin', '', '', 4],
+  ['pavel', 'Pavel Horemuž', '', '+421915410555', 5], ['veronika', 'Veronika Diničová', '', '+421918700722', 6], ['andreas', 'Andreas Horemuž', '', '+421917222122', 7]];
+// Who each site's Help page shows (people added later by an admin show on every site; PL/RO show everyone)
+const CONTACT_MARKETS = { hu: ['marc', 'karoly'], sk: ['pavel', 'veronika', 'andreas'], cz: ['pavel', 'veronika', 'andreas'], eu: ['alexander', 'kevin'], ch: ['alexander', 'kevin'] };
+const CONTACT_ROLE = { marc: 'CEO', karoly: 'Sales director', alexander: 'Managing director', pavel: 'Head of Slovakia & Czech Republic', veronika: 'Rental & sales', andreas: 'Rental & sales' };
+const CONTACT_PHOTO = { marc: 1, karoly: 1, pavel: 1, veronika: 1, andreas: 1 };
 let msgReady = false;
 async function ensureMsg(env) {
   if (msgReady || !env.DB) return;
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_contacts (k TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT, phone TEXT, sort INTEGER DEFAULT 9)').run();
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, created INTEGER NOT NULL, from_email TEXT NOT NULL, from_name TEXT, to_key TEXT NOT NULL, body TEXT NOT NULL, car TEXT, read_at INTEGER)').run();
   const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM desk_contacts').first();
-  if (!n || !n.n) for (const c of DEFAULT_CONTACTS) await env.DB.prepare('INSERT OR IGNORE INTO desk_contacts (k, name, email, phone, sort) VALUES (?, ?, ?, ?, ?)').bind(...c).run();
+  // add anyone missing (never overwrites what an admin saved); fill an empty email / phone from the defaults
+  for (const c of DEFAULT_CONTACTS) {
+    await env.DB.prepare('INSERT OR IGNORE INTO desk_contacts (k, name, email, phone, sort) VALUES (?, ?, ?, ?, ?)').bind(c[0], c[1], c[2] || null, c[3] || null, c[4]).run();
+    if (c[2]) await env.DB.prepare("UPDATE desk_contacts SET email = ? WHERE k = ? AND (email IS NULL OR email = '')").bind(c[2], c[0]).run();
+    if (c[3]) await env.DB.prepare("UPDATE desk_contacts SET phone = ? WHERE k = ? AND (phone IS NULL OR phone = '')").bind(c[3], c[0]).run();
+  }
+  await env.DB.prepare("UPDATE desk_contacts SET name = 'Marc Némethy' WHERE k = 'marc' AND name = 'Marc'").run();
   // Alexander checks offers (price-check emails go to him); fill his address only if nobody has saved one yet
   await env.DB.prepare("UPDATE desk_contacts SET email = 'a.roether@caradvance.de' WHERE k = 'alexander' AND (email IS NULL OR email = '')").run();
   msgReady = true;
@@ -505,9 +516,13 @@ async function msgRoute(route, request, env, me) {
   const mine = await myKeys(env, me);
   const ph = mine.map(() => '?').join(',');
   if (route === 'msg/list' && request.method === 'GET') {
-    const contacts = ((await env.DB.prepare('SELECT k, name, email, phone FROM desk_contacts ORDER BY sort, name').all()).results || [])
-      .filter(c => !mine.includes(c.k)).map(c => ({ key: c.k, name: c.name, phone: c.phone || '', email: c.email || '' }));
     const msgs = (await env.DB.prepare(`SELECT id, created, from_email, from_name, to_key, body, car, read_at FROM desk_msgs WHERE to_key IN (${ph}) OR lower(from_email) = ? ORDER BY created DESC LIMIT 300`).bind(...mine, lc(me.email)).all()).results || [];
+    const site = CONTACT_MARKETS[deskMarketOf(new URL(request.url).hostname)], known = new Set(DEFAULT_CONTACTS.map(c => c[0]));
+    const talked = c => msgs.some(m => [c.k, lc(c.email)].includes(m.to_key) || [c.k, lc(c.email)].includes(lc(m.from_email)));
+    const contacts = ((await env.DB.prepare('SELECT k, name, email, phone FROM desk_contacts ORDER BY sort, name').all()).results || [])
+      .filter(c => !mine.includes(c.k) && (!site || site.includes(c.k) || !known.has(c.k) || talked(c)))
+      .sort((a, b) => site ? (site.includes(b.k) - site.includes(a.k)) : 0)
+      .map(c => ({ key: c.k, name: c.name, phone: c.phone || '', email: c.email || '', role: CONTACT_ROLE[c.k] || '', photo: CONTACT_PHOTO[c.k] ? `/sales/img/team/${c.k}.webp` : '' }));
     // people who wrote to me but are not in the list (e.g. an admin) can be answered too
     for (const m of msgs) if (mine.includes(m.to_key) && !contacts.some(c => lc(c.email) === lc(m.from_email) || c.key === lc(m.from_email)) && lc(m.from_email) !== lc(me.email))
       contacts.push({ key: lc(m.from_email), name: m.from_name || m.from_email, phone: '', email: m.from_email });
