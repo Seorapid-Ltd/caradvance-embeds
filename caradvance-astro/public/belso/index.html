@@ -315,24 +315,21 @@
     <label style="display:block;font-size:11px;color:#8b93a7;margin-bottom:5px">Jelszó</label>
     <div style="position:relative">
       <input id="lg-pw" type="password" placeholder="Jelszó" autocomplete="current-password" style="width:100%;padding:11px;padding-right:44px;border-radius:9px;border:1px solid #2a2c33;background:#0f1013;color:#fff;outline:none;font-size:14px">
-      <button type="button" id="lg-toggle" style="position:absolute;right:5px;top:5px;bottom:5px;width:36px;border:0;border-radius:6px;background:transparent;color:#8b93a7;cursor:pointer;font-size:13px;font-weight:700">MUTAT</button>
+      <button type="button" id="lg-toggle" style="position:absolute;right:5px;top:5px;bottom:5px;width:36px;border:0;border-radius:6px;background:transparent;color:#8b93a7;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center" title="Jelszó megjelenítése" aria-label="Jelszó megjelenítése"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <button id="lg-btn" style="width:100%;margin-top:14px;padding:11px;border:0;border-radius:9px;background:#E2001A;color:#fff;font-weight:800;font-size:15px;cursor:pointer">Belépés</button>
-    <div style="display:flex;align-items:center;gap:10px;margin:14px 0 0;color:#666e7d;font-size:11px"><span style="flex:1;height:1px;background:#2a2c33"></span>vagy<span style="flex:1;height:1px;background:#2a2c33"></span></div>
-    <button id="lg-link" type="button" style="width:100%;margin-top:12px;padding:11px;border:1px solid #2a2c33;border-radius:9px;background:transparent;color:#fff;font-weight:700;font-size:14px;cursor:pointer">Belépő link küldése e-mailben</button>
     <div id="lg-err" style="color:#ff7a7a;font-size:12px;margin-top:9px;min-height:15px;text-align:center"></div>
-    <div id="lg-ok" style="display:none;color:#7ddc9a;font-size:12.5px;margin-top:4px;text-align:center;line-height:1.5"></div>
-    <div style="text-align:center;font-size:11.5px;color:#666e7d;margin-top:6px">Jelszó nélkül: add meg az e-mail címed, és küldünk egy belépő linket.</div>
   </div>
 </div>
 <script>
 (function(){
   var gate=document.getElementById('loginGate');
+  var EYE='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',EYEOFF='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.3 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
   var emailEl=document.getElementById('lg-email'),pwEl=document.getElementById('lg-pw'),btn=document.getElementById('lg-btn'),err=document.getElementById('lg-err'),toggle=document.getElementById('lg-toggle');
   toggle.addEventListener('click',function(){
     var show=pwEl.type==='password';
     pwEl.type=show?'text':'password';
-    toggle.textContent=show?'ELREJT':'MUTAT';
+    toggle.innerHTML=show?EYEOFF:EYE;var tl=(window.caT||String)(show?'Jelszó elrejtése':'Jelszó megjelenítése');toggle.title=tl;toggle.setAttribute('aria-label',tl);
   });
   function showGate(msg){gate.style.display='flex';if(msg)err.textContent=msg;pwEl.value='';}
   function hideGate(){gate.style.display='none';}
@@ -354,24 +351,6 @@
       .catch(function(){btn.disabled=false;btn.textContent='Belépés';err.textContent='Hálózati hiba.';});
   }
   btn.addEventListener('click',doLogin);
-  var linkBtn=document.getElementById('lg-link'),okEl=document.getElementById('lg-ok');
-  function sendLink(){
-    err.textContent='';okEl.style.display='none';
-    var email=emailEl.value.trim();
-    if(!email){err.textContent='Add meg az e-mail címed.';emailEl.focus();return;}
-    var nx=new URLSearchParams(location.search).get('next')||'/admin/';
-    linkBtn.disabled=true;linkBtn.textContent='Küldés…';
-    fetch('/api/belso/link',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:email,next:nx})})
-      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,body:j};});})
-      .then(function(res){
-        linkBtn.disabled=false;linkBtn.textContent='Belépő link küldése e-mailben';
-        if(!res.ok){err.textContent=(res.body&&res.body.error)||'Nem sikerült elküldeni.';return;}
-        okEl.textContent='Ha van fiók ezzel a címmel, elküldtük a belépő linket. Nézd meg a postafiókod (a spam mappát is). A link 30 percig érvényes.';
-        okEl.style.display='block';
-      })
-      .catch(function(){linkBtn.disabled=false;linkBtn.textContent='Belépő link küldése e-mailben';err.textContent='Hálózati hiba.';});
-  }
-  linkBtn.addEventListener('click',sendLink);
   pwEl.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
   emailEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();pwEl.focus();}});
 })();
@@ -1189,7 +1168,7 @@ function createUser(){
   if(!pw){
     apiFetch('/admin/invite',{method:'POST',body:{email:email,name:name,role:role,desk_access:document.getElementById('u-desk').checked,desk_markets:document.getElementById('u-mk').value,next:'/sales/'}}).then(function(r){
       ['u-email','u-name','u-pw','u-mk'].forEach(function(id){document.getElementById(id).value='';});
-      errEl.style.color='#1e8e4e';errEl.textContent=(r.created?'Létrehozva. ':'')+(r.mailed?'Belépő link elküldve: '+email:'');showInvite(r,email);
+      var T=window.caT||String;errEl.style.color='#1e8e4e';errEl.textContent=(r.created?T('Létrehozva.')+' ':'')+(r.mailed?T('Belépő link elküldve:')+' '+email:'');showInvite(r,email);
       return loadUsers();
     }).catch(function(e){errEl.textContent=(e&&e.error)||'Nem sikerült elküldeni a meghívót.';loadUsers();});
     return;
@@ -1211,20 +1190,20 @@ function setDeskAccess(id,el){
 }
 function setDeskMarkets(id){
   var u=(allUsers||[]).find(function(x){return x.id===id;})||{};
-  var v=prompt('Melyik országos oldalakon használhatja a Sales Desket? (hu, sk, cz, pl, ch, eu — vesszővel; üresen: mindegyiken)',u.desk_markets||'');
+  var v=prompt('Melyik országos oldalakon használhatja a Sales Desket?\nhu, sk, cz, pl, ch, eu — vesszővel elválasztva. Üresen: mindegyiken.',u.desk_markets||'');
   if(v===null)return;
   apiFetch('/admin/users/'+id+'/desk',{method:'POST',body:{markets:v}}).then(loadUsers).catch(function(){alert('Nem sikerült menteni.');});
 }
 function showInvite(r,email){
-  if(!r||r.mailed){if(r)alert('Belépő link elküldve e-mailben: '+email);return;}
+  if(!r||r.mailed){if(r)alert('Belépő link elküldve e-mailben:\n'+email);return;}
   // nincs e-mail küldés ezen az oldalon: a linket az admin továbbítja (WhatsApp, e-mail…)
-  var msg='Ezen az oldalon nincs beállítva e-mail küldés. Másold ki és küldd el ezt a linket neki ('+email+'). Egyszer használható, '+(r.days||7)+' napig érvényes:';
+  var msg='Ezen az oldalon nincs beállítva e-mail küldés.\nMásold ki és küldd el ezt a linket neki:\n'+email+'\nEgyszer használható, 7 napig érvényes.';
   try{navigator.clipboard&&navigator.clipboard.writeText(r.link);msg+='\n(a vágólapra másolva)';}catch(e){}
   prompt(msg,r.link);
 }
 function sendUserLink(id){
   var u=(allUsers||[]).find(function(x){return x.id===id;});if(!u)return;
-  if(!confirm('Belépő link ehhez: '+u.email+' (Sales Desk, 7 napig érvényes, egyszer használható). Mehet?'))return;
+  if(!confirm('Belépő link a Sales Deskhez:\n'+u.email+'\nEgyszer használható, 7 napig érvényes.\nMehet?'))return;
   apiFetch('/admin/invite',{method:'POST',body:{email:u.email,next:'/sales/'}}).then(function(r){showInvite(r,u.email);}).catch(function(e){alert((e&&e.error)||'Nem sikerült elküldeni.');});
 }
 function deleteUser(id){
