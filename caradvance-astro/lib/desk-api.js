@@ -593,11 +593,10 @@ async function stockList(env, me) {
 }
 
 /* Choosing the right price when the documents disagree (admins / sales managers). Optionally also sets the desk price in Notion. */
-// Only Alexander decides stock-list prices; everyone else can see them but not choose.
-// Only Alexander decides stock-list prices; everyone else can see them but not choose.
-const PRICE_DECIDERS = ['a.roether@caradvance.de'];
+// Who can set stock-list prices (saved and copied to every page). Alexander decides; Marc and Tamas added to demo it to him.
+const PRICE_DECIDERS = ['a.roether@caradvance.de', 'marc.nemethy@bhgeu.com', 'tszeredi@gmail.com'];
 // Temporary testers: can try choosing / deleting prices, but nothing is stored (remove when testing is done).
-const PRICE_TESTERS = ['tszeredi@gmail.com'];
+const PRICE_TESTERS = [];
 const priceMode = me => { const e = String((me && me.email) || '').trim().toLowerCase(); return PRICE_DECIDERS.includes(e) ? 'live' : PRICE_TESTERS.includes(e) ? 'test' : null; };
 async function stockChoosePrice(request, env, ctx, me) {
   const mode = priceMode(me);
