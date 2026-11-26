@@ -667,8 +667,20 @@ export async function handle(request, env, ctx) {
   if (request.method === 'GET' && route === 'public') {
     try {
       const { vehicles } = await loadAll(env, ctx, false);
+      // Cars Alexander marked "no longer for sale" on the stock list also show as unavailable here (without prices).
+      let offSet = new Set();
+      try {
+        await ensureStock(env);
+        const rows = (await env.DB.prepare('SELECT data FROM desk_stocklist').all()).results || [];
+        for (const r of rows) { const d = JSON.parse(r.data); if (d.off && d.desk) offSet.add(d.desk); }
+      } catch (e) {}
       // Sold cars are shown too (crossed out), so visitors see how many we sold — but without their prices.
-      const pub = v => { const o = publicCar(v); if ((v.status || 'Available') === 'Sold') for (const k of ['dealer_net', 'dealer_gross', 'msrp_gross', 'pct_vs_list']) delete o[k]; return o; };
+      const pub = v => {
+        const o = publicCar(v); const withdrawn = offSet.has(v.id);
+        if (withdrawn) o.withdrawn = true;
+        if (withdrawn || (v.status || 'Available') === 'Sold') for (const k of ['dealer_net', 'dealer_gross', 'msrp_gross', 'pct_vs_list']) delete o[k];
+        return o;
+      };
       return json({ vehicles: vehicles.map(pub), public: true, at: new Date().toISOString() });
     } catch (e) { return json({ error: 'Could not load the cars.' }, 503); }
   }
@@ -680,6 +692,17 @@ export async function handle(request, env, ctx) {
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
     if (request.method === 'GET' && route === 'damages') return json(await damagesList(env));
+    if (request.method === 'GET' && route === 'damage-photos') { // which damages have a photo (signed-in only)
+      try { const rs = (await env.DB.prepare('SELECT sid, vin, bereich FROM desk_damage_photos').all()).results || []; return json({ photos: rs }); }
+      catch (e) { return json({ photos: [] }); }
+    }
+    if (request.method === 'GET' && route.startsWith('damage-photo/')) { // serve one photo, signed-in only
+      const sid = Number(route.split('/')[1]);
+      const row = await env.DB.prepare('SELECT mime, data FROM desk_damage_photos WHERE sid = ?').bind(sid).first();
+      if (!row) return json({ error: 'not found' }, 404);
+      const bytes = Uint8Array.from(atob(row.data), c => c.charCodeAt(0));
+      return new Response(bytes, { headers: { 'Content-Type': row.mime || 'image/jpeg', 'Cache-Control': 'private, max-age=86400', 'X-Robots-Tag': 'noindex, nofollow' } });
+    }
   if (request.method === 'POST' && route === 'stocklist/price') {
       if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
       return json(await stockChoosePrice(request, env, ctx, me));
