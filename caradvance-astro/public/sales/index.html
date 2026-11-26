@@ -458,7 +458,9 @@ header .herobottom .brands{margin:0;padding:0}
 .herobottom .herostats .stats{align-items:center}
 @media(max-width:1100px){.herobottom{flex-wrap:wrap}.herobottom .ctas{flex-wrap:wrap}.herobottom .herostats{margin-left:0;width:100%}.herobottom .herostats .stat:first-child{padding-left:0}}
 
-#dkpis.kpis{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+#dkpis.kpis{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media(max-width:1000px){#dkpis.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){#dkpis.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* price columns: fixed width, header and figures on the same right edge, room before Status */
 th.pcol,td.pcol{text-align:right;width:128px;min-width:112px;padding-left:12px;padding-right:24px;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -1020,7 +1022,7 @@ Ready when you are.</h1>
     <div class="kpis" id="dkpis"></div>
     <div class="bar">
       <input type="search" id="dq" placeholder="Search company, city, contact…" aria-label="Search dealers">
-      <select id="dCountry" aria-label="Country"><option value="">All countries</option><option>HU</option><option>SK</option><option>CZ</option><option>AT</option><option>PL</option><option>RO</option><option>HR</option><option>SI</option><option>DE</option></select>
+      <select id="dCountry" aria-label="Country"><option value="">All countries</option><option>HU</option><option>SK</option><option>CZ</option><option>AT</option><option>PL</option><option>RO</option></select>
       <select id="dTier" aria-label="Tier"><option value="">All tiers</option><option value="1">Tier 1 – BMW/MINI dealer</option><option value="2">Tier 2 – premium used</option><option value="3">Tier 3 – trader/exporter</option></select>
       <select id="dScore" aria-label="Score"><option value="">Any score</option><option value="4">Score 4+</option><option value="3">Score 3+</option></select>
       <select id="dStat" aria-label="Outreach status"><option value="">Any status</option><option>New</option><option>Contacted</option><option>Interested</option><option>Not interested</option><option>Do not contact</option></select>
@@ -1421,7 +1423,7 @@ function renderDealers(){
   $('#dCount').textContent=L.length+' of '+S.dealers.length;document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;
   const by={};S.dealers.forEach(d=>{by[d.country]=(by[d.country]||0)+1});
   const CN={HU:'Hungary',SK:'Slovakia',CZ:'Czech Republic',AT:'Austria',PL:'Poland',RO:'Romania',HR:'Croatia',SI:'Slovenia',DE:'Germany'},curC=$('#dCountry').value;
-  $('#dkpis').innerHTML=['HU','SK','CZ','AT','PL','RO','HR','SI','DE'].map(c=>`<button type="button" class="kpi cbtn${curC===c?' on':''}${by[c]?'':' zero'}" data-c="${c}" aria-pressed="${curC===c}"><span class="tag">${c}</span><span class="v">${by[c]||0}</span><span class="l">${CN[c]} · ${by[c]?'dealers':'not researched yet'}</span></button>`).join('');
+  $('#dkpis').innerHTML=['HU','SK','CZ','AT','PL','RO'].map(c=>`<button type="button" class="kpi cbtn${curC===c?' on':''}${by[c]?'':' zero'}" data-c="${c}" aria-pressed="${curC===c}"><span class="tag">${c}</span><span class="v">${by[c]||0}</span><span class="l">${CN[c]} · ${by[c]?'dealers':'not researched yet'}</span></button>`).join('');
   const link=u=>/^https:\/\//.test(u||'')?`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https:\/\/(www\.)?/,'').replace(/\/$/,''))}</a>`:esc(u);
   $('#dRows').innerHTML=L.length?L.map(d=>`<tr class="row" data-id="${esc(d.id)}"><td class="car"><b>${esc(d.name)}</b><span class="sub">${esc(d.city)}${d.website?' · ':''}</span><span class="sub">${link(d.website)}</span></td>
    <td>${esc(d.country)}</td><td class="hide-s">${d.tier?`<span class="chip${d.tier==1?' red':''}">Tier ${esc(d.tier)}</span>`:''}<br><span class="sub">${esc(d.brands)}</span></td>
