@@ -615,7 +615,10 @@ async function stockChoosePrice(request, env, ctx, me) {
   }
   let deskTo = null; // B2B/B2C to write to the desk (Vehicles in Notion)
   if (b.clear) { // delete the chosen price: back to the price the car had before anyone chose
-    if (!d.chosen) throw bad('No chosen price to delete.');
+    if (!d.chosen) { // in test mode the "chosen" price was never stored, so there is nothing to delete server-side — just tell the client the price is cleared
+      if (mode === 'test') { if (me.role !== 'admin') for (const k of STOCK_ADMIN_ONLY) delete d[k]; return { ok: true, car: d, test: true }; }
+      throw bad('No chosen price to delete.');
+    }
     const o = d.chosen.orig || { net: d.chosen.prev, from: '' };
     if (d.chosen.deskPrev) deskTo = d.chosen.deskPrev;
     d.net = o.net; d.gross = o.net != null ? Math.round(o.net * (1 + VAT) * 100) / 100 : null; d.net_from = o.from || d.net_from; delete d.chosen; delete d.price_ok;
