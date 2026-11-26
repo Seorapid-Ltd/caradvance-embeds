@@ -1122,7 +1122,8 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .carpick .cpchips{display:flex;flex-wrap:wrap;gap:6px}
 .carpick .cpchips:empty{display:none}
 .carpick .cpchips:not(:empty){margin:2px 2px 6px}
-.carpick .cpchip{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 11px;font-size:13px;font-weight:600;color:var(--ink)}
+.carpick .cpchip{display:inline-flex;align-items:center;gap:4px;max-width:100%;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 11px;font-size:13px;font-weight:600;color:var(--ink)}
+.carpick .cpchip .cptx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
 .carpick .cpchip .cpx{border:0;background:transparent;color:var(--muted);font-size:17px;line-height:1;cursor:pointer;padding:0 4px;border-radius:50%}
 .carpick .cpchip .cpx:hover{color:var(--red)}
 .carpick #cpSearch{width:100%;border:0;background:transparent;padding:8px 6px;font:inherit;color:var(--ink);outline:none}
@@ -2489,17 +2490,21 @@ function renderLogs(){try{renderLeads()}catch(e){}
   $('#oRows').innerHTML=L.length?L.map(o=>`<tr class="row" data-id="${esc(o.id)}"><td>${esc(o.date)}</td><td>${esc(dn(o.dealer))}</td><td class="sub">${esc(o.cars)}</td><td>${esc(o.channel)}</td><td class="hide-s">${esc(o.member)}</td><td>${esc(o.outcome)}</td></tr>`).join('')
    :`<tr><td colspan="6" class="empty">No calls or emails logged yet.</td></tr>`;
 }
-function carPickHtml(val){
-  return `<label class="f wide carpick"><span>Cars</span><div class="cpbox"><div class="cpchips" id="cpChips"></div><input id="cpSearch" type="text" placeholder="Search model or ID…" autocomplete="off"><input type="hidden" name="cars" id="cpHidden" value="${esc(val||'')}"><div class="cplist" id="cpList" hidden></div></div></label>`;
+function carPickHtml(val,name,single,label){
+  name=name||'cars';label=label||(single?'Car':'Cars');
+  return `<label class="f carpick${single?' single':''}"><span>${esc(label)}</span><div class="cpbox"${single?' data-single="1"':''}><div class="cpchips" id="cpChips"></div><input id="cpSearch" type="text" placeholder="Search model or ID…" autocomplete="off"><input type="hidden" name="${esc(name)}" id="cpHidden" value="${esc(val||'')}"><div class="cplist" id="cpList" hidden></div></div></label>`;
 }
 function wireCarPicker(){
   const chips=$('#cpChips'),hidden=$('#cpHidden'),search=$('#cpSearch'),list=$('#cpList');
   if(!chips||!hidden||!search||!list)return;
+  const box=search.closest('.cpbox'),single=!!(box&&box.dataset.single);
   const cars=(S.cars||[]);
   let sel=(hidden.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(single)sel=sel.slice(0,1);
   const labelOf=id=>{const c=cars.find(x=>x.id===id);return c?`${c.id} · ${c.model||''}`.trim():id;};
   const sync=()=>{hidden.value=sel.join(', ');
-    chips.innerHTML=sel.map(id=>`<span class="cpchip">${esc(labelOf(id))}<button type="button" class="cpx" data-rm="${esc(id)}" aria-label="Remove">×</button></span>`).join('');};
+    chips.innerHTML=sel.map(id=>`<span class="cpchip" title="${esc(labelOf(id))}"><span class="cptx">${esc(labelOf(id))}</span><button type="button" class="cpx" data-rm="${esc(id)}" aria-label="Remove">×</button></span>`).join('');
+    if(single)search.style.display=sel.length?'none':'';};
   const render=()=>{const q=search.value.trim().toLowerCase();
     const avail=cars.filter(c=>!sel.includes(c.id)&&(!q||`${c.id} ${c.model||''} ${c.colour||''}`.toLowerCase().includes(q))).slice(0,40);
     list.innerHTML=avail.length?avail.map(c=>`<button type="button" class="cpitem" data-add="${esc(c.id)}"><b>${esc(c.model||c.id)}</b><small>${esc(c.id)}${c.colour?' · '+esc(c.colour):''}${c.status&&c.status!=='Available'?' · '+esc(c.status):''}</small></button>`).join(''):`<div class="cpempty">No match</div>`;
@@ -2508,8 +2513,8 @@ function wireCarPicker(){
   search.addEventListener('focus',render);
   search.addEventListener('input',render);
   search.addEventListener('blur',()=>setTimeout(()=>{list.hidden=true},180));
-  list.addEventListener('mousedown',e=>{const a=e.target.closest('[data-add]');if(!a)return;e.preventDefault();if(!sel.includes(a.dataset.add))sel.push(a.dataset.add);search.value='';sync();render();search.focus();});
-  chips.addEventListener('click',e=>{const r=e.target.closest('[data-rm]');if(!r)return;sel=sel.filter(x=>x!==r.dataset.rm);sync();});
+  list.addEventListener('mousedown',e=>{const a=e.target.closest('[data-add]');if(!a)return;e.preventDefault();if(single)sel=[a.dataset.add];else if(!sel.includes(a.dataset.add))sel.push(a.dataset.add);search.value='';sync();if(single){list.hidden=true}else{render();search.focus()}});
+  chips.addEventListener('click',e=>{const r=e.target.closest('[data-rm]');if(!r)return;sel=sel.filter(x=>x!==r.dataset.rm);sync();if(single)setTimeout(()=>search.focus(),0);});
 }
 function openLog(o,preset){
   preset=preset||{};
@@ -2550,7 +2555,7 @@ function openRecordOffer(preCar,preDealer){
   const carOpts=avail.map(c=>`<option value="${esc(c.id)}"${preCar===c.id?' selected':''}>${esc(c.id)} · ${esc(c.model||'')}</option>`).join('');
   const dealerOpts=(S.dealers||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(d=>`<option value="${esc(d.id)}"${preDealer===d.id?' selected':''}>${esc(d.name)}${d.country?' ('+esc(d.country)+')':''}</option>`).join('');
   const html=
-    `<label class="f">Car<select name="car" required><option value="">—</option>${carOpts}</select></label>`+
+    carPickHtml(preCar||'','car',true,'Car')+
     `<label class="f">Dealer<select name="dealer" required><option value="">—</option>${dealerOpts}</select></label>`+
     `<label class="f">Amount €<input name="price" inputmode="numeric" required placeholder="€" maxlength="12"></label>`+
     `<label class="f">Type<select name="type"><option value="b2b">B2B (net)</option><option value="b2c">B2C (incl. VAT)</option></select></label>`+
@@ -2580,6 +2585,7 @@ function openRecordOffer(preCar,preDealer){
     finally{if(sv)sv.disabled=false}
   });
   const sv=$('#dlgSave');if(sv)sv.textContent='Record offer';
+  wireCarPicker();
 }
 function openOffer(id){
   const c=(S.cars||[]).find(x=>x.id===id);if(!c)return;const o=OFR();
