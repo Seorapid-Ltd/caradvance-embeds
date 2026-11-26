@@ -1946,6 +1946,10 @@ function renderKpis(){
   $('#kpis').innerHTML='';
   const ns=document.getElementById('nStock');if(ns)ns.textContent=av.length;
   const rs=document.getElementById('resSold');if(rs)rs.textContent=`${t('k_res')}: ${res} / ${sold}`;
+  /* New/public visitor opening the link: bring them straight to the car list, not just the hero */
+  if(!window.__pubScrolled&&document.documentElement.classList.contains('public')&&S.cars&&S.cars.length&&!/^#car/.test(location.hash||'')){
+    window.__pubScrolled=1;setTimeout(()=>{const b=document.querySelector('.bar')||document.getElementById('sRows');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});},220);
+  }
 }
 ['#sq','#sCat','#sMake','#sStat','#sSort'].forEach(s=>$(s).addEventListener('input',renderStock));
 $('#sRows').addEventListener('click',e=>{const sb=e.target.closest('[data-share]');if(sb){e.stopPropagation();const c=S.cars.find(x=>x.id===sb.dataset.share);if(c&&window.__shareCar)window.__shareCar(c);return}});
