@@ -60,6 +60,11 @@ const CSS = '<style id="ca-dark-tidy-css">'
   + '.cah .svc-media.ca-stage img{position:relative;z-index:1;width:auto!important;height:auto!important;max-width:88%;max-height:100%;object-fit:contain!important;'
   + 'filter:drop-shadow(0 18px 14px rgba(0,0,0,.65)) drop-shadow(0 0 30px rgba(226,0,26,.18));-webkit-box-reflect:below -2px linear-gradient(transparent 72%,rgba(255,255,255,.14));transition:transform .5s cubic-bezier(.2,.8,.2,1)}'
   + '.cah .svc:hover .svc-media.ca-stage img{transform:translateX(10px) scale(1.04)}'
+  // világos stúdió-fotók (teljes kitöltés, nincs tükröződés / piros fény)
+  + 'html body .cah .svc-media.ca-stage.ca-photo{padding:0!important;height:auto!important;aspect-ratio:2.2/1;align-items:stretch;overflow:hidden;background:#EEEAE5!important;border-bottom:1px solid rgba(18,19,23,.08)!important}'
+  + 'html body .cah .svc-media.ca-stage.ca-photo::after,html body .cah .svc-media.ca-stage.ca-photo::before{display:none!important}'
+  + 'html body .cah .svc-media.ca-stage.ca-photo img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:50% 60%;filter:none!important;-webkit-box-reflect:unset!important;transform:none;transition:transform .6s cubic-bezier(.2,.8,.2,1)}'
+  + 'html body .cah .svc:hover .svc-media.ca-stage.ca-photo img{transform:scale(1.035)}'
   + '@media(max-width:900px){#rolunk .ca-vrow{grid-template-columns:1fr 1fr}}@media(max-width:700px){#rolunk .ca-q{font-size:30px}}@media(max-width:420px){#rolunk .ca-vrow{grid-template-columns:1fr}}'
   // vélemények: link az összesre
   + '#velemenyek .ca-rev-all{display:inline-flex;margin-top:18px}'
@@ -181,6 +186,13 @@ try {
       // az eladás kártyán a fehér M3 helyett MINI John Cooper Works (BMW Group sajtófotó, az orra jobbra néz, mint a többi)
       h = h.replace('<div class="svc-media"><img src="/bmw-m3-touring-premium-auto-eladas.webp" alt="BMW M3 Touring — prémium autó eladás"',
         '<div class="svc-media ca-stage"><img src="/mini-jcw-premium-auto-eladas-cut.webp?v=2" alt="MINI John Cooper Works — prémium autó eladás"');
+      // 2026-11: a négy szolgáltatás-kártya új, egységes világos stúdió-fotót kap (BMW-renderek + az autószállító ugyanerre a háttérre montírozva)
+      for (const [from, to, alt] of [
+        ['piros-bmw-x6-m-premium-autoberles-cut.webp', 'bmw-3-touring-premium-autoberles.webp', 'Szürke BMW 3-as Touring — prémium autóbérlés'],
+        ['mini-jcw-premium-auto-eladas-cut.webp?v=2', 'bmw-m4-cabrio-premium-auto-eladas.webp', 'Zöld BMW M4 Cabrio — prémium autó eladás'],
+        ['autoszallitas-autoimport-nemetorszagbol-cut.webp', 'autoszallitas-autoimport-nemetorszagbol-studio.webp', 'Autószállító — autóimport Németországból'],
+        ['toyota-rav4-hybrid-hasznaltauto-eladas-cut.webp', 'bmw-x2-m-eladjuk-az-autodat.webp', 'Fehér BMW X2 M — eladjuk az autódat'],
+      ]) h = h.replace(new RegExp('<div class="svc-media ca-stage"><img src="/' + from.replace(/[.?]/g, '\\$&') + '" alt="[^"]*"'), '<div class="svc-media ca-stage ca-photo"><img src="/' + to + '" alt="' + alt + '"');
       h = h.replace('</head>', CSS + '</head>');
       fs.writeFileSync(FILE, h);
       console.log('[home-tidy] letisztult főoldal: ' + edits.length + ' módosítás');
