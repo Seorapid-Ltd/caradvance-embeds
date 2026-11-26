@@ -1033,14 +1033,13 @@ tr.det .offerrow{margin:0}
 .subnav a[data-s=outreach].on{background:var(--red-dark,#B80015);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
 .subnav a[data-s=outreach] span{background:rgba(255,255,255,.22);color:#fff}
 /* Tail-light style arrow pointing to the Activity button */
-.subnav .subarrow{margin-left:auto;align-self:center;display:inline-flex;align-items:center;color:var(--red);pointer-events:none}
+.subnav .subarrow{margin-left:auto;align-self:center;display:inline-flex;align-items:center;pointer-events:none}
 .subnav a[data-s=outreach]{margin-left:12px}
-.subarrow svg{width:46px;height:24px;overflow:visible}
-.subarrow .sa-main{stroke:var(--red);stroke-width:3;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--red) 80%,transparent)) drop-shadow(0 0 7px color-mix(in srgb,var(--red) 55%,transparent))}
-.subarrow .sa-trail{stroke:var(--red);stroke-width:7;stroke-linecap:round;opacity:.18}
-.subarrow{animation:saPulse 1.3s ease-in-out infinite}
-@keyframes saPulse{0%,100%{transform:translateX(0);opacity:.85}50%{transform:translateX(6px);opacity:1}}
-@media(prefers-reduced-motion:reduce){.subarrow{animation:none}}
+.subarrow svg{width:60px;height:22px;overflow:visible}
+.subarrow line{stroke:#fff;stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 2px #ff2230) drop-shadow(0 0 5px #ff2230);animation:tlSweep 1.5s linear infinite}
+.subarrow line:nth-child(1){animation-delay:0s}.subarrow line:nth-child(2){animation-delay:.1s}.subarrow line:nth-child(3){animation-delay:.2s}.subarrow line:nth-child(4){animation-delay:.3s}.subarrow line:nth-child(5){animation-delay:.4s}.subarrow line:nth-child(6){animation-delay:.5s}.subarrow line:nth-child(7){animation-delay:.6s}
+@keyframes tlSweep{0%{opacity:.4}10%{opacity:1}30%{opacity:.4}100%{opacity:.4}}
+@media(prefers-reduced-motion:reduce){.subarrow line{animation:none;opacity:.8}}
 
 /* ---- Dealers (B2B) list ---- */
 .dlrhead{display:flex;align-items:baseline;gap:14px;margin:4px 0 16px}
@@ -1059,9 +1058,9 @@ tr.det .offerrow{margin:0}
 .dctile.on{background:var(--navy);border-color:var(--navy);color:#fff}.dctile.on .dcn small{color:rgba(255,255,255,.75)}.dctile.on .dcall{color:#fff}
 .dctile.zero{opacity:.5}
 .dlrfilters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.dlrfilters select{height:44px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:0 36px 0 14px}
+.dlrfilters select{flex:1 1 150px;min-width:120px;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:0 36px 0 14px}
 .dlrfilters .pri,.dlrfilters #csv{height:44px;padding:0 18px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
-.dlrfilters .pri{background:var(--red);border-color:var(--red);color:#fff;margin-left:auto}
+.dlrfilters .pri{background:var(--red);border-color:var(--red);color:#fff}
 .dlrfilters .pri:hover{background:var(--red-dark,#B80015)}
 .dlrfilters .pri svg,.dlrfilters #csv svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .dlrtbl{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
@@ -1093,6 +1092,20 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .dmenu{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer;display:inline-grid;place-items:center}
 .dmenu svg{width:20px;height:20px;fill:currentColor}
 .dmenu:hover{background:var(--soft);border-color:var(--line);color:var(--ink)}
+/* dealer read-only detail */
+.dvwrap{display:block}
+.dvhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px}
+.dvhead .dvsub{font-size:14px;color:var(--muted);font-weight:600}
+.dvhead .dvpill{font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.dvsec{margin:0 0 18px}
+.dvsec h4{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:800}
+.dvgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px 20px}
+.dvr{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid var(--line)}
+.dvr dt{font-size:11.5px;color:var(--muted);font-weight:700}
+.dvr dd{margin:0;font-size:14.5px;color:var(--ink);font-weight:600;word-break:break-word}
+.dvr a{color:var(--red);text-decoration:none;font-weight:700}
+.dvr a:hover{text-decoration:underline}
+.dvempty{color:var(--muted);text-align:center;padding:22px}
 @media(max-width:900px){.dlrfilters select{flex:1 1 140px}.dlrfilters .pri{margin-left:0}}
 @media(max-width:700px){
   .dlrh1{font-size:24px}
@@ -1458,7 +1471,7 @@ Ready when you are.</h1>
   </section>
 
   <section class="view" id="v-dealers">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 46 24"><path d="M3 12h30" class="sa-trail"/><path d="M4 12h30M25 5l9 7-9 7" class="sa-main" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 60 22"><line x1="2" y1="16" x2="7" y2="6"/><line x1="10" y1="16" x2="15" y2="6"/><line x1="18" y1="16" x2="23" y2="6"/><line x1="26" y1="16" x2="31" y2="6"/><line x1="34" y1="16" x2="39" y2="6"/><line x1="42" y1="16" x2="47" y2="6"/><line x1="50" y1="16" x2="55" y2="6"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
     <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
     <div id="dkpis" hidden style="display:none"></div>
     <div class="dlrpanel">
@@ -1525,7 +1538,7 @@ Ready when you are.</h1>
   <dialog id="ofDlg"><form method="dialog" id="ofForm"><div class="dh"><h2 id="ofDlgT"></h2><button value="cancel" type="button" id="ofDlgX" aria-label="Close">✕</button></div><div class="db" id="ofDlgB"></div><div class="df" id="ofDlgF"></div></form></dialog>
 
   <section class="view" id="v-outreach">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 46 24"><path d="M3 12h30" class="sa-trail"/><path d="M4 12h30M25 5l9 7-9 7" class="sa-main" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 60 22"><line x1="2" y1="16" x2="7" y2="6"/><line x1="10" y1="16" x2="15" y2="6"/><line x1="18" y1="16" x2="23" y2="6"/><line x1="26" y1="16" x2="31" y2="6"/><line x1="34" y1="16" x2="39" y2="6"/><line x1="42" y1="16" x2="47" y2="6"/><line x1="50" y1="16" x2="55" y2="6"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
     <div class="bar"><button class="pri" id="addLog">Log a call or email</button><span class="count" id="oCount"></span></div>
     <div class="tbl"><table>
       <thead><tr><th>Date</th><th>Dealer</th><th>Cars</th><th>Channel</th><th class="hide-s">Team member</th><th>Outcome</th></tr></thead>
@@ -1537,7 +1550,7 @@ Ready when you are.</h1>
 <dialog id="dlg"><form method="dialog" id="dlgForm">
   <div class="dh"><h2 id="dlgTitle"></h2><button value="cancel" type="button" id="dlgX" aria-label="Close">✕</button></div>
   <div class="db" id="dlgBody"></div>
-  <div class="df"><button type="button" id="dlgDel" hidden>Delete</button><button type="button" id="dlgCancel">Cancel</button><button class="pri" type="submit">Save</button></div>
+  <div class="df"><button type="button" id="dlgDel" hidden>Delete</button><button type="button" id="dlgCancel">Cancel</button><button type="button" id="dlgEdit" class="pri" hidden>Edit</button><button class="pri" type="submit" id="dlgSave">Save</button></div>
 </form></dialog>
 <dialog id="lb" aria-label="Photo viewer"><div class="lbtop"><span id="lbCap"></span><div class="lbtools"><button type="button" id="lbFs" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fs-on" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-off" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button><button type="button" id="lbX" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div><div class="lbstage"><button type="button" id="lbPrev" class="lbnav prev" aria-label="Previous photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><img id="lbImg" alt=""><button type="button" id="lbNext" class="lbnav next" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></dialog>
 <dialog id="dlb" aria-label="Damage photo"><button type="button" id="dlbX" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img id="dlbImg" alt=""></dialog>
@@ -1942,7 +1955,7 @@ function renderDealers(){
 }
 ['#dq','#dCountry','#dTier','#dScore','#dStat'].forEach(s=>$(s).addEventListener('input',renderDealers));
 $('#dCountries')&&$('#dCountries').addEventListener('click',e=>{const b=e.target.closest('[data-dc]');if(!b)return;const cur=$('#dCountry').value;$('#dCountry').value=cur===b.dataset.dc?'':b.dataset.dc;renderDealers()});
-$('#dRows').addEventListener('click',e=>{if(e.target.closest('a,input'))return;const r=e.target.closest('tr.row');if(r)openDealer(S.dealers.find(d=>d.id===r.dataset.id))});
+$('#dRows').addEventListener('click',e=>{if(e.target.closest('a,input'))return;const r=e.target.closest('tr.row');if(r)openDealerView(S.dealers.find(d=>d.id===r.dataset.id))});
 $('#dAll')&&$('#dAll').addEventListener('change',e=>{document.querySelectorAll('#dRows .drchk').forEach(c=>{c.checked=e.target.checked})});
 $('#addDealer').addEventListener('click',()=>openDealer(null));
 
@@ -1957,10 +1970,66 @@ function field([k,l,t,req],val){
   if(t==='team')return`<label class="f">${l}<input name="${k}" list="team" value="${v}"></label>`;
   return`<label class="f">${l}<input name="${k}" type="${t&&t!=='text'?t:'text'}" value="${v}"${req?' required':''}></label>`;
 }
-function openDialog(title,html,save,del){$('#dlgTitle').textContent=title;$('#dlgBody').innerHTML=html;onSave=save;onDel=del;$('#dlgDel').hidden=!del;dlg.showModal()}
+function openDialog(title,html,save,del){$('#dlgTitle').textContent=title;$('#dlgBody').innerHTML=html;$('#dlgBody').classList.remove('dvwrap');onSave=save;onDel=del;$('#dlgDel').hidden=!del;$('#dlgSave').hidden=false;$('#dlgEdit').hidden=true;dlg.showModal()}
 $('#dlgX').onclick=$('#dlgCancel').onclick=()=>dlg.close();
 $('#dlgDel').onclick=async()=>{if(onDel&&$('#dlgDel').dataset.armed){await onDel();dlg.close();$('#dlgDel').dataset.armed='';$('#dlgDel').textContent='Delete'}else{$('#dlgDel').dataset.armed='1';$('#dlgDel').textContent='Click again to delete'}};
 $('#dlgForm').addEventListener('submit',async e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));for(const k in fd)if(typeof fd[k]==='string')fd[k]=fd[k].trim();if(onSave&&await onSave(fd)!==false)dlg.close()});
+/* read-only dealer detail (visible to everyone; Edit opens the form) */
+let viewDealer=null;
+$('#dlgEdit').onclick=()=>{const d=viewDealer;dlg.close();if(d)setTimeout(()=>openDealer(d),60)};
+function dealerViewHtml(d){
+  const E=s=>esc(s==null?'':String(s));
+  const tel=p=>p?`<a href="tel:${E(String(p).replace(/[^\d+]/g,''))}">${E(p)}</a>`:'';
+  const mail=m=>m?`<a href="mailto:${E(m)}">${E(m)}</a>`:'';
+  const web=w=>{if(!w)return'';const u=/^https?:/i.test(w)?w:'https://'+w;return `<a href="${E(u)}" target="_blank" rel="noopener">${E(String(w).replace(/^https?:\/\//,''))}</a>`};
+  const links=s=>s?String(s).split(/\n+/).map(u=>u.trim()).filter(Boolean).map(web).join('<br>'):'';
+  const row=(l,v)=>v?`<div class="dvr"><dt>${E(trStr(l))}</dt><dd>${v}</dd></div>`:'';
+  const sec=(title,rows)=>{const r=rows.filter(Boolean).join('');return r?`<section class="dvsec"><h4>${E(trStr(title))}</h4><div class="dvgrid">${r}</div></section>`:''};
+  const TIER={1:'Tier 1 – BMW/MINI dealer',2:'Tier 2 – premium used',3:'Tier 3 – trader/exporter'};
+  const CN={HU:'Hungary',SK:'Slovakia',CZ:'Czech Republic',AT:'Austria',PL:'Poland',RO:'Romania',HR:'Croatia',SI:'Slovenia',DE:'Germany'};
+  const cname=d.country?trStr(CN[d.country]||d.country):'';
+  const head=`<div class="dvhead">${(cname||d.city)?`<span class="dvsub">${E(cname)}${cname&&d.city?' · ':''}${E(d.city)}</span>`:''}${d.status?`<span class="dvpill">${E(trStr(d.status))}</span>`:''}${d.tier?`<span class="dvpill">${E(trStr(TIER[d.tier]||('Tier '+d.tier)))}</span>`:''}${(d.score!=null&&d.score!=='')?`<span class="dvpill">${E(trStr('Score'))} ${E(d.score)}/5</span>`:''}</div>`;
+  const body=
+    sec('Company',[
+      row('Legal name',E(d.legal_name)),
+      row('Company reg. no.',E(d.reg_no)),
+      row('Country',E(cname)),
+      row('Address',E(d.address)),
+      row('Website',web(d.website)),
+      row('Brands sold',E(d.brands)),
+      row('Interest fit',E(d.fit)),
+      row('Premium cars listed (€30k+)',(d.premium_stock!=null&&d.premium_stock!=='')?E(d.premium_stock):'')
+    ])+
+    sec('Contact',[
+      row('Contact person',E(d.contact_name)),
+      row('Job title',E(d.contact_title)),
+      row('Contact phone (published)',tel(d.contact_phone)),
+      row('Contact email (published)',mail(d.contact_email)),
+      row('General phone',tel(d.phone)),
+      row('General email',mail(d.email))
+    ])+
+    sec('Sales',[
+      row('Score reason',E(d.score_reason)),
+      row('Outreach language',E(d.language)),
+      row('Owner (team member)',E(d.owner)),
+      row('Last contact',E(d.last_contact))
+    ])+
+    sec('Notes',[
+      row('Notes',d.notes?E(d.notes).replace(/\n/g,'<br>'):''),
+      row('Source URLs (one per line)',links(d.sources))
+    ]);
+  return head+(body||`<p class="dvempty">—</p>`);
+}
+function openDealerView(d){
+  if(!d)return;
+  viewDealer=d;
+  $('#dlgTitle').textContent=d.name||trStr('Dealer');
+  $('#dlgBody').innerHTML=dealerViewHtml(d);
+  $('#dlgBody').classList.add('dvwrap');
+  onSave=null;onDel=null;
+  $('#dlgDel').hidden=true;$('#dlgSave').hidden=true;$('#dlgEdit').hidden=false;
+  dlg.showModal();
+}
 function openDealer(d){
   openDialog(d?'Edit dealer':'Add dealer',DF.map(f=>field(f,d?d[f[0]]:(f[0]==='status'?'New':''))).join(''),async fd=>{
     if(d&&d.status==='Do not contact'&&fd.status!=='Do not contact'){status('This dealer is marked "Do not contact"; that status stays.');fd.status='Do not contact'}
