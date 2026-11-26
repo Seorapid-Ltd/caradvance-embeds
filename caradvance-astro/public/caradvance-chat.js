@@ -68,6 +68,7 @@
 (function () {
   "use strict";
   if (window.__caChatLoaded) return; window.__caChatLoaded = true;
+  return; /* CarAdvance "Segítek" AI chat widget disabled on request (not working) — 2026-11-26. Remove this line to re-enable. */
 
   var API = "https://caradvance-chatbot.winter-dew-1eed.workers.dev/api/chat";
   var WA = "36302336060";                 // +36 30 233 6060
