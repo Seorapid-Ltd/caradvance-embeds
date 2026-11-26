@@ -476,7 +476,7 @@ async function offerDecision(request, env, ctx) {
 /* ---------------- Kapcsolat: internal messages between the team (D1) ----------------
  * desk_contacts: the people you can write to (Marc, Karoly, Alexander, Kevin by default; email/phone filled in later).
  * desk_msgs: one row per message. A message reaches a person by email (if known) or by their contact key. */
-const DEFAULT_CONTACTS = [['marc', 'Marc', '', '', 1], ['karoly', 'Tóth Károly', 'import@caradvance.de', '', 2], ['alexander', 'Alexander', '', '', 3], ['kevin', 'Kevin', '', '', 4]];
+const DEFAULT_CONTACTS = [['marc', 'Marc', '', '', 1], ['karoly', 'Tóth Károly', 'import@caradvance.de', '', 2], ['alexander', 'Alexander Röther', 'a.roether@caradvance.de', '', 3], ['kevin', 'Kevin', '', '', 4]];
 let msgReady = false;
 async function ensureMsg(env) {
   if (msgReady || !env.DB) return;
@@ -484,6 +484,8 @@ async function ensureMsg(env) {
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, created INTEGER NOT NULL, from_email TEXT NOT NULL, from_name TEXT, to_key TEXT NOT NULL, body TEXT NOT NULL, car TEXT, read_at INTEGER)').run();
   const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM desk_contacts').first();
   if (!n || !n.n) for (const c of DEFAULT_CONTACTS) await env.DB.prepare('INSERT OR IGNORE INTO desk_contacts (k, name, email, phone, sort) VALUES (?, ?, ?, ?, ?)').bind(...c).run();
+  // Alexander checks offers (price-check emails go to him); fill his address only if nobody has saved one yet
+  await env.DB.prepare("UPDATE desk_contacts SET email = 'a.roether@caradvance.de' WHERE k = 'alexander' AND (email IS NULL OR email = '')").run();
   msgReady = true;
 }
 const lc = s => String(s || '').trim().toLowerCase();
@@ -622,7 +624,7 @@ export async function handle(request, env, ctx) {
       return json({ vehicles, dealers, outreach, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
-    if (request.method === 'POST' && route === 'stocklist/price') {
+  if (request.method === 'POST' && route === 'stocklist/price') {
       if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
       return json(await stockChoosePrice(request, env, ctx, me));
     }

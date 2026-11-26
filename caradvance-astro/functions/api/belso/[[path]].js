@@ -1,5 +1,6 @@
 // CarAdvance /belso auth + data API
 import { ensureDeskColumn, cleanMarkets } from '../../../lib/desk-api.js';
+import { handleStaffLinks } from '../../../lib/staff-links.js';
 // Route: www.caradvance.hu/api/belso/*
 // D1 binding name expected: DB
 
@@ -775,6 +776,8 @@ export async function onRequest(context) {
   const method = request.method;
 
   try {
+      const linkRes = await handleStaffLinks(path, request, env, getSessionUser);
+      if (linkRes) return linkRes;
       if (path === '/login' && method === 'POST') return await handleLogin(request, env);
       if (path === '/logout' && method === 'POST') return await handleLogout(request, env);
       if (path === '/me' && method === 'GET') return await handleMe(request, env);
