@@ -586,6 +586,12 @@ async function stockChoosePrice(request, env, ctx, me) {
   if (!row) throw bad('Car not found.', 404);
   const d = JSON.parse(row.data);
   const who = me.name || nameOf(me.email), at = new Date().toISOString().slice(0, 10);
+  if (b.withdraw != null) { // "No longer for sale": greys the car out of the price selection (and back)
+    if (b.withdraw) d.off = { by: who, at }; else delete d.off;
+    if (mode === 'live') await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
+    if (me.role !== 'admin') for (const k of STOCK_ADMIN_ONLY) delete d[k];
+    return { ok: true, car: d, test: mode === 'test' };
+  }
   let deskTo = null; // B2B/B2C to write to the desk (Vehicles in Notion)
   if (b.clear) { // delete the chosen price: back to the price the car had before anyone chose
     if (!d.chosen) throw bad('No chosen price to delete.');
