@@ -50,7 +50,10 @@ export const MAP = {
     contact_title: ['Contact title', 'text'], contact_email: ['Contact email', 'email'], contact_phone: ['Contact phone', 'phone'],
     language: ['Language', 'select'], score: ['Score', 'number'], score_reason: ['Score reason', 'text'],
     status: ['Status', 'select'], owner: ['Owner', 'text'], last_contact: ['Last contact', 'date'], sources: ['Sources', 'text'],
-    notes: ['Notes', 'text'], updated: ['Updated', 'readonly_edited'],
+    notes: ['Notes', 'text'],
+    // Mr. Job SK (SK/CZ ügynök) által bemutatott kereskedők – a GmbH is látja, ki és mikor hozta
+    introduced_by: ['Introduced by', 'select'], introduced_on: ['Introduced on', 'date'], agent_ref: ['Agent ref', 'text'],
+    updated: ['Updated', 'readonly_edited'],
   },
   outreach: {
     date: ['Date', 'date'], dealer: ['Dealer', 'dealer_rel'], cars: ['Cars (as typed)', 'text'], channel: ['Channel', 'select'],

@@ -2095,7 +2095,7 @@ const DF=[['name','Company name','text',1],['legal_name','Legal name'],['reg_no'
  ['tier','Type','sel:1|Tier 1 – BMW/MINI dealer,2|Tier 2 – premium used,3|Tier 3 – trader/exporter'],['brands','Brands sold'],['premium_stock','Premium cars listed (€30k+)','number'],['fit','Interest fit','sel:SUV,M models,MINI,Mixed'],
  ['email','General email','email'],['phone','General phone'],['contact_name','Contact person'],['contact_title','Job title'],['contact_email','Contact email (published)','email'],['contact_phone','Contact phone (published)'],
  ['language','Outreach language','sel:HU,SK,CZ,DE,PL,RO,EN'],['score','Lead score 1–5','sel:1,2,3,4,5'],['score_reason','Score reason'],['status','Outreach status','sel:New,Contacted,Interested,Not interested,Do not contact'],
- ['owner','Owner (team member)','team'],['last_contact','Last contact','date'],['sources','Source URLs (one per line)','area'],['notes','Notes','area']];
+ ['owner','Owner (team member)','team'],['last_contact','Last contact','date'],['sources','Source URLs (one per line)','area'],['notes','Notes','area'],['introduced_by','Introduced by (agent)','sel:,Mr. Job SK'],['introduced_on','Introduced on','date'],['agent_ref','Agent ref.']];
 function renderDealers(){
   const q=$('#dq').value.trim().toLowerCase(),co=$('#dCountry').value,ti=$('#dTier').value,sc=$('#dScore').value,st=$('#dStat').value;
   const L=S.dealers.filter(d=>(!co||d.country===co)&&(!ti||String(d.tier)===ti)&&(!sc||Number(d.score)>=Number(sc))&&(!st||(d.status||'New')===st)&&
@@ -2210,7 +2210,7 @@ function dealerViewHtml(d){
   if(has(d.premium_stock))bp.push(`<div class="dv2bp"><span class="dv2bpi">${IV.car}</span><span>${E(d.premium_stock)} ${E(trStr('Premium cars listed (€30k+)'))}</span></div>`);
   if(has(d.fit))bp.push(`<div class="dv2bp"><span class="dv2bpi">${IV.globe}</span><span>${E(trStr('Interest fit'))}: ${E(d.fit)}</span></div>`);
   const bprofile=sec(IV.tag,'Business profile',bp.length?`<div class="dv2bpg">${bp.join('')}</div>`:'');
-  const sales=sec(IV.chart,'Sales',(()=>{const r=[fld('Score reason',E(d.score_reason)),fld('Outreach language',E(d.language)),fld('Owner (team member)',E(d.owner)),fld('Last contact',E(d.last_contact))].filter(Boolean).join('');return r?`<div class="dv2grid">${r}</div>`:''})());
+  const sales=sec(IV.chart,'Sales',(()=>{const r=[fld('Score reason',E(d.score_reason)),fld('Outreach language',E(d.language)),fld('Owner (team member)',E(d.owner)),fld('Last contact',E(d.last_contact)),fld('Introduced by',E([d.introduced_by,d.introduced_on,d.agent_ref].filter(Boolean).join(' · ')))].filter(Boolean).join('');return r?`<div class="dv2grid">${r}</div>`:''})());
   const notesInner=(()=>{const parts=[];if(has(d.notes))parts.push(`<div class="dv2f wide"><span class="dv2v note">${E(d.notes)}</span></div>`);const lk=links(d.sources);if(lk)parts.push(`<div class="dv2f"><span class="dv2l">${E(trStr('Source'))}</span><span class="dv2v">${lk}</span></div>`);return parts.length?`<div class="dv2grid">${parts.join('')}</div>`:''})();
   const notes=sec(IV.note,'Sales notes',notesInner);
   const acts=`<div class="dv2acts">`+
