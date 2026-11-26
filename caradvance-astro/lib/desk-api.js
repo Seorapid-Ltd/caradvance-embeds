@@ -567,37 +567,55 @@ async function stockList(env, me) {
   const rows = (await env.DB.prepare('SELECT data, updated FROM desk_stocklist ORDER BY sort').all()).results || [];
   const admin = me.role === 'admin';
   const cars = rows.map(r => { const d = JSON.parse(r.data); if (!admin) for (const k of STOCK_ADMIN_ONLY) delete d[k]; return d; });
-  return { cars, admin, canPrice: canPickPrice(me), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
+  return { cars, admin, canPrice: !!priceMode(me), priceMode: priceMode(me), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
 }
 
 /* Choosing the right price when the documents disagree (admins / sales managers). Optionally also sets the desk price in Notion. */
 // Only Alexander decides stock-list prices; everyone else can see them but not choose.
+// Only Alexander decides stock-list prices; everyone else can see them but not choose.
 const PRICE_DECIDERS = ['a.roether@caradvance.de'];
-const canPickPrice = me => PRICE_DECIDERS.includes(String((me && me.email) || '').trim().toLowerCase());
+// Temporary testers: can try choosing / deleting prices, but nothing is stored (remove when testing is done).
+const PRICE_TESTERS = ['tszeredi@gmail.com'];
+const priceMode = me => { const e = String((me && me.email) || '').trim().toLowerCase(); return PRICE_DECIDERS.includes(e) ? 'live' : PRICE_TESTERS.includes(e) ? 'test' : null; };
 async function stockChoosePrice(request, env, ctx, me) {
-  if (!canPickPrice(me)) throw bad('Only Alexander (a.roether@caradvance.de) can choose the price.', 403);
+  const mode = priceMode(me);
+  if (!mode) throw bad('Only Alexander (a.roether@caradvance.de) can choose the price.', 403);
   const b = await request.json().catch(() => ({}));
-  const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
-  if (!(net > 1000 && net < 5000000)) throw bad('Enter a valid net price.');
   await ensureStock(env);
   const row = await env.DB.prepare('SELECT data FROM desk_stocklist WHERE id = ?').bind(String(b.id || '')).first();
   if (!row) throw bad('Car not found.', 404);
   const d = JSON.parse(row.data);
   const who = me.name || nameOf(me.email), at = new Date().toISOString().slice(0, 10);
-  d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document' };
-  d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
-  await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
+  let deskTo = null; // B2B/B2C to write to the desk (Vehicles in Notion)
+  if (b.clear) { // delete the chosen price: back to the price the car had before anyone chose
+    if (!d.chosen) throw bad('No chosen price to delete.');
+    const o = d.chosen.orig || { net: d.chosen.prev, from: '' };
+    if (d.chosen.deskPrev) deskTo = d.chosen.deskPrev;
+    d.net = o.net; d.gross = o.net != null ? Math.round(o.net * (1 + VAT) * 100) / 100 : null; d.net_from = o.from || d.net_from; delete d.chosen; delete d.price_ok;
+  } else {
+    const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
+    if (!(net > 1000 && net < 5000000)) throw bad('Enter a valid net price.');
+    const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
+    d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document', orig, deskPrev: d.chosen && d.chosen.deskPrev };
+    d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
+    if (d.desk) deskTo = { net, gross: d.gross };
+  }
   let desk = false;
-  if (b.desk && d.desk) {
-    const all = await loadAll(env, ctx, true);
-    const car = all.vehicles.find(v => v.id === d.desk);
-    if (car) {
-      await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', net), B2C: writeProp('number', d.gross) } });
-      memo = null; desk = true;
+  if (mode === 'live') {
+    // the chosen price goes to every list: the stock list and the desk (B2B / B2C in Notion)
+    if (deskTo && d.desk) {
+      const all = await loadAll(env, ctx, true);
+      const car = all.vehicles.find(v => v.id === d.desk);
+      if (car) {
+        if (!b.clear && d.chosen && !d.chosen.deskPrev) d.chosen.deskPrev = { net: car.dealer_net ?? null, gross: car.dealer_gross ?? null };
+        await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', deskTo.net), B2C: writeProp('number', deskTo.gross) } });
+        memo = null; desk = true;
+      }
     }
+    await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
   }
   if (me.role !== 'admin') for (const k of STOCK_ADMIN_ONLY) delete d[k];
-  return { ok: true, car: d, desk };
+  return { ok: true, car: d, desk, test: mode === 'test' };
 }
 
 
