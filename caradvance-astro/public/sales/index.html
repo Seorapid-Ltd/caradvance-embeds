@@ -1039,6 +1039,7 @@ li.op .dmgst{background:var(--red);color:#fff}li.fx .dmgst{background:color-mix(
 @media(max-width:700px){.dmgbox.big ul{grid-template-columns:1fr}}
 .dmgchip{display:flex;width:max-content;margin-top:3px;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--red) 10%,transparent);color:var(--red);font-size:11.5px;font-weight:800}
 .gonechip{display:flex;width:max-content;margin-top:3px;padding:2px 9px;border-radius:999px;background:var(--chip);color:var(--muted);font-size:11.5px;font-weight:800}
+html.public .dmgbox,html.public .dmgchip,html.public .vddmg{display:none!important}
 tr.row.gone>td{opacity:.5}tr.row.gone img{filter:grayscale(1)}
 
 /* Kapcsolat — belső üzenetek */
@@ -1627,7 +1628,7 @@ const isPk=c=>false; // packages dropped 25 Nov 2026 — every car is sold indiv
 const price=c=>c.asking_price!=null&&c.asking_price!==''?Number(c.asking_price):(c.dealer_net??null);
 
 /* ---------- Damages (fleet system, by VIN): what is still there and what was fixed ---------- */
-function dmgList(vin){const D=window.__dmg||{};return D[String(vin||'').toUpperCase()]||null}
+function dmgList(vin){if(document.documentElement.classList.contains('public'))return null;const D=window.__dmg||{};return D[String(vin||'').toUpperCase()]||null}
 function dmgFmt(d){if(!d)return'';const x=new Date(d+'T12:00:00');return isNaN(x)?d:x.toLocaleDateString(window.__loc||'en-GB',{day:'numeric',month:'short',year:'numeric'})}
 function dmgBox(vin,big){const L=dmgList(vin);if(!L)return'';const open=L.filter(d=>!d.f),fixed=L.filter(d=>d.f);
   const row=d=>`<li class="${d.f?'fx':'op'}"><span class="dmgst">${d.f?'✓':'!'}</span><span class="dmgd">${esc(d.d)}</span><span class="dmgm">${d.f?`${esc(t('dm_fixedon'))} ${esc(dmgFmt(d.fd))}`:`${esc(t('dm_rec'))} ${esc(dmgFmt(d.e))}`}</span></li>`;

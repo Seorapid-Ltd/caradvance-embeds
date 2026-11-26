@@ -568,18 +568,6 @@ async function damagesList(env) {
   const rows = (await env.DB.prepare('SELECT vin, data, updated FROM desk_damages').all()).results || [];
   return { damages: Object.fromEntries(rows.map(r => [r.vin, JSON.parse(r.data)])), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
 }
-const DMG_IMPORT_SHA256 = '64dc722f85632b1d55a5aab9b0b2dfe6cb26b57136e4d75c4837f6016c4c3434'; // one-off upload key (hash only); removed after use
-async function damagesImport(request, env) {
-  const key = request.headers.get('X-Import-Key') || '';
-  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key)))].map(b => b.toString(16).padStart(2, '0')).join('');
-  if (hash !== DMG_IMPORT_SHA256) return json({ error: 'Forbidden' }, 403);
-  const map = await request.json();
-  await ensureDmg(env);
-  const now = Math.floor(Date.now() / 1000);
-  const stmts = Object.entries(map).map(([vin, list]) => env.DB.prepare('INSERT OR REPLACE INTO desk_damages (vin, data, updated) VALUES (?, ?, ?)').bind(String(vin).toUpperCase(), JSON.stringify(list || []), now));
-  for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
-  return json({ ok: true, n: stmts.length });
-}
 async function stockList(env, me) {
   if (!env.DB) throw bad('Not available here.', 503);
   await ensureStock(env);
@@ -659,7 +647,6 @@ export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
-  if (request.method === 'POST' && route === 'damages-import') return damagesImport(request, env); // one-off, removed after use
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
