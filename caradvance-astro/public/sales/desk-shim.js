@@ -38,8 +38,17 @@
         if (!Object.keys(catalogue).length) catalogue = await fetch('catalogue.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
         let j;
         if (!PUBLIC) {
-          try { j = await api('data' + (fresh ? '?fresh=1' : '')); }
-          catch (e) { if (e.code === 'unauthenticated' || e.code === 'invalid_argument') { PUBLIC = true; markPublic(); } else throw e; }
+          // A refresh can hit a transient 401/redirect on cold start — don't demote a signed-in user to
+          // public (which disables the stock list) on the first miss; retry a few times first.
+          for (let attempt = 1; ; attempt++) {
+            try { j = await api('data' + (fresh ? '?fresh=1' : '')); break; }
+            catch (e) {
+              if (e.code === 'unauthenticated' || e.code === 'invalid_argument') {
+                if (attempt >= 3) { PUBLIC = true; markPublic(); break; }
+                await new Promise(r => setTimeout(r, 400 * attempt));
+              } else throw e;
+            }
+          }
         }
         if (PUBLIC) { j = await api('public'); j.dealers = []; j.outreach = []; j.me = null; }
         me = j.me;
