@@ -626,7 +626,7 @@ async function stockChoosePrice(request, env, ctx, me) {
 
 
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
- *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
+ *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are shown without prices (26 Nov 2026). */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
   'highlights', 'msrp_gross', 'dealer_net', 'dealer_gross', 'pct_vs_list', 'status', 'available_until', 'vin',
   'prev_owners', 'condition', 'paint', 'trim', 'climate', 'park_assist', 'seats', 'doors', 'engine_cc', 'equipment', 'rent_sale'];
@@ -645,7 +645,9 @@ export async function handle(request, env, ctx) {
   if (request.method === 'GET' && route === 'public') {
     try {
       const { vehicles } = await loadAll(env, ctx, false);
-      return json({ vehicles: vehicles.filter(v => (v.status || 'Available') !== 'Sold').map(publicCar), public: true, at: new Date().toISOString() });
+      // Sold cars are shown too (crossed out), so visitors see how many we sold — but without their prices.
+      const pub = v => { const o = publicCar(v); if ((v.status || 'Available') === 'Sold') for (const k of ['dealer_net', 'dealer_gross', 'msrp_gross', 'pct_vs_list']) delete o[k]; return o; };
+      return json({ vehicles: vehicles.map(pub), public: true, at: new Date().toISOString() });
     } catch (e) { return json({ error: 'Could not load the cars.' }, 503); }
   }
   try {

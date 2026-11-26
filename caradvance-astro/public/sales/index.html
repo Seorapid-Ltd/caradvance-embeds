@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('sd_theme2')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>CarAdvance Sales Desk</title>
@@ -1249,7 +1250,7 @@ Ready when you are.</h1>
       <input type="search" id="sq" placeholder="Search model, colour, plate, VIN…" data-i18n-ph="s_search" aria-label="Search stock">
       <select id="sCat" aria-label="Category"><option value="" data-i18n="s_allcat">All categories</option><option value="b2b">Business to Business · whole stock</option><option value="priv" data-i18n="c_priv">B2C · private buyers</option><option value="rs" data-i18n="c_rs">Rental / Sale</option><option value="perf" data-i18n="c_perf">All performance models (M, AMG, Porsche)</option><option value="BMW &amp; MINI selection">BMW &amp; MINI selection (15)</option><option value="BMW SUV selection">BMW SUV selection · X5/X6/X7 (17)</option><option value="2026 BMW/MINI stock">Ex-rental 2026 · sold individually</option><option value="Single offers">Performance &amp; luxury cars</option></select>
       <select id="sMake" aria-label="Make"><option value="">All makes</option></select>
-      <select id="sStat" aria-label="Status"><option value="Available" data-i18n="s_avail">Available only</option><option value="">All statuses</option><option>Under offer</option><option>Reserved</option><option>Sold</option></select>
+      <select id="sStat" aria-label="Status"><option value="" selected>All statuses</option><option value="Available" data-i18n="s_avail">Available only</option><option>Under offer</option><option>Reserved</option><option>Sold</option></select>
       <select id="sSort" aria-label="Sort"><option value="id">Sort: list order</option><option value="until">Sort: available until</option><option value="price">Sort: price high–low</option><option value="km">Sort: mileage</option></select>
       <span class="count" id="sCount"></span>
     </div>
@@ -1457,8 +1458,8 @@ function applyLang(){window.__loc={en:'en-GB',hu:'hu-HU',sk:'sk-SK',cs:'cs-CZ',d
   brandSig='';if(S.cars&&S.cars.length)renderStock();try{renderDealers();renderLogs()}catch(e){}if(typeof renderLangPicker==='function'){renderLangPicker();trAll();}if(window.__sortShort)setTimeout(window.__sortShort,0);if(window.__fitSelects)setTimeout(window.__fitSelects,0);}
 $('#lang').addEventListener('change',e=>{LANG=e.target.value;ls.set('sd_lang',LANG);applyLang();});
 const setTheme=m=>{if(m)document.documentElement.dataset.theme=m;else delete document.documentElement.dataset.theme;};
-setTheme(ls.get('sd_theme'));
-$('#themeBtn').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;const m=dark?'light':'dark';setTheme(m);ls.set('sd_theme',m);});
+setTheme(ls.get('sd_theme2')||'light');
+$('#themeBtn').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;const m=dark?'light':'dark';setTheme(m);ls.set('sd_theme2',m);});
 
 /* message a dealer */
 const MSG={
