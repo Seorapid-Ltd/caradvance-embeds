@@ -1133,6 +1133,51 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .carpick .cpitem b{font-size:14px;font-weight:700;color:var(--ink)}
 .carpick .cpitem small{font-size:12px;color:var(--muted)}
 .carpick .cpempty{padding:12px;color:var(--muted);font-size:13px}
+.carpick .cprow{display:flex;gap:8px;align-items:center}
+.carpick #cpSearch{flex:1}
+.cpbrowsebtn{flex:none;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--red);background:var(--card);color:var(--red);font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+.cpbrowsebtn:hover{background:color-mix(in srgb,var(--red) 10%,var(--card))}
+/* split browse layout */
+.dlgcols{display:block}
+.formcol{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 14px;align-items:start}
+.browsecol{display:none;min-width:0}
+#dlg.dlg-browse{width:min(1120px,96vw);max-width:96vw}
+#dlg.dlg-browse .dlgcols{display:grid;grid-template-columns:320px minmax(0,1fr);gap:0}
+#dlg.dlg-browse .formcol{display:block;grid-template-columns:1fr;border-right:1px solid var(--line);padding-right:18px}
+#dlg.dlg-browse .browsecol{display:block;padding-left:18px;min-width:0}
+.bphead{display:flex;gap:8px;align-items:center;margin:0 0 10px;position:sticky;top:0}
+.bphead #bpSearch{flex:1;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:9px 12px;font:inherit;color:var(--ink);outline:none}
+.bpclose{flex:none;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font-weight:700;font-size:13px;cursor:pointer}
+.bplist{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:2px}
+.bpcard{display:grid;grid-template-columns:84px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer}
+.bpcard:hover{border-color:#cdd4df;box-shadow:0 3px 12px rgba(0,0,0,.06)}
+.bpthumb{width:84px;height:56px;border-radius:10px;object-fit:cover;background:linear-gradient(135deg,#2a2d33,#0b0b0d)}
+.bpthumb.noimg{background:var(--soft)}
+.bpci{min-width:0}.bpcm{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bpcs{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bpcp{text-align:right;white-space:nowrap}.bpcp .bpb2b{font-weight:800;font-size:14px;color:var(--ink)}.bpcp .bpb2c{display:block;font-size:11.5px;color:var(--muted)}
+.bpadd{width:38px;height:38px;border-radius:50%;border:0;background:var(--red);color:#fff;font-size:19px;cursor:pointer;flex:none}
+.bpadd.on{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.carpick .pill,.browsecol .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;background:var(--soft);color:var(--muted)}
+.browsecol .pill.cp-available{background:#dcfce7;color:#166534}.browsecol .pill.cp-under-offer{background:#fef3c7;color:#92400e}.browsecol .pill.cp-sold{background:#fee2e2;color:#991b1b}.browsecol .pill.cp-reserved{background:#fef3c7;color:#92400e}
+.bpback{border:0;background:transparent;color:var(--red);font-weight:800;font-size:14px;cursor:pointer;padding:0;margin:0 0 10px}
+.bpgal{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.bpgal img,.bpgal .bpg{border-radius:12px;height:82px;object-fit:cover;background:linear-gradient(135deg,#2a2d33,#0b0b0d)}
+.bpgal img.big,.bpgal .bpg.big{grid-row:span 2;height:172px}
+.bpgal .noimg{background:var(--soft)}
+.bpdt{margin:4px 0 2px;font-size:18px;font-weight:800}
+.bpds{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.bpprices{display:flex;gap:10px;margin-bottom:12px}
+.bpp{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.bpp.b2b{border-color:var(--red);background:color-mix(in srgb,var(--red) 6%,var(--card))}
+.bpp span{display:block;font-size:11px;font-weight:700;color:var(--muted)}.bpp b{font-size:19px}.bpp.b2b b{color:var(--red)}
+.bpspec{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.bpsf{background:var(--soft);border-radius:10px;padding:8px 10px;min-width:0}
+.bpsf span{display:block;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.bpsf b{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.bpaddbig{width:100%;height:46px;border-radius:999px;border:0;background:var(--red);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+.bpaddbig.on{background:#15803d}
+@media(max-width:760px){#dlg.dlg-browse .dlgcols{grid-template-columns:1fr}#dlg.dlg-browse .formcol{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}}
 .dv2av{flex:none;width:46px;height:52px;border-radius:0;background:none;color:var(--ink);display:grid;place-items:center;border-right:1px solid var(--line)}
 .dv2av svg{width:34px;height:34px}
 .dv2htx{min-width:0}
@@ -2492,7 +2537,10 @@ function renderLogs(){try{renderLeads()}catch(e){}
 }
 function carPickHtml(val,name,single,label){
   name=name||'cars';label=label||(single?'Car':'Cars');
-  return `<label class="f carpick${single?' single':''}"><span>${esc(label)}</span><div class="cpbox"${single?' data-single="1"':''}><div class="cpchips" id="cpChips"></div><input id="cpSearch" type="text" placeholder="Search model or ID…" autocomplete="off"><input type="hidden" name="${esc(name)}" id="cpHidden" value="${esc(val||'')}"><div class="cplist" id="cpList" hidden></div></div></label>`;
+  return `<label class="f carpick${single?' single':''}"><span>${esc(label)}</span><div class="cpbox"${single?' data-single="1"':''}><div class="cpchips" id="cpChips"></div><div class="cprow"><input id="cpSearch" type="text" placeholder="Search model or ID…" autocomplete="off"><button type="button" class="cpbrowsebtn" id="cpBrowseBtn">Browse</button></div><input type="hidden" name="${esc(name)}" id="cpHidden" value="${esc(val||'')}"><div class="cplist" id="cpList" hidden></div></div></label>`;
+}
+function browsePanelHtml(){
+  return `<div class="browsecol" id="cpBrowse"><div class="bphead"><input id="bpSearch" type="text" placeholder="Search model, colour, ID…" autocomplete="off"><button type="button" class="bpclose" id="bpClose">Close</button></div><div class="bplist" id="bpList"></div></div>`;
 }
 function wireCarPicker(){
   const chips=$('#cpChips'),hidden=$('#cpHidden'),search=$('#cpSearch'),list=$('#cpList');
@@ -2501,27 +2549,39 @@ function wireCarPicker(){
   const cars=(S.cars||[]);
   let sel=(hidden.value||'').split(',').map(s=>s.trim()).filter(Boolean);
   if(single)sel=sel.slice(0,1);
+  const inSel=id=>sel.includes(id);
   const labelOf=id=>{const c=cars.find(x=>x.id===id);return c?`${c.id} · ${c.model||''}`.trim():id;};
+  const stCls=s=>'cp-'+String(s||'Available').replace(/\s+/g,'-').toLowerCase();
+  const browseBtn=$('#cpBrowseBtn'),panel=$('#cpBrowse'),bpSearch=$('#bpSearch'),bpList=$('#bpList'),bpClose=$('#bpClose'),dlg2=$('#dlg');
+  const toggle=id=>{if(single)sel=inSel(id)?[]:[id];else{if(inSel(id))sel=sel.filter(x=>x!==id);else sel.push(id);}sync();};
   const sync=()=>{hidden.value=sel.join(', ');
     chips.innerHTML=sel.map(id=>`<span class="cpchip" title="${esc(labelOf(id))}"><span class="cptx">${esc(labelOf(id))}</span><button type="button" class="cpx" data-rm="${esc(id)}" aria-label="Remove">×</button></span>`).join('');
-    if(single)search.style.display=sel.length?'none':'';};
-  const render=()=>{const q=search.value.trim().toLowerCase();
-    const avail=cars.filter(c=>!sel.includes(c.id)&&(!q||`${c.id} ${c.model||''} ${c.colour||''}`.toLowerCase().includes(q))).slice(0,40);
+    if(single)search.style.display=sel.length?'none':'';
+    if(bpList)bpList.querySelectorAll('.bpadd').forEach(b=>{const on=inSel(b.dataset.add);b.classList.toggle('on',on);b.textContent=on?'✓':'＋';});};
+  const renderDrop=()=>{const q=search.value.trim().toLowerCase();
+    const avail=cars.filter(c=>!inSel(c.id)&&(!q||`${c.id} ${c.model||''} ${c.colour||''}`.toLowerCase().includes(q))).slice(0,40);
     list.innerHTML=avail.length?avail.map(c=>`<button type="button" class="cpitem" data-add="${esc(c.id)}"><b>${esc(c.model||c.id)}</b><small>${esc(c.id)}${c.colour?' · '+esc(c.colour):''}${c.status&&c.status!=='Available'?' · '+esc(c.status):''}</small></button>`).join(''):`<div class="cpempty">No match</div>`;
     list.hidden=false;};
-  sync();
-  search.addEventListener('focus',render);
-  search.addEventListener('input',render);
+  search.addEventListener('focus',renderDrop);
+  search.addEventListener('input',renderDrop);
   search.addEventListener('blur',()=>setTimeout(()=>{list.hidden=true},180));
-  list.addEventListener('mousedown',e=>{const a=e.target.closest('[data-add]');if(!a)return;e.preventDefault();if(single)sel=[a.dataset.add];else if(!sel.includes(a.dataset.add))sel.push(a.dataset.add);search.value='';sync();if(single){list.hidden=true}else{render();search.focus()}});
-  chips.addEventListener('click',e=>{const r=e.target.closest('[data-rm]');if(!r)return;sel=sel.filter(x=>x!==r.dataset.rm);sync();if(single)setTimeout(()=>search.focus(),0);});
+  list.addEventListener('mousedown',e=>{const a=e.target.closest('[data-add]');if(!a)return;e.preventDefault();toggle(a.dataset.add);search.value='';if(single){list.hidden=true}else{renderDrop();search.focus()}});
+  chips.addEventListener('click',e=>{const r=e.target.closest('[data-rm]');if(!r)return;sel=sel.filter(x=>x!==r.dataset.rm);sync();});
+  const renderBrowse=()=>{if(!bpList)return;const q=(bpSearch&&bpSearch.value||'').trim().toLowerCase();
+    const show=cars.filter(c=>!q||`${c.id} ${c.model||''} ${c.colour||''}`.toLowerCase().includes(q));
+    bpList.innerHTML=show.length?show.map(c=>{const ph=pics(c)[0];return `<div class="bpcard" data-car="${esc(c.id)}">${ph?`<img class="bpthumb" src="img/t/${esc(ph)}" alt="" loading="lazy">`:'<span class="bpthumb noimg"></span>'}<div class="bpci"><div class="bpcm">${esc(c.model||c.id)}</div><div class="bpcs">${esc(c.id)}${c.colour?' · '+esc(c.colour):''} <span class="pill ${stCls(c.status)}">${esc(c.status||'Available')}</span></div></div><div class="bpcp"><span class="bpb2b">${eur(c.dealer_net)}</span><span class="bpb2c">${eur(c.dealer_gross)} B2C</span></div><button type="button" class="bpadd${inSel(c.id)?' on':''}" data-add="${esc(c.id)}" aria-label="Add">${inSel(c.id)?'✓':'＋'}</button></div>`;}).join(''):`<div class="cpempty">No match</div>`;};
+  if(browseBtn&&panel&&dlg2)browseBtn.addEventListener('click',()=>{dlg2.classList.add('dlg-browse');renderBrowse();if(bpSearch)setTimeout(()=>bpSearch.focus(),0);});
+  if(bpClose&&dlg2)bpClose.addEventListener('click',()=>dlg2.classList.remove('dlg-browse'));
+  if(bpSearch)bpSearch.addEventListener('input',renderBrowse);
+  if(bpList)bpList.addEventListener('click',e=>{const add=e.target.closest('.bpadd');if(add){e.stopPropagation();toggle(add.dataset.add);return}const card=e.target.closest('[data-car]');if(card&&window.__openCarSheet){const c=cars.find(x=>x.id===card.dataset.car);if(c)window.__openCarSheet(c);}});
+  sync();
 }
 function openLog(o,preset){
   preset=preset||{};
   const dsel=`<label class="f">Dealer<select name="dealer" required><option value="">—</option>${S.dealers.map(d=>`<option value="${esc(d.id)}"${(o?o.dealer:preset.dealer)===d.id?' selected':''}>${esc(d.name)} (${esc(d.country)})</option>`).join('')}</select></label>`;
-  openDialog(o?'Edit entry':'Log a call or email',field(['date','Date','date',1],o?o.date:new Date().toISOString().slice(0,10))+dsel+
+  openDialog(o?'Edit entry':'Log a call or email','<div class="dlgcols"><div class="formcol">'+field(['date','Date','date',1],o?o.date:new Date().toISOString().slice(0,10))+dsel+
     field(['channel','Channel','sel:Email,Phone,Meeting,Other',1],o&&o.channel)+field(['member','Team member','team'],o?o.member:((window.claude&&claude.me&&claude.me()||{}).name||''))+
-    carPickHtml(o?o.cars:'')+field(['outcome','Outcome','sel:No answer,Sent offer,Interested,Asked for price,Not interested,Reserved a car,Do not contact'],o&&o.outcome)+field(['notes','Notes','area'],o&&o.notes),
+    carPickHtml(o?o.cars:'')+field(['outcome','Outcome','sel:No answer,Sent offer,Interested,Asked for price,Not interested,Reserved a car,Do not contact'],o&&o.outcome)+field(['notes','Notes','area'],o&&o.notes)+'</div>'+browsePanelHtml()+'</div>',
     async fd=>{const id=o?o.id:'o'+Date.now().toString(36);const ok=await save('outreach/'+id,o?fd:{...fd,id},!!o);
       const d=S.dealers.find(x=>x.id===fd.dealer);
       if(ok!==false&&d){const up={last_contact:fd.date};if(d.status!=='Do not contact'){if(fd.outcome==='Do not contact')up.status='Do not contact';else if(['Interested','Asked for price','Reserved a car'].includes(fd.outcome))up.status='Interested';else if(fd.outcome==='Not interested')up.status='Not interested';else if((d.status||'New')==='New')up.status='Contacted'}
@@ -2554,14 +2614,15 @@ function openRecordOffer(preCar,preDealer){
   const avail=(S.cars||[]).filter(c=>(c.status||'Available')!=='Sold');
   const carOpts=avail.map(c=>`<option value="${esc(c.id)}"${preCar===c.id?' selected':''}>${esc(c.id)} · ${esc(c.model||'')}</option>`).join('');
   const dealerOpts=(S.dealers||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(d=>`<option value="${esc(d.id)}"${preDealer===d.id?' selected':''}>${esc(d.name)}${d.country?' ('+esc(d.country)+')':''}</option>`).join('');
-  const html=
+  const html='<div class="dlgcols"><div class="formcol">'+
     carPickHtml(preCar||'','car',true,'Car')+
     `<label class="f">Dealer<select name="dealer" required><option value="">—</option>${dealerOpts}</select></label>`+
     `<label class="f">Amount €<input name="price" inputmode="numeric" required placeholder="€" maxlength="12"></label>`+
     `<label class="f">Type<select name="type"><option value="b2b">B2B (net)</option><option value="b2c">B2C (incl. VAT)</option></select></label>`+
     field(['member','Recorded by','team'],me)+
     `<label class="f wide">Note<textarea name="note" rows="2" maxlength="1000"></textarea></label>`+
-    `<p class="foot wide recmsg" hidden></p>`;
+    `<p class="foot wide recmsg" hidden></p>`+
+    '</div>'+browsePanelHtml()+'</div>';
   openDialog('Record an offer',html,async fd=>{
     const m=$('#dlgBody .recmsg'),bad=t=>{m.hidden=false;m.className='foot wide recmsg bad';m.textContent=t;return false};
     const price=Number(String(fd.price||'').replace(/[^\d.,]/g,'').replace(',','.'));
