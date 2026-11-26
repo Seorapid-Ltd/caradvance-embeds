@@ -38,11 +38,17 @@ export async function onRequest(context) {
         const code = randomCode();
         await env.DB.prepare(`INSERT INTO staff_codes (email, code_hash, expires_at, attempts) VALUES (?, ?, ?, 0) ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at, attempts = 0`)
           .bind(email, await sha256hex('staff|' + email + '|' + code), Math.floor(Date.now() / 1000) + CODE_MIN * 60).run();
-        const html = emailShell(`<p style="margin:0 0 6px;font-size:18px;font-weight:bold">Belépés a CarAdvance belső felületre</p>
-          <p style="margin:0 0 18px;color:#4b5563">A /belso irányítópultra ezzel a kóddal léphetsz be:</p>
+        const host = new URL(request.url).hostname, L = /caradvance\.sk$/.test(host) ? 'sk' : /caradvance\.cz$/.test(host) ? 'cs' : 'hu';
+        const T = {
+          hu: ['Belépés a CarAdvance belső felületre', 'A belső felületre ezzel a kóddal léphetsz be:', `A kód ${CODE_MIN} percig érvényes. Ha nem te kérted, hagyd figyelmen kívül ezt az e-mailt.`, 'Belépési kód: '],
+          sk: ['Prihlásenie do internej zóny CarAdvance', 'Do internej zóny sa prihlásite týmto kódom:', `Kód platí ${CODE_MIN} minút. Ak ste oň nežiadali, tento e-mail ignorujte.`, 'Prihlasovací kód: '],
+          cs: ['Přihlášení do interní zóny CarAdvance', 'Do interní zóny se přihlásíte tímto kódem:', `Kód platí ${CODE_MIN} minut. Pokud jste o něj nežádali, tento e-mail ignorujte.`, 'Přihlašovací kód: ']
+        }[L];
+        const html = emailShell(`<p style="margin:0 0 6px;font-size:18px;font-weight:bold">${T[0]}</p>
+          <p style="margin:0 0 18px;color:#4b5563">${T[1]}</p>
           <div style="font:bold 34px/1 'Courier New',monospace;letter-spacing:10px;background:#f4f7fb;border:1px solid #e6eaf1;border-radius:12px;padding:18px 0;text-align:center;color:#0b2a4a">${code}</div>
-          <p style="margin:18px 0 0;color:#6b7280;font-size:13px">A kód ${CODE_MIN} percig érvényes. Ha nem te kérted, hagyd figyelmen kívül ezt az e-mailt.</p>`, '');
-        await sendMail(env, email, 'Belépési kód (belső felület): ' + code, html, 'Belépési kód: ' + code + ' (' + CODE_MIN + ' percig érvényes)');
+          <p style="margin:18px 0 0;color:#6b7280;font-size:13px">${T[2]}</p>`, '');
+        await sendMail(env, email, T[3] + code, html, T[3] + code + '\n' + T[2]);
       }
       return json({ ok: true });
     }
