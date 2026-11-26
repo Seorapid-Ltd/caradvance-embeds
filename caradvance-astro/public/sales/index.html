@@ -870,7 +870,9 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 .slh .slhi{color:var(--red);display:grid;place-items:center}.slh .slhi .oi{width:34px;height:34px;stroke-width:1.9}
 .slh h3{margin:0;font-size:27px;font-weight:800;line-height:1.15}.slh .sub{margin:4px 0 0;font-size:14.5px}
 .slh.sm{align-items:center;flex-wrap:wrap;gap:6px 12px}.slh.sm .slhi .oi{width:24px;height:24px;color:var(--ink)}.slh.sm h4{margin:0;font-size:20px;font-weight:800}.slh.sm .sub{margin:0}
-.slopts2{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.slopts2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.slopts2:has(.slo:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+.slopts2 .slo{align-content:center}
 .slo{position:relative;display:grid;grid-template-columns:26px 1px minmax(0,1fr);gap:16px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--soft);cursor:pointer;transition:border-color .15s,box-shadow .15s}
 .slo:hover{border-color:color-mix(in srgb,var(--red) 50%,var(--line))}
 .slo.on{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 18%,transparent)}
@@ -1048,6 +1050,14 @@ tr.det .offerrow{margin:0}
 .dlrsearch{display:flex;align-items:center;gap:10px;padding:0 14px;height:48px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
 .dlrsearch svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
 .dlrsearch input{flex:1;border:0;background:none;font:inherit;font-size:15px;color:var(--ink);outline:none;min-width:0}
+.dlrcountries{display:flex;flex-wrap:wrap;gap:8px}
+.dctile{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 10px;border-radius:12px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer;font:inherit}
+.dctile .dcflag{font-size:20px;line-height:1}.dctile .dcall{font-size:16px;color:var(--red)}
+.dctile .dcn{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+.dctile .dcn b{font-size:13.5px;font-weight:800}.dctile .dcn small{font-size:11px;color:var(--muted)}
+.dctile:hover{border-color:var(--muted)}
+.dctile.on{background:var(--navy);border-color:var(--navy);color:#fff}.dctile.on .dcn small{color:rgba(255,255,255,.75)}.dctile.on .dcall{color:#fff}
+.dctile.zero{opacity:.5}
 .dlrfilters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .dlrfilters select{height:44px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:0 36px 0 14px}
 .dlrfilters .pri,.dlrfilters #csv{height:44px;padding:0 18px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
@@ -1089,20 +1099,20 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
   .dlrtbl{border:0;background:transparent;box-shadow:none;overflow:visible}
   .dlrtbl thead{display:none}
   .dlrtbl table,.dlrtbl tbody{display:block;width:100%}
-  #dRows tr.row{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;margin:0 0 12px}
-  #dRows tr.row>td{display:block;padding:0!important;border:0!important}
-  #dRows .dchk{grid-row:1;grid-column:1;align-self:center}
-  #dRows .ddealer{grid-row:1;grid-column:2}
-  #dRows .dact{grid-row:1;grid-column:3;justify-self:end}
-  /* labelled fields stack full-width below the header row */
-  #dRows .dcountry,#dRows .dtier,#dRows td[data-label]:not(.dchk):not(.ddealer):not(.dact){grid-column:1/-1;display:flex;align-items:center;gap:8px}
-  #dRows td[data-label]:not(.dchk):not(.ddealer):not(.dact)::before{content:attr(data-label)": ";font-size:12px;font-weight:700;color:var(--muted)}
-  #dRows .dcountry::before{content:"Country: ";font-size:12px;font-weight:700;color:var(--muted)}
-  #dRows td[data-label] .pill{flex:0 0 auto;align-self:center}
-  #dRows .num{justify-content:flex-start}#dRows .num .pill.score{margin:0}
-  /* the dealer, checkbox and actions cells never get an auto-label */
-  #dRows .dchk::before,#dRows .ddealer::before,#dRows .dact::before{content:none!important;display:none!important}
-  #dRows td.empty{display:block;grid-column:1/-1;background:var(--card);border-radius:18px;padding:24px!important;text-align:center}
+  /* Dealer card: header row (avatar + name + actions), then a wrapping chip row below */
+  #dRows tr.row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 48px 14px 44px;margin:0 0 12px}
+  #dRows tr.row>td{padding:0!important;border:0!important}
+  #dRows tr.row>td::before{content:none!important;display:none!important}
+  #dRows .dchk{order:0;position:absolute;left:15px;top:26px}
+  #dRows .ddealer{order:1;flex:1 1 100%;min-width:0}
+  #dRows .dact{order:2;position:absolute;top:12px;right:10px}
+  #dRows .ddealer .dinfo b,#dRows .ddealer .dinfo .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+  #dRows .dcountry{order:3}#dRows .dtier{order:4}#dRows .dscore{order:5}#dRows .dstat{order:6}#dRows .downer{order:7}
+  #dRows .dcountry,#dRows .dtier,#dRows .dscore,#dRows .dstat,#dRows .downer{flex:none;display:inline-flex;align-items:center}
+  #dRows .dscore .pill.score{margin:0}
+  #dRows .downer .downerv{font-size:13px;color:var(--muted)}
+  #dRows .downer .downerv::before{content:"·\00a0";color:var(--muted)}
+  #dRows td.empty{flex-basis:100%;text-align:center;background:var(--card);border-radius:18px;padding:24px!important}
 }
 
 /* „Már nem eladó” — szürkített kártya */
@@ -1119,8 +1129,11 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 
 /* Sérülések + „már nem elérhető” */
 .dmgbox{margin-top:14px;border:1px solid var(--sl-line,var(--line));border-radius:12px;background:var(--card);font-size:13px}
-.dmgbox>.dmgh,.dmgbox>summary.dmgh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;padding:10px 12px;font-weight:800;list-style:none;cursor:pointer}
+.dmgbox>.dmgh,.dmgbox>summary.dmgh{display:flex;flex-wrap:nowrap;align-items:center;gap:8px 10px;padding:10px 12px;font-weight:800;list-style:none;cursor:pointer}
 .dmgbox>summary::-webkit-details-marker{display:none}
+.dmgbox>summary.dmgh .dmgsum{margin-left:auto}
+.dmgbox>summary.dmgh::after{content:'';flex:none;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .2s}
+.dmgbox[open]>summary.dmgh::after{transform:rotate(45deg)}
 .dmgsum{display:inline-flex;gap:6px}.dmgsum b{padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:800}
 .dmgsum b.op{background:color-mix(in srgb,var(--red) 12%,transparent);color:var(--red)}.dmgsum b.fx{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
 .dmgk{margin:4px 12px 4px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.dmgk.op{color:var(--red)}.dmgk.fx{color:var(--ok)}
@@ -1450,8 +1463,9 @@ Ready when you are.</h1>
     <div id="dkpis" hidden style="display:none"></div>
     <div class="dlrpanel">
       <label class="dlrsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" id="dq" placeholder="Search company, city or contact…" aria-label="Search dealers"></label>
+      <div class="dlrcountries" id="dCountries" role="group" aria-label="Filter by country"></div>
+      <input type="hidden" id="dCountry" value="">
       <div class="dlrfilters">
-        <select id="dCountry" aria-label="Country"><option value="">All countries</option><option>HU</option><option>SK</option><option>CZ</option><option>AT</option><option>PL</option><option>RO</option></select>
         <select id="dTier" aria-label="Tier"><option value="">All tiers</option><option value="1">Tier 1 – BMW/MINI dealer</option><option value="2">Tier 2 – premium used</option><option value="3">Tier 3 – trader/exporter</option></select>
         <select id="dScore" aria-label="Score"><option value="">Any score</option><option value="4">Score 4+</option><option value="3">Score 3+</option></select>
         <select id="dStat" aria-label="Outreach status"><option value="">Any status</option><option>New</option><option>Contacted</option><option>Interested</option><option>Not interested</option><option>Do not contact</option></select>
@@ -1806,7 +1820,7 @@ function dmgBox(vin,big){const L=dmgList(vin);if(!L)return'';const open=L.filter
   const row=d=>`<li class="${d.f?'fx':'op'}">${d.s?`<button type="button" class="dmgph" data-dph="${esc(d.s)}" aria-label="${esc(t('dm_photo'))}"><img src="/api/desk/damage-photo/${esc(d.s)}" alt="" loading="lazy" decoding="async"></button>`:`<span class="dmgst">${d.f?'✓':'!'}</span>`}<span class="dmgd" title="${esc(d.d)}">${esc((d.t&&(d.t[LANG]||d.t.en))||d.d)}</span><span class="dmgm">${dmgArea(d.b)?esc(dmgArea(d.b))+' · ':''}${d.f?`${esc(t('dm_fixedon'))} ${esc(dmgFmt(d.fd))}`:`${esc(t('dm_rec'))} ${esc(dmgFmt(d.e))}`}</span></li>`;
   const head=`<span class="dmgsum">${L.length?`${open.length?`<b class="op">${open.length} ${esc(t('dm_open'))}</b>`:''}${fixed.length?`<b class="fx">${fixed.length} ${esc(t('dm_fixed'))}</b>`:''}`:`<b class="fx">${esc(t('dm_none'))}</b>`}</span>`;
   if(!L.length)return`<div class="dmgbox${big?' big':''}"><div class="dmgh">${esc(t('dm_title'))}${head}</div></div>`;
-  return`<details class="dmgbox${big?' big':''}"${big||open.length?' open':''}><summary class="dmgh">${esc(t('dm_title'))}${head}</summary>${open.length?`<p class="dmgk op">${esc(t('dm_still'))}</p><ul>${open.map(row).join('')}</ul>`:''}${fixed.length?`<p class="dmgk fx">${esc(t('dm_done'))}</p><ul>${fixed.map(row).join('')}</ul>`:''}</details>`}
+  return`<details class="dmgbox${big?' big':''}"><summary class="dmgh">${esc(t('dm_title'))}${head}</summary>${open.length?`<p class="dmgk op">${esc(t('dm_still'))}</p><ul>${open.map(row).join('')}</ul>`:''}${fixed.length?`<p class="dmgk fx">${esc(t('dm_done'))}</p><ul>${fixed.map(row).join('')}</ul>`:''}</details>`}
 const XTRA={off:new Set(),ld:false};
 window.__setOffDesk=(id,on)=>{on?XTRA.off.add(id):XTRA.off.delete(id);try{renderStock()}catch(e){}};
 function loadXtra(){if(XTRA.ld||document.documentElement.classList.contains('public'))return;XTRA.ld=true;
@@ -1903,6 +1917,13 @@ function renderDealers(){
   $('#dCount').textContent=flt?`${L.length} / ${S.dealers.length}`:String(S.dealers.length);
   document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;
   const FLAG_E=c=>/^[A-Za-z]{2}$/.test(c||'')?c.toUpperCase().replace(/./g,ch=>String.fromCodePoint(127397+ch.charCodeAt(0))):'';
+  // Country filter tiles (flags + counts)
+  const byC={};S.dealers.forEach(d=>{if(d.country)byC[d.country]=(byC[d.country]||0)+1});
+  const CNAME={HU:'Hungary',SK:'Slovakia',CZ:'Czech Republic',AT:'Austria',PL:'Poland',RO:'Romania',HR:'Croatia',SI:'Slovenia',DE:'Germany'};
+  const COUNTRIES=['HU','SK','CZ','AT','PL','RO'].concat(Object.keys(byC).filter(c=>!['HU','SK','CZ','AT','PL','RO'].includes(c)));
+  const dcEl=$('#dCountries');
+  if(dcEl)dcEl.innerHTML=`<button type="button" class="dctile${co===''?' on':''}" data-dc=""><span class="dcall">★</span><span class="dcn"><b>All</b><small>${S.dealers.length}</small></span></button>`+
+    COUNTRIES.map(c=>`<button type="button" class="dctile${co===c?' on':''}${byC[c]?'':' zero'}" data-dc="${esc(c)}"><span class="dcflag">${FLAG_E(c)}</span><span class="dcn"><b>${esc(c)}</b><small>${byC[c]||0}</small></span></button>`).join('');
   const ini=n=>String(n||'?').replace(/[^\p{L}\p{N} ]/gu,'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';
   const hue=n=>{let h=0;for(const ch of String(n||''))h=(h*31+ch.charCodeAt(0))%360;return h};
   const ST={New:['new','New'],Contacted:['contacted','Contacted'],Interested:['interested','Interested'],'Not interested':['no','Not interested'],'Do not contact':['dnc','Do not contact']};
@@ -1911,15 +1932,16 @@ function renderDealers(){
     return `<tr class="row" data-id="${esc(d.id)}"><td class="dchk"><input type="checkbox" class="drchk" aria-label="${esc(d.name)}"></td>
     <td class="ddealer"><span class="dwrap"><span class="davatar" style="--h:${h}">${esc(ini(d.name))}</span><span class="dinfo"><b>${esc(d.name)}</b>${sub?`<span class="sub">${esc(sub)}</span>`:''}</span></span></td>
     <td class="dcountry" data-label="Country">${d.country?`<span class="dwrap"><span class="dflag">${FLAG_E(d.country)}</span><span class="dcc">${esc(d.country)}</span></span>`:'<span class="sub">—</span>'}</td>
-    <td data-label="Tier">${d.tier?`<span class="pill tier">Tier ${esc(d.tier)}</span>`:'<span class="sub">—</span>'}</td>
-    <td class="num" data-label="Score">${d.score!=null&&d.score!==''?`<span class="pill score">${esc(d.score)}</span>`:'<span class="sub">—</span>'}</td>
-    <td data-label="Status"><span class="pill stat s-${sm[0]}"><i class="sdot"></i>${esc(sm[1])}</span></td>
-    <td class="hide-s" data-label="Account owner">${d.owner?esc(d.owner):'<span class="sub">—</span>'}</td>
+    <td class="dtier" data-label="Tier">${d.tier?`<span class="pill tier">Tier ${esc(d.tier)}</span>`:'<span class="sub">—</span>'}</td>
+    <td class="num dscore" data-label="Score">${d.score!=null&&d.score!==''?`<span class="pill score">${esc(d.score)}</span>`:'<span class="sub">—</span>'}</td>
+    <td class="dstat" data-label="Status"><span class="pill stat s-${sm[0]}"><i class="sdot"></i>${esc(sm[1])}</span></td>
+    <td class="hide-s downer" data-label="Account owner">${d.owner?`<span class="downerv">${esc(d.owner)}</span>`:'<span class="sub">—</span>'}</td>
     <td class="dact"><button type="button" class="dmenu" data-dmenu="${esc(d.id)}" aria-label="Actions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button></td></tr>`}).join('')
    :`<tr><td colspan="8" class="empty">${S.dealers.length?'No dealers match these filters.':'No dealers yet — Claude is researching them country by country (Hungary first). You can also add one yourself.'}</td></tr>`;
   const all=$('#dAll');if(all)all.checked=false;
 }
 ['#dq','#dCountry','#dTier','#dScore','#dStat'].forEach(s=>$(s).addEventListener('input',renderDealers));
+$('#dCountries')&&$('#dCountries').addEventListener('click',e=>{const b=e.target.closest('[data-dc]');if(!b)return;const cur=$('#dCountry').value;$('#dCountry').value=cur===b.dataset.dc?'':b.dataset.dc;renderDealers()});
 $('#dRows').addEventListener('click',e=>{if(e.target.closest('a,input'))return;const r=e.target.closest('tr.row');if(r)openDealer(S.dealers.find(d=>d.id===r.dataset.id))});
 $('#dAll')&&$('#dAll').addEventListener('change',e=>{document.querySelectorAll('#dRows .drchk').forEach(c=>{c.checked=e.target.checked})});
 $('#addDealer').addEventListener('click',()=>openDealer(null));
