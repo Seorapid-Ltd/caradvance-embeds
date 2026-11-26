@@ -540,7 +540,51 @@ async function stockList(env, me) {
   const rows = (await env.DB.prepare('SELECT data, updated FROM desk_stocklist ORDER BY sort').all()).results || [];
   const admin = me.role === 'admin';
   const cars = rows.map(r => { const d = JSON.parse(r.data); if (!admin) for (const k of STOCK_ADMIN_ONLY) delete d[k]; return d; });
-  return { cars, admin, updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
+  return { cars, admin, canPrice: ['admin', 'sales_manager'].includes(me.role), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
+}
+
+/* Choosing the right price when the documents disagree (admins / sales managers). Optionally also sets the desk price in Notion. */
+async function stockChoosePrice(request, env, ctx, me) {
+  if (!['admin', 'sales_manager'].includes(me.role)) throw bad('Only an admin or a sales manager can set the price.', 403);
+  const b = await request.json().catch(() => ({}));
+  const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
+  if (!(net > 1000 && net < 5000000)) throw bad('Enter a valid net price.');
+  await ensureStock(env);
+  const row = await env.DB.prepare('SELECT data FROM desk_stocklist WHERE id = ?').bind(String(b.id || '')).first();
+  if (!row) throw bad('Car not found.', 404);
+  const d = JSON.parse(row.data);
+  const who = me.name || nameOf(me.email), at = new Date().toISOString().slice(0, 10);
+  d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document' };
+  d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
+  await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
+  let desk = false;
+  if (b.desk && d.desk) {
+    const all = await loadAll(env, ctx, true);
+    const car = all.vehicles.find(v => v.id === d.desk);
+    if (car) {
+      await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', net), B2C: writeProp('number', d.gross) } });
+      memo = null; desk = true;
+    }
+  }
+  if (me.role !== 'admin') for (const k of STOCK_ADMIN_ONLY) delete d[k];
+  return { ok: true, car: d, desk };
+}
+const STOCK_IMPORT_SHA256 = '053f1b97f641e54fc0f2494e4ebd2e5c40fdddd1328a53e066d64837644ab20e'; // one-off upload key (hash only); removed after use
+async function stockImport(request, env) {
+  const key = request.headers.get('X-Import-Key') || '';
+  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key)))].map(b => b.toString(16).padStart(2, '0')).join('');
+  if (hash !== STOCK_IMPORT_SHA256) return json({ error: 'Forbidden' }, 403);
+  const list = await request.json();
+  if (!Array.isArray(list) || !list.length) return json({ error: 'Empty' }, 400);
+  await ensureStock(env);
+  // keep prices someone already chose in the desk
+  const old = Object.fromEntries(((await env.DB.prepare('SELECT id, data FROM desk_stocklist').all()).results || []).map(r => [r.id, JSON.parse(r.data)]));
+  for (const c of list) { const o = old[c.id]; if (o && o.chosen) { c.chosen = o.chosen; c.net = o.net; c.gross = o.gross; c.net_from = o.net_from; c.price_ok = true; } }
+  await env.DB.prepare('DELETE FROM desk_stocklist').run();
+  const now = Math.floor(Date.now() / 1000);
+  const stmts = list.map((c, i) => env.DB.prepare('INSERT INTO desk_stocklist (id, sort, data, updated) VALUES (?, ?, ?, ?)').bind(String(c.id), i, JSON.stringify(c), now));
+  for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));
+  return json({ ok: true, n: list.length });
 }
 
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
@@ -558,6 +602,7 @@ export async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
+  if (request.method === 'POST' && route === 'stocklist-import') return stockImport(request, env); // one-off, removed after use
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
@@ -573,6 +618,10 @@ export async function handle(request, env, ctx) {
       return json({ vehicles, dealers, outreach, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
+    if (request.method === 'POST' && route === 'stocklist/price') {
+      if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
+      return json(await stockChoosePrice(request, env, ctx, me));
+    }
     if (route.startsWith('msg/')) {
       if (request.method === 'POST' && request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
       return json(await msgRoute(route, request, env, me));
