@@ -4,7 +4,13 @@
 <meta charset="utf-8">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('sd_theme2')||'light'}catch(e){document.documentElement.dataset.theme='light'}
 /* If the phone restores this page from its back/forward cache, reload so the latest version (styles, fixes) is shown instead of a stale copy */
-addEventListener('pageshow',function(e){if(e.persisted)location.reload()});</script>
+addEventListener('pageshow',function(e){if(e.persisted)location.reload()});
+/* Stop browser writing-assistant extensions (Grammarly etc.) from injecting their floating badge into our input fields */
+(function(){function off(el){if(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA')){el.setAttribute('data-gramm','false');el.setAttribute('data-gramm_editor','false');el.setAttribute('data-enable-grammarly','false');}}
+function sweep(){document.querySelectorAll('input,textarea').forEach(off);}
+document.addEventListener('focusin',function(e){off(e.target);});
+if(document.readyState!=='loading')sweep();else document.addEventListener('DOMContentLoaded',sweep);
+document.addEventListener('click',function(){setTimeout(sweep,0);},true);})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>CarAdvance Sales Desk</title>
