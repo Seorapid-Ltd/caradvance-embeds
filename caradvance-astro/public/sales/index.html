@@ -1703,7 +1703,7 @@ const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:
 // Market = the country site (dev.caradvance.hu/.sk/.cz/.pl/.ro/.eu/.ch). ?market=sk previews another market on dev.
 const MARKET=(()=>{let q=null;try{q=new URLSearchParams(location.search).get('market');if(q)sessionStorage.setItem('sd_market',q);else q=sessionStorage.getItem('sd_market')}catch(e){}
   const ok={hu:1,sk:1,cz:1,pl:1,ro:1,eu:1,ch:1};if(q&&ok[q])return q;const tld=location.hostname.split('.').pop();return ok[tld]?tld:'hu'})();
-const MARKET_LANGS={hu:['hu','en','de'],sk:['sk','cs','en','de'],cz:['cs','sk','en','de'],pl:['pl','en','de'],ro:['ro','hu','en'],eu:['en','de','hu'],ch:['de','en']};
+const MARKET_LANGS={hu:['hu','en','de'],sk:['sk','cs','en','de'],cz:['cs','sk','en','de'],pl:['pl','en','de'],ro:['ro','hu','en'],eu:['de','en','hu'],ch:['de','en']};
 const MLANGS=MARKET_LANGS[MARKET];
 const MARKET_LOGO={hu:'/caradvance-logo-white.webp',sk:'/caradvance-logo-white-sk.webp',cz:'/caradvance-logo-white-cs.webp',pl:'/caradvance-logo-white-pl.webp',ro:'/caradvance-logo-white-ch-en.webp',eu:'/caradvance-logo-white-ch-en.webp',ch:'/caradvance-logo-white-ch-de.webp'};
 try{const bl=document.getElementById('brandLogo');if(bl&&MARKET!=='hu'){bl.src=MARKET_LOGO[MARKET];bl.removeAttribute('height');bl.style.height='48px';bl.style.width='auto'}}catch(e){}
