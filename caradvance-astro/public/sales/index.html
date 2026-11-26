@@ -1169,10 +1169,11 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .carpick .pill,.browsecol .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;background:var(--soft);color:var(--muted)}
 .browsecol .pill.cp-available{background:#dcfce7;color:#166534}.browsecol .pill.cp-under-offer{background:#fef3c7;color:#92400e}.browsecol .pill.cp-sold{background:#fee2e2;color:#991b1b}.browsecol .pill.cp-reserved{background:#fef3c7;color:#92400e}
 .bpback{border:0;background:transparent;color:var(--red);font-weight:800;font-size:14px;cursor:pointer;padding:0;margin:0 0 10px}
-.bpgal{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px}
-.bpgal img,.bpgal .bpg{border-radius:12px;height:82px;object-fit:cover;background:linear-gradient(135deg,#2a2d33,#0b0b0d)}
-.bpgal img.big,.bpgal .bpg.big{grid-row:span 2;height:172px}
-.bpgal .noimg{background:var(--soft)}
+.bpgal{display:grid;grid-template-columns:2fr 1fr 1fr;grid-auto-rows:1fr;gap:8px;margin-bottom:12px}
+.bpgc{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#2a2d33,#0b0b0d);min-height:94px}
+.bpgc.big{grid-row:span 2;min-height:196px}
+.bpgc img{width:100%;height:100%;object-fit:cover;display:block}
+.bpgmore{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,11,13,.55);color:#fff;font-weight:800;font-size:20px}
 .bpdt{margin:4px 0 2px;font-size:18px;font-weight:800}
 .bpds{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:10px}
 .bpprices{display:flex;gap:10px;margin-bottom:12px}
@@ -1189,6 +1190,37 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .bpaddbig{width:100%;height:46px;border-radius:999px;border:0;background:var(--red);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
 .bpaddbig.on{background:#15803d}
 @media(max-width:760px){#dlg.dlg-browse .dlgcols{grid-template-columns:1fr}#dlg.dlg-browse .formcol{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}}
+.slstat{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:middle;background:#dcfce7;color:#166534}
+.slstat.ss-under-offer,.slstat.ss-reserved{background:#fef3c7;color:#92400e}
+.slstat.ss-sold{background:#fee2e2;color:#991b1b}
+.sllock{display:none;flex-direction:column;gap:3px;padding:16px 18px;border-radius:14px;background:var(--soft);border:1px dashed var(--line);margin:4px 0}
+.sllock b{font-size:16px}.sllock.ss-sold b{color:#991b1b}.sllock.ss-under-offer b,.sllock.ss-reserved b{color:#92400e}
+.sllock span{font-size:13px;color:var(--muted)}
+.slc.locked .slh,.slc.locked .slopts2,.slc.locked .slfoot,.slc.locked .slmk{display:none}
+.slc.locked .sllock{display:flex}
+.bptiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin-bottom:14px}
+.bptile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.bpti{color:var(--red);line-height:0}.bptic{width:22px;height:22px}
+.bptile b{font-size:13.5px;font-weight:800;line-height:1.2;word-break:break-word}
+.bptile small{font-size:11px;color:var(--muted)}
+.bpsec{border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin:0 0 12px;background:var(--card)}
+.bpsech{margin:0 0 11px;font-size:15px;font-weight:800;display:block}
+.bpsec .bpprices{margin-bottom:0}.bpsec .bparak{margin:10px 0 0}
+.bpdl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bpdlrow{display:flex;flex-direction:column;gap:1px;padding:8px 11px;background:var(--soft);border-radius:9px;min-width:0}
+.bpdlrow span{font-size:11px;color:var(--muted)}.bpdlrow b{font-size:13px;font-weight:600;word-break:break-word}
+.bpeq{display:flex;flex-wrap:wrap;gap:7px}
+.bpeqc{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:9px;background:var(--soft);font-size:12.5px;line-height:1.2}
+.bpeqc::before{content:'✓';color:var(--red);font-weight:800}
+.bpeqall summary{cursor:pointer;list-style:none}.bpeqall[open] summary{margin-bottom:11px}
+.bpdmgwrap{margin:0 0 12px}
+.bptop{margin:0 0 12px}
+.bptoph{display:flex;align-items:center;gap:9px}
+.bptopic{width:22px;height:22px;color:var(--ink);flex:none}
+.bptoph h4{margin:0;font-size:17px;font-weight:800}
+.bpcount{margin-left:auto;background:var(--soft);color:var(--muted);font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.bptops{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.35}
+@media(max-width:560px){.bpdl{grid-template-columns:1fr}}
 .dv2av{flex:none;width:46px;height:52px;border-radius:0;background:none;color:var(--ink);display:grid;place-items:center;border-right:1px solid var(--line)}
 .dv2av svg{width:34px;height:34px}
 .dv2htx{min-width:0}
@@ -2464,14 +2496,15 @@ $('#ofList').addEventListener('click',async e=>{
           <span class="slob"><span class="slon">${esc(x.own?t('sl_ours'):t('sl_opt')+' '+String.fromCharCode(65+i))}</span><b>${eur(x.price)}</b><span class="sub">${esc(t('sl_b2bx'))} · ${eur(x.price*1.19)} B2C</span><span class="slchip">${chip}</span></span></label>`};
       const comps=c.comp||[];const avg=comps.length?comps.reduce((a,x)=>a+(x.price||0),0)/comps.length:null;
       const det=[['VIN',c.vin],[t('sl_plate'),c.plate],[t('sl_list'),c.list?eur(c.list):''],[t('sl_fuel'),c.fuel],[t('sl_gear'),c.gear],[t('sl_drive'),c.drive],[t('sl_int'),c.interior],[t('sl_owners'),c.owners],[t('sl_rent'),c.rent?eur(c.rent)+' / '+t('sl_month'):''],[t('sl_src'),c.net_from],[t('sl_mdeq'),c.comp_q?`${c.comp_q} · ${c.comp_total} ${t('sl_hits')}`:''],[t('sl_feats'),(c.feats||[]).join(', ')],[t('sl_chosenby'),c.chosen?`${c.chosen.by} · ${c.chosen.at} (${t('sl_prev')} ${c.chosen.prev?eur(c.chosen.prev):'—'})`:'']].filter(x=>x[1]!=null&&x[1]!=='');
-      return `<article class="slc${c.off?' off':''}" data-id="${esc(c.id)}">${c.off?`<span class="slofftag">${esc(t('sl_offtag'))}</span>`:''}
+      const _st=String((dc&&dc.status)||c.status||'Available').trim();const locked=/^(sold|under offer|reserved)$/i.test(_st);const stCls='ss-'+_st.replace(/\s+/g,'-').toLowerCase();const _STL={hu:{Available:'Elérhető','Under offer':'Ajánlat alatt',Reserved:'Foglalt',Sold:'Eladva'},de:{Available:'Verfügbar','Under offer':'Im Angebot',Reserved:'Reserviert',Sold:'Verkauft'},sk:{Available:'Dostupné','Under offer':'V ponuke',Reserved:'Rezervované',Sold:'Predané'},cs:{Available:'Dostupné','Under offer':'V nabídce',Reserved:'Rezervováno',Sold:'Prodáno'},pl:{Available:'Dostępny','Under offer':'W ofercie',Reserved:'Zarezerwowany',Sold:'Sprzedany'},ro:{Available:'Disponibil','Under offer':'În ofertă',Reserved:'Rezervat',Sold:'Vândut'}};const stTx=((_STL[LANG]||{})[_st])||(t(_st)!==_st?t(_st):_st);const nolock=({hu:'Nincs szükség árazásra',de:'Keine Preisfindung nötig',sk:'Netreba stanoviť cenu',cs:'Není třeba stanovit cenu',pl:'Nie trzeba ustalać ceny',ro:'Nu necesită preț'})[LANG]||'No pricing needed';
+      return `<article class="slc${c.off?' off':''}${locked?' locked':''}" data-id="${esc(c.id)}">${c.off?`<span class="slofftag">${esc(t('sl_offtag'))}</span>`:''}
       <aside class="slcl">${c.photo?`<button type="button" class="slph" data-ph="${esc(c.id)}" aria-label="${esc(t('sl_photos'))}"><img src="img/t/${esc(c.photo)}" alt="" loading="lazy" decoding="async">${n>1?`<span class="slpn">${n}</span>`:''}</button>`:'<div class="slph noimg"></div>'}
-        <span class="slid">${esc(c.id)}${c.desk?' · '+esc(c.desk):''}</span><h3 class="slmodel">${esc(String(c.model||'').replace(/^(BMW|MINI|Mercedes-Benz|Audi|Tesla) (?=\1)/,''))}</h3>${c.aka&&c.aka!==c.model?`<span class="sub">${esc(c.aka)}</span>`:''}<span class="sub">${esc(c.colour||'')}</span>
+        <span class="slid">${esc(c.id)}${c.desk?' · '+esc(c.desk):''}</span><h3 class="slmodel">${esc(String(c.model||'').replace(/^(BMW|MINI|Mercedes-Benz|Audi|Tesla) (?=\1)/,''))}</h3>${c.aka&&c.aka!==c.model?`<span class="sub">${esc(c.aka)}</span>`:''}<span class="sub">${esc(c.colour||'')}</span> <span class="slstat ${stCls}">${esc(stTx)}</span>
         <div class="slmeta"><span>${IC.cal}${esc(c.reg||'—')}</span><span>${IC.road}${kmf(c.km)}</span></div>
         <div class="slpb give"><small>${esc(t('sl_give'))}</small>${net?`<b>${eur(net)}</b><span class="sub">B2B · ${esc(t('l_net'))}</span><b>${eur(c.gross)}</b><span class="sub">B2C · ${esc(t('l_gross'))}</span>`:`<span class="sub">${esc(t('sl_noprice'))}</span>`}${c.chosen?`<span class="slok">✓ ${esc(c.chosen.by||t('sl_chosen'))}</span>`:''}</div>
         ${dmgBox(c.vin)}
         ${c.off?`<span class="sloffnote">${esc(t('sl_offtag'))} · ${esc(c.off.by||'')}${c.off.at?' · '+esc(c.off.at):''}</span>`:''}${can?`<button type="button" class="sloff${c.off?' on':''}" data-sloff="${esc(c.id)}">${esc(t(c.off?'sl_on':'sl_off'))}</button>`:''}</aside>
-      <div class="slcr">
+      <div class="slcr"><div class="sllock ${stCls}"><b>${esc(stTx)}</b><span>${esc(nolock)}</span></div>
         <div class="slh"><span class="slhi">${si('tag')}</span><div><h3>${esc(t('sl_choose'))}</h3><p class="sub">${esc(t('sl_choose_sub'))}</p></div></div>
         <div class="slopts2">${P.map(opt).join('')}
           <label class="slo cust${typed?' on':''}"><input type="radio" name="slp-${esc(c.id)}" value="custom"${typed?' checked':''}${can?'':' disabled'} data-slp="${esc(c.id)}"><span class="slov"></span>
@@ -2553,7 +2586,8 @@ function carPickHtml(val,name,single,label){
   return `<label class="f carpick${single?' single':''}"><span>${esc(label)}</span><div class="cpbox"${single?' data-single="1"':''}><div class="cpchips" id="cpChips"></div><div class="cprow"><input id="cpSearch" type="text" placeholder="Search model or ID…" autocomplete="off"><button type="button" class="cpbrowsebtn" id="cpBrowseBtn">Browse</button></div><input type="hidden" name="${esc(name)}" id="cpHidden" value="${esc(val||'')}"><div class="cplist" id="cpList" hidden></div></div></label>`;
 }
 function browsePanelHtml(){
-  return `<div class="browsecol" id="cpBrowse"><div class="bphead"><input id="bpSearch" type="text" placeholder="Search model, colour, ID…" autocomplete="off"><button type="button" class="bpclose" id="bpClose">Close</button></div><div class="bplist" id="bpList"></div><div class="bpdetail" id="bpDetail" hidden></div></div>`;
+  const H=({hu:['Járművek csatolása','Válasszon egy vagy több járművet, amelyet a kapcsolathoz csatol.'],de:['Fahrzeuge anhängen','Wählen Sie ein oder mehrere Fahrzeuge für diesen Kontakt.'],sk:['Pripojiť vozidlá','Vyberte jedno alebo viac vozidiel pre tento kontakt.'],cs:['Připojit vozidla','Vyberte jedno nebo více vozidel pro tento kontakt.'],pl:['Dołącz pojazdy','Wybierz jeden lub więcej pojazdów do tego kontaktu.'],ro:['Atașează vehicule','Alege unul sau mai multe vehicule pentru acest contact.']})[LANG]||['Attach vehicles','Choose one or more vehicles to attach to this contact.'];
+  return `<div class="browsecol" id="cpBrowse"><div class="bptop" id="bpTop"><div class="bptoph"><svg class="bptopic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11l1.6-4.8A2 2 0 0 1 8.5 5h7a2 2 0 0 1 1.9 1.2L19 11M4 11h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1.5M4 11a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h1.5M5.5 17h13M7 17v1.5M17 17v1.5M7 14h.01M17 14h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><h4>${esc(H[0])}</h4><span class="bpcount" id="bpCount"></span></div><p class="bptops">${esc(H[1])}</p></div><div class="bphead"><input id="bpSearch" type="text" placeholder="Search model, colour, ID…" autocomplete="off"><button type="button" class="bpclose" id="bpClose">Close</button></div><div class="bplist" id="bpList"></div><div class="bpdetail" id="bpDetail" hidden></div></div>`;
 }
 function wireCarPicker(){
   const chips=$('#cpChips'),hidden=$('#cpHidden'),search=$('#cpSearch'),list=$('#cpList');
@@ -2566,9 +2600,11 @@ function wireCarPicker(){
   const inSel=id=>sel.includes(id);
   const labelOf=id=>{const c=cars.find(x=>x.id===id);return c?`${c.id} · ${c.model||''}`.trim():id;};
   const stCls=s=>'cp-'+String(s||'Available').replace(/\s+/g,'-').toLowerCase();
-  const browseBtn=$('#cpBrowseBtn'),panel=$('#cpBrowse'),bphead=panel?panel.querySelector('.bphead'):null,bpSearch=$('#bpSearch'),bpList=$('#bpList'),bpDetail=$('#bpDetail'),bpClose=$('#bpClose'),dlg2=$('#dlg');
+  const browseBtn=$('#cpBrowseBtn'),panel=$('#cpBrowse'),bphead=panel?panel.querySelector('.bphead'):null,bpSearch=$('#bpSearch'),bpList=$('#bpList'),bpDetail=$('#bpDetail'),bpClose=$('#bpClose'),dlg2=$('#dlg'),bpTop=$('#bpTop'),bpCount=$('#bpCount');
+  const _cntW=({hu:'kiválasztva',de:'ausgewählt',sk:'vybrané',cs:'vybráno',pl:'wybrano',ro:'selectate'})[LANG]||'selected';
   const toggle=id=>{if(single)sel=inSel(id)?[]:[id];else{if(inSel(id))sel=sel.filter(x=>x!==id);else sel.push(id);}sync();};
   const sync=()=>{hidden.value=sel.join(', ');
+    if(bpCount)bpCount.textContent=sel.length+' '+_cntW;
     chips.innerHTML=sel.map(id=>`<span class="cpchip" title="${esc(labelOf(id))}"><span class="cptx">${esc(labelOf(id))}</span><button type="button" class="cpx" data-rm="${esc(id)}" aria-label="Remove">×</button></span>`).join('');
     if(single)search.style.display=sel.length?'none':'';
     if(bpList)bpList.querySelectorAll('.bpadd').forEach(b=>{const on=inSel(b.dataset.add);b.classList.toggle('on',on);b.textContent=on?'✓':'＋';});
@@ -2587,19 +2623,29 @@ function wireCarPicker(){
   const renderBrowse=()=>{if(!bpList)return;const q=(bpSearch&&bpSearch.value||'').trim().toLowerCase();
     const show=priced.filter(c=>!q||`${c.id} ${c.model||''} ${c.colour||''}`.toLowerCase().includes(q));
     bpList.innerHTML=show.length?`<div class="bphcols"><span></span><span>Car</span><span>Reg · km</span><span>B2B</span><span>B2C</span><span></span></div>`+show.map(cardHtml).join(''):`<div class="cpempty">No priced cars yet</div>`;};
-  const showList=()=>{if(bphead)bphead.style.display='';if(bpList)bpList.hidden=false;if(bpDetail){bpDetail.hidden=true;bpDetail.innerHTML='';}renderBrowse();};
-  const renderDetail=c=>{if(!bpDetail)return;const ph=pics(c),L=(window.__carLabels?window.__carLabels():{})||{};
-    const gal=ph.length?`<div class="bpgal">`+ph.slice(0,5).map((f,i)=>`<img class="bpg${i===0?' big':''}" src="img/t/${esc(f)}" alt="" loading="lazy">`).join('')+(ph.length>5?`<div class="bpg bpmore">+${ph.length-5}</div>`:'')+`</div>`:'';
-    const km=c.km_text||(c.mileage!=null&&c.mileage!==''?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':'');
-    const specs=[[L.reg||'First reg',c.first_reg],[L.km||'Mileage',km],[L.power||'Power',c.power],[L.fuel||'Fuel',c.fuel],[L.gear||'Transmission',c.transmission],[L.drive||'Drive',c.drive],[L.interior||'Interior',c.interior],[L.colour||'Colour',c.colour],[L.vin||'VIN',c.vin]].filter(x=>x[1]!=null&&x[1]!=='');
+  const showList=()=>{if(bpTop)bpTop.style.display='';if(bphead)bphead.style.display='';if(bpList)bpList.hidden=false;if(bpDetail){bpDetail.hidden=true;bpDetail.innerHTML='';}renderBrowse();};
+  const renderDetail=c=>{if(!bpDetail)return;const ph=pics(c),L=(window.__carLabels?window.__carLabels():{})||{},loc=window.__loc||'en-GB';
+    const km=c.km_text||(c.mileage!=null&&c.mileage!==''?Number(c.mileage).toLocaleString(loc)+' km':'');
+    const gph=ph.slice(0,5);const gal=ph.length?`<div class="bpgal">`+gph.map((f,i)=>`<div class="bpgc${i===0?' big':''}"><img src="img/${i===0?'':'t/'}${esc(f)}" alt="" loading="lazy">${(i===4&&ph.length>5)?`<span class="bpgmore">+${ph.length-5}</span>`:''}</div>`).join('')+`</div>`:'';
+    const IG={km:'<svg class="bptic" viewBox="0 0 24 24"><path d="M8 3 4 21M16 3l4 18M12 4v3M12 10v3M12 16v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',pw:'<svg class="bptic" viewBox="0 0 24 24"><path d="M13 2 5 14h6l-1 8 8-12h-6l1-8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',fu:'<svg class="bptic" viewBox="0 0 24 24"><path d="M6 21V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v16M4 21h12M6 11h8M16 8l3 3v6a2 2 0 0 0 4 0V9l-3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',gr:'<svg class="bptic" viewBox="0 0 24 24"><path d="M7 6.5v11M7 12h10M17 6.5v11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="5" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="7" cy="19" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>',cal:'<svg class="bptic" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',ow:'<svg class="bptic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 20c1.6-4 11.4-4 13 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'};
+    const tiles=[[IG.km,km,L.km||'Mileage'],[IG.pw,c.power,L.power||'Power'],[IG.fu,c.fuel,L.fuel||'Fuel'],[IG.gr,c.transmission,L.gear||'Transmission'],[IG.cal,c.first_reg,L.reg||'First reg'],[IG.ow,c.prev_owners,L.owners||'Owners']].filter(x=>x[1]!=null&&x[1]!=='');
+    const tilesHtml=tiles.length?`<div class="bptiles">`+tiles.map(([ic,v,l])=>`<div class="bptile"><span class="bpti">${ic}</span><b>${esc(String(v))}</b><small>${esc(l)}</small></div>`).join('')+`</div>`:'';
+    const spec=[[L.model||'Make / model',[c.make,c.model].filter(Boolean).join(' · ')],[L.colour||'Colour',c.colour],[L.paint||'Paint',c.paint],[L.interior||'Interior',c.interior],[L.trim||'Trim',c.trim],[L.cond||'Condition',c.condition],[L.seats||'Seats / doors',[c.seats,c.doors].filter(v=>v!=null&&v!=='').join(' / ')],[L.cc||'Engine',c.engine_cc?Number(c.engine_cc).toLocaleString(loc)+' cm³':''],[L.drive||'Drive',c.drive],[L.clim||'Climate',c.climate],[L.park||'Parking',c.park_assist],[L.vin||'VIN',c.vin]].filter(x=>x[1]!=null&&x[1]!=='');
     const arak=[c.msrp_gross?[L.msrp||'List price',eur(c.msrp_gross)]:null,(c.pct_vs_list!=null&&c.pct_vs_list!=='')?[L.vs||'vs list',(c.pct_vs_list>0?'+':'')+c.pct_vs_list+'%']:null].filter(Boolean);
+    const mdeRow=(c.mde_url||(c.mde_price!=null&&c.mde_price!==''))?`<div class="bparakrow"><span>mobile.de</span><b>${c.mde_url?`<a href="${esc(c.mde_url)}" target="_blank" rel="noopener">${c.mde_price!=null&&c.mde_price!==''?eur(c.mde_price):'↗'} ↗</a>`:eur(c.mde_price)}</b></div>`:'';
+    const hl=Array.isArray(c.highlights)?c.highlights:[],eqa=Array.isArray(c.equipment)?c.equipment:[];
+    const dmg=(typeof dmgBox==='function'&&c.vin)?dmgBox(c.vin,true):'';
+    const dmgSec=dmg?`<div class="bpdmgwrap">${dmg}</div>`:`<div class="bpdmgwrap"><div class="dmgbox big"><div class="dmgh">${esc(t('dm_title'))}<span class="dmgsum"><b class="fx">${esc(t('dm_none'))}</b></span></div></div></div>`;
     bpDetail.innerHTML=`<button type="button" class="bpback" data-back="1">← ${esc(L.back||'Back')}</button>`+gal
       +`<h3 class="bpdt">${esc(c.model||c.id)}</h3><div class="bpds">${esc(c.id)}${c.colour?' · '+esc(c.colour):''} <span class="pill ${stCls(c.status)}">${esc(c.status||'Available')}</span></div>`
-      +`<div class="bpprices"><div class="bpp b2b"><span>B2B · ${esc(trStr('net'))}</span><b>${eur(c.dealer_net)}</b></div><div class="bpp"><span>B2C · ${esc(trStr('incl. VAT'))}</span><b>${eur(c.dealer_gross)}</b></div></div>`
-      +(arak.length?`<div class="bparak">`+arak.map(([l,v])=>`<div class="bparakrow"><span>${esc(l)}</span><b>${esc(v)}</b></div>`).join('')+`</div>`:'')
-      +`<div class="bpspec">`+specs.map(([l,v])=>`<div class="bpsf"><span>${esc(l)}</span><b>${esc(String(v))}</b></div>`).join('')+`</div>`
+      +tilesHtml
+      +`<div class="bpsec"><h4 class="bpsech">${esc(t('vd_prices'))}</h4><div class="bpprices"><div class="bpp b2b"><span>${esc(L.b2b||'B2B')}</span><b>${eur(c.dealer_net)}</b></div><div class="bpp"><span>${esc(L.b2c||'B2C')}</span><b>${eur(c.dealer_gross)}</b></div></div>`+((arak.length||mdeRow)?`<div class="bparak">`+arak.map(([l,v])=>`<div class="bparakrow"><span>${esc(l)}</span><b>${esc(v)}</b></div>`).join('')+mdeRow+`</div>`:'')+`</div>`
+      +(spec.length?`<div class="bpsec"><h4 class="bpsech">${esc(t('vd_tech'))}</h4><div class="bpdl">`+spec.map(([l,v])=>`<div class="bpdlrow"><span>${esc(l)}</span><b>${esc(String(v))}</b></div>`).join('')+`</div></div>`:'')
+      +dmgSec
+      +(hl.length?`<div class="bpsec"><h4 class="bpsech">${esc(t('vd_eqh'))}</h4><div class="bpeq">`+hl.map(x=>`<span class="bpeqc">${esc(x)}</span>`).join('')+`</div></div>`:'')
+      +(eqa.length?`<details class="bpsec bpeqall"><summary class="bpsech">${esc(L.eqall||'Full equipment')} <span class="sub">(${eqa.length})</span></summary><div class="bpeq">`+eqa.map(x=>`<span class="bpeqc">${esc(x)}</span>`).join('')+`</div></details>`:'')
       +`<button type="button" class="bpaddbig${inSel(c.id)?' on':''}" data-add="${esc(c.id)}">${inSel(c.id)?'✓ '+(single?'Selected':'Added'):'＋ '+(single?'Select this car':'Add to list')}</button>`;
-    if(bphead)bphead.style.display='none';bpList.hidden=true;bpDetail.hidden=false;bpDetail.scrollTop=0;};
+    if(bpTop)bpTop.style.display='none';if(bphead)bphead.style.display='none';bpList.hidden=true;bpDetail.hidden=false;bpDetail.scrollTop=0;};
   if(browseBtn&&panel&&dlg2)browseBtn.addEventListener('click',()=>{dlg2.classList.add('dlg-browse');showList();if(bpSearch)setTimeout(()=>bpSearch.focus(),0);});
   if(bpClose&&dlg2)bpClose.addEventListener('click',()=>dlg2.classList.remove('dlg-browse'));
   if(bpSearch)bpSearch.addEventListener('input',renderBrowse);
