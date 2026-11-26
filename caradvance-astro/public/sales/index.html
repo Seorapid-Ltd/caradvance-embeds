@@ -363,6 +363,13 @@ header .herobottom .brands{margin:0;padding:0}
 .herostats .stat b.red{color:#ff2a3f}
 .herostats .stat span{color:#E7EAF0;font-size:13.5px;font-weight:600;text-shadow:0 1px 10px rgba(0,0,0,.6)}
 .herostats .stat small{color:#AEB6C4}
+/* hero stat: car icon · red divider · big red number · white label */
+.herostats .stat{gap:18px;align-items:center}
+.herostats .stat>svg{width:44px!important;height:44px!important;opacity:1!important}
+.herostats .stat>div{border-left:3px solid var(--red);padding-left:20px;display:flex;flex-direction:column;gap:2px;line-height:1}
+.herostats .stat b.red{color:#ff2a3f;font-size:clamp(40px,5.4vw,66px)!important;font-weight:900;letter-spacing:-.03em;line-height:.92}
+.herostats .stat span{color:#fff!important;font-size:clamp(15px,1.5vw,20px)!important;font-weight:800!important}
+.herostats .stat small{color:#AEB6C4;margin-top:4px}
 #kpis.kpis{grid-template-columns:1fr 1fr}
 @media(max-width:1100px){.herostats{width:100%}.herostats .stats{flex-wrap:wrap;gap:14px 0}.herostats .stat:first-child{padding-left:0}}
 @media(max-width:640px){.herostats .stat{flex:1 1 45%;padding:0 10px!important;border-left:0!important}}
@@ -890,6 +897,7 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 .slin i{font-style:normal;font-weight:800;color:var(--muted)}
 .slin input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:20px;font-weight:800;padding:11px 0;outline:none}
 .slsave{margin-top:10px;padding:7px 16px;border-radius:999px;border:0;background:var(--red);color:#fff;font-weight:800;font-size:13px;cursor:pointer}.slsave:hover{background:var(--red-dark,#B80015)}
+.slsave.danger{background:#6b7280}.slsave.danger:hover{background:#4b5563}
 .slcr .slchk{font-size:13.5px;color:var(--muted)}
 .slnote{margin:-4px 0 0;font-size:13px;color:var(--muted)}
 .slmk{display:flex;flex-direction:column;gap:14px;padding-top:18px;border-top:1px solid var(--line)}
@@ -1032,19 +1040,26 @@ tr.det .offerrow{margin:0}
 .subnav a[data-s=outreach]:hover{background:var(--red-dark,#B80015)}
 .subnav a[data-s=outreach].on{background:var(--red-dark,#B80015);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
 .subnav a[data-s=outreach] span{background:rgba(255,255,255,.22);color:#fff}
-/* Tail-light style arrow pointing to the Activity button */
-.subnav .subarrow{margin-left:auto;margin-right:auto;align-self:center;display:inline-flex;align-items:center;pointer-events:none}
-.subnav a[data-s=outreach]{margin-left:auto}
-.subarrow svg{width:64px;height:24px;overflow:visible}
-.subarrow line{stroke-width:3;stroke-linecap:round;animation:tlSweep 1.5s linear infinite}
-.subarrow line:nth-child(1){stroke:#fff;filter:drop-shadow(0 0 2px #ffced3) drop-shadow(0 0 5px #ffb3ba);animation-delay:0s}
-.subarrow line:nth-child(2){stroke:#ffd4d9;filter:drop-shadow(0 0 2px #ff9ba4) drop-shadow(0 0 5px #ff7a86);animation-delay:.1s}
-.subarrow line:nth-child(3){stroke:#ffaab3;filter:drop-shadow(0 0 2px #ff6b78) drop-shadow(0 0 5px #ff4655);animation-delay:.2s}
-.subarrow line:nth-child(4){stroke:#ff808d;filter:drop-shadow(0 0 2px #ff3f4e) drop-shadow(0 0 6px #ff2230);animation-delay:.3s}
-.subarrow line:nth-child(5){stroke:#ff5160;filter:drop-shadow(0 0 3px #ff2230) drop-shadow(0 0 6px #ff2230);animation-delay:.4s}
-.subarrow line:nth-child(6){stroke:#f52433;filter:drop-shadow(0 0 3px #ff2230) drop-shadow(0 0 7px #e60012);animation-delay:.5s}
-.subarrow line:nth-child(7){stroke:#e60012;filter:drop-shadow(0 0 3px #ff2230) drop-shadow(0 0 8px #e60012);animation-delay:.6s}
-@keyframes tlSweep{0%{opacity:.4}10%{opacity:1}30%{opacity:.4}100%{opacity:.4}}
+/* Tail-light style bar between the Leads and Activity buttons */
+.subnav .subarrow{flex:1 1 auto;min-width:0;align-self:center;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.subnav a[data-s=outreach]{margin-left:0}
+.subarrow svg{width:100%;max-width:620px;height:26px;overflow:visible}
+.subarrow line{stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 2px #ff2230) drop-shadow(0 0 5px #ff3340);animation:tlSweep 1.6s linear infinite}
+.subarrow line:nth-child(1){stroke:#ffffff;animation-delay:0.0s}
+.subarrow line:nth-child(2){stroke:#fdebed;animation-delay:0.05s}
+.subarrow line:nth-child(3){stroke:#fbd8db;animation-delay:0.1s}
+.subarrow line:nth-child(4){stroke:#f9c4c8;animation-delay:0.15s}
+.subarrow line:nth-child(5){stroke:#f7b1b6;animation-delay:0.2s}
+.subarrow line:nth-child(6){stroke:#f59da4;animation-delay:0.25s}
+.subarrow line:nth-child(7){stroke:#f38992;animation-delay:0.3s}
+.subarrow line:nth-child(8){stroke:#f2767f;animation-delay:0.35s}
+.subarrow line:nth-child(9){stroke:#f0626d;animation-delay:0.4s}
+.subarrow line:nth-child(10){stroke:#ee4e5b;animation-delay:0.45s}
+.subarrow line:nth-child(11){stroke:#ec3b49;animation-delay:0.5s}
+.subarrow line:nth-child(12){stroke:#ea2736;animation-delay:0.55s}
+.subarrow line:nth-child(13){stroke:#e81424;animation-delay:0.6s}
+.subarrow line:nth-child(14){stroke:#e60012;animation-delay:0.65s}
+@keyframes tlSweep{0%{opacity:.4}9%{opacity:1}26%{opacity:.4}100%{opacity:.4}}
 @media(prefers-reduced-motion:reduce){.subarrow line{animation:none;opacity:.9}}
 
 /* ---- Dealers (B2B) list ---- */
@@ -1098,20 +1113,50 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .dmenu{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer;display:inline-grid;place-items:center}
 .dmenu svg{width:20px;height:20px;fill:currentColor}
 .dmenu:hover{background:var(--soft);border-color:var(--line);color:var(--ink)}
-/* dealer read-only detail */
+/* hide the site AI chat bubble on the internal desk */
+.cac{display:none!important}
+/* dealer read-only detail (card design) */
 .dvwrap{display:block}
-.dvhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px}
-.dvhead .dvsub{font-size:14px;color:var(--muted);font-weight:600}
-.dvhead .dvpill{font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;background:var(--soft);color:var(--ink);border:1px solid var(--line)}
-.dvsec{margin:0 0 18px}
-.dvsec h4{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:800}
-.dvgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px 20px}
-.dvr{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid var(--line)}
-.dvr dt{font-size:11.5px;color:var(--muted);font-weight:700}
-.dvr dd{margin:0;font-size:14.5px;color:var(--ink);font-weight:600;word-break:break-word}
-.dvr a{color:var(--red);text-decoration:none;font-weight:700}
-.dvr a:hover{text-decoration:underline}
 .dvempty{color:var(--muted);text-align:center;padding:22px}
+.dv2head{display:flex;align-items:center;gap:16px;margin:2px 0 18px}
+.dv2av{flex:none;width:60px;height:60px;border-radius:16px;background:#ffe8ea;color:var(--red);display:grid;place-items:center;border-right:3px solid var(--red)}
+.dv2av svg{width:34px;height:34px}
+.dv2htx{min-width:0}
+.dv2ttl{margin:0 0 8px;font-size:26px;font-weight:800;line-height:1.1;color:var(--ink)}
+.dv2pills{display:flex;flex-wrap:wrap;gap:8px}
+.dv2pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;background:var(--soft);border:1px solid var(--line);color:var(--ink)}
+.dv2pill svg{width:15px;height:15px;color:var(--red)}
+.dv2sec{border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 14px;background:var(--card)}
+.dv2sec.tint{background:#fff5f6;border-color:#ffdfe3}
+.dv2sh{display:flex;align-items:center;gap:9px;margin:0 0 13px}
+.dv2sh svg{width:19px;height:19px;color:var(--red)}
+.dv2sh h4{margin:0;font-size:16px;font-weight:800;color:var(--ink)}
+.dv2grid{display:flex;flex-wrap:wrap;gap:14px 0}
+.dv2f{flex:1 1 180px;min-width:150px;padding:0 18px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:5px}
+.dv2f:first-child{border-left:0;padding-left:0}
+.dv2f.wide{flex-basis:100%}
+.dv2l{font-size:12px;color:var(--muted);font-weight:700}
+.dv2v{font-size:15.5px;color:var(--ink);font-weight:700;word-break:break-word}
+.dv2v.note{font-weight:500;font-size:14.5px;line-height:1.5;white-space:pre-line}
+.dv2a{display:inline-flex;align-items:center;gap:6px;color:var(--red);font-weight:800;text-decoration:none;word-break:break-word}
+.dv2a svg{width:15px;height:15px;flex:none}
+.dv2a:hover{text-decoration:underline}
+.dv2call{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;padding:10px 16px;border:2px solid #16a34a;border-radius:14px;background:#f0fdf4;color:#15803d;text-decoration:none}
+.dv2call svg{width:22px;height:22px;flex:none}
+.dv2call b{font-size:17px;font-weight:800;display:block;line-height:1.15;white-space:nowrap}
+.dv2call small{font-size:12px;font-weight:700;opacity:.85}
+.dv2addmail{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;padding:8px 14px;border:1px solid var(--red);border-radius:12px;background:#fff;color:var(--red);font-weight:800;font-size:14px;cursor:pointer}
+.dv2addmail svg{width:16px;height:16px}
+.dv2addmail:hover{background:#fff5f6}
+.dv2bpg{display:flex;flex-wrap:wrap;gap:16px 0}
+.dv2bp{flex:1 1 200px;min-width:160px;padding:0 18px;border-left:1px solid var(--line);display:flex;align-items:center;gap:12px;font-size:14.5px;font-weight:700;color:var(--ink)}
+.dv2bp:first-child{border-left:0;padding-left:0}
+.dv2bpi{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#ffe8ea;color:var(--red)}
+.dv2bpi svg{width:20px;height:20px}
+html[data-theme=dark] .dv2av,html[data-theme=dark] .dv2bpi{background:rgba(230,0,18,.18)}
+html[data-theme=dark] .dv2sec.tint{background:rgba(230,0,18,.08);border-color:rgba(230,0,18,.25)}
+html[data-theme=dark] .dv2call{background:rgba(22,163,74,.12);color:#4ade80}
+@media(max-width:640px){.dv2f,.dv2bp{flex-basis:100%;border-left:0!important;padding-left:0!important}.dv2ttl{font-size:21px}.dv2av{width:52px;height:52px}}
 @media(max-width:900px){.dlrfilters select{flex:1 1 140px}.dlrfilters .pri{margin-left:0}}
 @media(max-width:700px){
   .dlrh1{font-size:24px}
@@ -1477,7 +1522,7 @@ Ready when you are.</h1>
   </section>
 
   <section class="view" id="v-dealers">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 64 24"><line x1="5" y1="15.5" x2="10" y2="8.5"/><line x1="13" y1="16.5" x2="18" y2="7.5"/><line x1="21" y1="17.5" x2="26" y2="6.5"/><line x1="29" y1="18.5" x2="34" y2="5.5"/><line x1="37" y1="19.5" x2="42" y2="4.5"/><line x1="45" y1="20.5" x2="50" y2="3.5"/><line x1="53" y1="21.5" x2="58" y2="2.5"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 140 24" preserveAspectRatio="none"><line x1="5.0" y1="15.0" x2="8.0" y2="9.0"/><line x1="14.8" y1="15.6" x2="17.8" y2="8.4"/><line x1="24.6" y1="16.1" x2="27.6" y2="7.9"/><line x1="34.4" y1="16.6" x2="37.4" y2="7.3"/><line x1="44.2" y1="17.2" x2="47.2" y2="6.8"/><line x1="54.0" y1="17.8" x2="57.0" y2="6.2"/><line x1="63.8" y1="18.3" x2="66.8" y2="5.7"/><line x1="73.6" y1="18.9" x2="76.6" y2="5.1"/><line x1="83.4" y1="19.4" x2="86.4" y2="4.6"/><line x1="93.2" y1="19.9" x2="96.2" y2="4.0"/><line x1="103.0" y1="20.5" x2="106.0" y2="3.5"/><line x1="112.8" y1="21.1" x2="115.8" y2="2.9"/><line x1="122.6" y1="21.6" x2="125.6" y2="2.4"/><line x1="132.4" y1="22.1" x2="135.4" y2="1.8"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
     <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
     <div id="dkpis" hidden style="display:none"></div>
     <div class="dlrpanel">
@@ -1544,7 +1589,7 @@ Ready when you are.</h1>
   <dialog id="ofDlg"><form method="dialog" id="ofForm"><div class="dh"><h2 id="ofDlgT"></h2><button value="cancel" type="button" id="ofDlgX" aria-label="Close">✕</button></div><div class="db" id="ofDlgB"></div><div class="df" id="ofDlgF"></div></form></dialog>
 
   <section class="view" id="v-outreach">
-    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 64 24"><line x1="5" y1="15.5" x2="10" y2="8.5"/><line x1="13" y1="16.5" x2="18" y2="7.5"/><line x1="21" y1="17.5" x2="26" y2="6.5"/><line x1="29" y1="18.5" x2="34" y2="5.5"/><line x1="37" y1="19.5" x2="42" y2="4.5"/><line x1="45" y1="20.5" x2="50" y2="3.5"/><line x1="53" y1="21.5" x2="58" y2="2.5"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
+    <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span class="nDeal2"></span></a><span class="subarrow" aria-hidden="true"><svg viewBox="0 0 140 24" preserveAspectRatio="none"><line x1="5.0" y1="15.0" x2="8.0" y2="9.0"/><line x1="14.8" y1="15.6" x2="17.8" y2="8.4"/><line x1="24.6" y1="16.1" x2="27.6" y2="7.9"/><line x1="34.4" y1="16.6" x2="37.4" y2="7.3"/><line x1="44.2" y1="17.2" x2="47.2" y2="6.8"/><line x1="54.0" y1="17.8" x2="57.0" y2="6.2"/><line x1="63.8" y1="18.3" x2="66.8" y2="5.7"/><line x1="73.6" y1="18.9" x2="76.6" y2="5.1"/><line x1="83.4" y1="19.4" x2="86.4" y2="4.6"/><line x1="93.2" y1="19.9" x2="96.2" y2="4.0"/><line x1="103.0" y1="20.5" x2="106.0" y2="3.5"/><line x1="112.8" y1="21.1" x2="115.8" y2="2.9"/><line x1="122.6" y1="21.6" x2="125.6" y2="2.4"/><line x1="132.4" y1="22.1" x2="135.4" y2="1.8"/></svg></span><a href="#outreach" data-s="outreach"><i data-i18n="tab_out">Outreach log</i> <span class="nOut2"></span></a></nav>
     <div class="bar"><button class="pri" id="addLog">Log a call or email</button><span class="count" id="oCount"></span></div>
     <div class="tbl"><table>
       <thead><tr><th>Date</th><th>Dealer</th><th>Cars</th><th>Channel</th><th class="hide-s">Team member</th><th>Outcome</th></tr></thead>
@@ -1739,6 +1784,7 @@ const FLAG={
  pl:'<svg viewBox="0 0 8 5"><rect width="8" height="2.5" fill="#fff"/><rect y="2.5" width="8" height="2.5" fill="#DC143C"/></svg>'};
 Object.assign(TRD,{"Dealer package": ["Kereskedői csomag", "Dílerský balík", "Dealerský balíček", "Händlerpaket", "Pakiet dealerski"], "Dealer & private": ["Kereskedő és magánvevő", "Predajca aj súkromník", "Prodejce i soukromník", "Händler & privat", "Dealer i prywatny"], "net": ["nettó", "bez DPH", "bez DPH", "netto", "netto"], "Asking price €": ["Kínálati ár €", "Ponuková cena €", "Nabídková cena €", "Angebotspreis €", "Cena ofertowa €"]});
 Object.assign(TRD,{"B2B prices exclude VAT; B2C prices include 19% German VAT. Sources: dealer lists (16–17 Nov 2026), 2026 stock list (18 Nov 2026), sales exposés (11 Nov 2026). Click a row for full details and photos.": ["A B2B árak ÁFA nélküliek, a B2C árak a 19%-os német ÁFÁ-t tartalmazzák. Források: kereskedői listák (2026. nov. 16–17.), 2026-os készletlista (nov. 18.), értékesítési adatlapok (nov. 11.). Kattintson egy sorra a részletekért és fotókért.", "Ceny B2B sú bez DPH, ceny B2C obsahujú 19 % nemeckú DPH. Zdroje: zoznamy pre predajcov (16.–17. 11. 2026), zoznam skladu 2026 (18. 11. 2026), predajné exposé (11. 11. 2026). Kliknite na riadok pre detaily a fotky.", "Ceny B2B jsou bez DPH, ceny B2C obsahují 19% německou DPH. Zdroje: seznamy pro dealery (16.–17. 11. 2026), seznam skladu 2026 (18. 11. 2026), prodejní exposé (11. 11. 2026). Klikněte na řádek pro detaily a fotky.", "B2B-Preise ohne MwSt., B2C-Preise inkl. 19 % deutscher MwSt. Quellen: Händlerlisten (16.–17.11.2026), Bestandsliste 2026 (18.11.2026), Verkaufsexposés (11.11.2026). Zeile anklicken für Details und Fotos.", "Ceny B2B bez VAT, ceny B2C zawierają 19% niemiecki VAT. Źródła: listy dla dealerów (16–17.11.2026), lista magazynowa 2026 (18.11.2026), oferty sprzedażowe (11.11.2026). Kliknij wiersz, aby zobaczyć szczegóły i zdjęcia."], "Dealer Package 1 · mixed BMW & MINI (15)": ["1. kereskedői csomag · vegyes BMW és MINI (15)", "Dílerský balík 1 · zmiešané BMW a MINI (15)", "Dealerský balíček 1 · smíšené BMW a MINI (15)", "Händlerpaket 1 · gemischte BMW & MINI (15)", "Pakiet dealerski 1 · mieszane BMW i MINI (15)"], "Dealer Package 2 · BMW SUVs (17)": ["2. kereskedői csomag · BMW SUV-ok (17)", "Dílerský balík 2 · BMW SUV (17)", "Dealerský balíček 2 · BMW SUV (17)", "Händlerpaket 2 · BMW-SUVs (17)", "Pakiet dealerski 2 · BMW SUV (17)"], "Ex-rental 2026 · sold individually": ["2026-os bérautók · egyenként", "Autá z prenájmu 2026 · jednotlivo", "Vozy z pronájmu 2026 · jednotlivě", "Ex-Mietwagen 2026 · einzeln", "Auta z wynajmu 2026 · pojedynczo"], "Performance & luxury cars": ["Sport- és luxusautók", "Výkonné a luxusné autá", "Výkonné a luxusní vozy", "Performance- & Luxusfahrzeuge", "Auta sportowe i luksusowe"], "Minimum price € (internal)": ["Minimális ár € (belső)", "Minimálna cena € (interné)", "Minimální cena € (interní)", "Mindestpreis € (intern)", "Cena minimalna € (wewn.)"], "B2B": ["B2B", "B2B", "B2B", "B2B", "B2B"], "Package No.1": ["1. kereskedői csomag", "Dílerský balík 1", "Dealerský balíček 1", "Händlerpaket 1", "Pakiet dealerski 1"], "Package No.2": ["2. kereskedői csomag", "Dílerský balík 2", "Dealerský balíček 2", "Händlerpaket 2", "Pakiet dealerski 2"], "Single offers": ["Sport- és luxusautók", "Výkonné a luxusné autá", "Výkonné a luxusní vozy", "Performance- & Luxusfahrzeuge", "Auta sportowe i luksusowe"]});
+Object.assign(TRD,{"Company": ["Cég", "Firma", "Firma", "Unternehmen", "Firma"], "Business profile": ["Üzleti profil", "Obchodný profil", "Obchodní profil", "Geschäftsprofil", "Profil biznesowy"], "Sales": ["Értékesítés", "Predaj", "Prodej", "Vertrieb", "Sprzedaż"], "Sales notes": ["Értékesítési jegyzetek", "Predajné poznámky", "Prodejní poznámky", "Vertriebsnotizen", "Notatki sprzedażowe"], "Website": ["Weboldal", "Webstránka", "Webové stránky", "Website", "Strona WWW"], "Source": ["Forrás", "Zdroj", "Zdroj", "Quelle", "Źródło"], "Add email": ["E-mail hozzáadása", "Pridať e-mail", "Přidat e-mail", "E-Mail hinzufügen", "Dodaj e-mail"]});
 const TRX=TRP.map(([p,v])=>[new RegExp(p),v]);
 const TRDRO={"Add dealer": "Adaugă dealer", "All countries": "Toate țările", "All statuses": "Toate statusurile", "All tiers": "Toate nivelurile", "Any score": "Orice scor", "Any status": "Orice status", "Back to stock": "Înapoi la stoc", "Cancel": "Anulare", "Car": "Mașină", "Cars": "Mașini", "Category": "Categorie", "Channel": "Canal", "Close": "Închide", "Contact": "Contact", "Contacted": "Contactat", "Country": "Țară", "Date": "Data", "Dealer": "Dealer", "Dealers": "Dealeri", "Delete": "Șterge", "Do not contact": "Nu contactați", "Export CSV": "Export CSV", "Filter stock by make": "Filtrare după marcă", "Interested": "Interesat", "Not interested": "Neinteresat", "Email": "E-mail", "Phone": "Telefon", "Meeting": "Întâlnire", "Other": "Altele", "Language": "Limbă", "Light / dark": "Luminos / întunecat", "Switch light or dark mode": "Comută modul luminos / întunecat", "Loading dealers…": "Se încarcă dealerii…", "Loading stock…": "Se încarcă stocul…", "Loading…": "Se încarcă…", "Log a call or email": "Înregistrează un apel sau e-mail", "Make": "Marcă", "New": "Nou", "Next ›": "Următor ›", "‹ Previous": "‹ Anterior", "Notes": "Note", "Note": "Notă", "Outcome": "Rezultat", "Owner": "Responsabil", "Reserved": "Rezervat", "Under offer": "Sub ofertă", "Sold": "Vândut", "Available": "Disponibil", "Save": "Salvează", "Score": "Scor", "Search stock": "Caută în stoc", "Sort": "Sortare", "Sort: available until": "Sortare: disponibil până la", "Sort: list order": "Sortare: ordinea listei", "Sort: mileage": "Sortare: kilometraj", "Sort: price high–low": "Sortare: preț descrescător", "Status": "Status", "Team member": "Membru echipă", "Type": "Tip", "Available until": "Disponibil până la", "Body": "Caroserie", "City": "Oraș", "Colour": "Culoare", "Equipment": "Dotări", "First reg.": "Prima înmatriculare", "Fuel": "Combustibil", "Interior": "Interior", "Make / model": "Marcă / model", "Mileage": "Kilometraj", "No cars match these filters.": "Nicio mașină pentru aceste filtre.", "Plate": "Număr", "Power": "Putere", "Prev. owners": "Proprietari anteriori", "Transmission": "Transmisie", "VIN": "VIN", "Wheels": "Roți", "Hungary": "Ungaria", "Slovakia": "Slovacia", "Czech Republic": "Cehia", "Austria": "Austria", "Poland": "Polonia", "Romania": "România", "no photo yet": "încă fără fotografie", "km on request": "km la cerere", "on request": "la cerere", "Message a dealer": "Mesaj către un dealer", "Asking price": "Preț cerut", "Minimum price": "Preț minim", "net": "net", "B2B": "B2B", "B2C": "B2C", "Condition": "Stare", "Trim": "Echipare", "Paint (manufacturer)": "Vopsea (producător)", "Seats / doors": "Locuri / uși", "Engine": "Motor", "Climate": "Climatizare", "Parking aids": "Asistență parcare"};
 function trStr(s){if(LANG==='en'||s==null)return s;if(LANG==='ro'){const k0=String(s).trim();if(TRDRO[k0])return String(s).replace(k0,TRDRO[k0]);return String(s).replace(/^(\d+) of (\d+) vehicles$/,'$1 din $2 vehicule').replace(/^(\d+) dealers?$/,'$1 dealeri').replace(/^(\d+) entries$/,'$1 înregistrări')}const li=TRL.indexOf(LANG);if(li<0)return s;const k=s.trim();if(!k)return s;
@@ -1983,47 +2029,60 @@ $('#dlgForm').addEventListener('submit',async e=>{e.preventDefault();const fd=Ob
 /* read-only dealer detail (visible to everyone; Edit opens the form) */
 let viewDealer=null;
 $('#dlgEdit').onclick=()=>{const d=viewDealer;dlg.close();if(d)setTimeout(()=>openDealer(d),60)};
+$('#dlgBody').addEventListener('click',e=>{if(e.target.closest('[data-dealeredit]')){const d=viewDealer;dlg.close();if(d)setTimeout(()=>openDealer(d),60)}});
 function dealerViewHtml(d){
   const E=s=>esc(s==null?'':String(s));
-  const tel=p=>p?`<a href="tel:${E(String(p).replace(/[^\d+]/g,''))}">${E(p)}</a>`:'';
-  const mail=m=>m?`<a href="mailto:${E(m)}">${E(m)}</a>`:'';
-  const web=w=>{if(!w)return'';const u=/^https?:/i.test(w)?w:'https://'+w;return `<a href="${E(u)}" target="_blank" rel="noopener">${E(String(w).replace(/^https?:\/\//,''))}</a>`};
-  const links=s=>s?String(s).split(/\n+/).map(u=>u.trim()).filter(Boolean).map(web).join('<br>'):'';
-  const row=(l,v)=>v?`<div class="dvr"><dt>${E(trStr(l))}</dt><dd>${v}</dd></div>`:'';
-  const sec=(title,rows)=>{const r=rows.filter(Boolean).join('');return r?`<section class="dvsec"><h4>${E(trStr(title))}</h4><div class="dvgrid">${r}</div></section>`:''};
+  const has=v=>v!=null&&v!=='';
+  const IV={
+    car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11l1.6-4.3A2 2 0 0 1 8.5 5.4h7A2 2 0 0 1 17.4 6.7L19 11M4 11h16a1 1 0 0 1 1 1v4h-2M4 11a1 1 0 0 0-1 1v4h2m0 0v2m0-2h14m0 0v2"/><circle cx="7.5" cy="14.5" r="1" fill="currentColor"/><circle cx="16.5" cy="14.5" r="1" fill="currentColor"/></svg>',
+    bld:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16M14 9h5a1 1 0 0 1 1 1v11M3 21h18M7 7h2M7 11h2M7 15h2"/></svg>',
+    ppl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M16 5.5a3 3 0 0 1 0 5.5M21 20c0-2.2-1.4-4-3.6-4.6"/></svg>',
+    tag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></svg>',
+    note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+    chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"/></svg>',
+    pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>',
+    layers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17l9 5 9-5"/></svg>',
+    star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg>',
+    globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9S14.5 18.4 12 21C9.5 18.4 8.2 15.4 8.2 12S9.5 5.6 12 3z"/></svg>',
+    phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
+    mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+    ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+    link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg>',
+    plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+  };
+  const telHref=p=>'tel:'+String(p).replace(/[^\d+]/g,'');
+  const web=w=>{if(!w)return'';const u=/^https?:/i.test(w)?w:'https://'+w;return `<a class="dv2a" href="${E(u)}" target="_blank" rel="noopener">${IV.ext}${E(String(w).replace(/^https?:\/\//,'').replace(/\/$/,''))}</a>`};
+  const links=s=>s?String(s).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(u=>/^https?:/i.test(u)?`<a class="dv2a" href="${E(u)}" target="_blank" rel="noopener">${IV.link}${E(u.replace(/^https?:\/\//,''))}</a>`:`<span class="dv2v">${E(u)}</span>`).join('<br>'):'';
   const TIER={1:'Tier 1 – BMW/MINI dealer',2:'Tier 2 – premium used',3:'Tier 3 – trader/exporter'};
   const CN={HU:'Hungary',SK:'Slovakia',CZ:'Czech Republic',AT:'Austria',PL:'Poland',RO:'Romania',HR:'Croatia',SI:'Slovenia',DE:'Germany'};
   const cname=d.country?trStr(CN[d.country]||d.country):'';
-  const head=`<div class="dvhead">${(cname||d.city)?`<span class="dvsub">${E(cname)}${cname&&d.city?' · ':''}${E(d.city)}</span>`:''}${d.status?`<span class="dvpill">${E(trStr(d.status))}</span>`:''}${d.tier?`<span class="dvpill">${E(trStr(TIER[d.tier]||('Tier '+d.tier)))}</span>`:''}${(d.score!=null&&d.score!=='')?`<span class="dvpill">${E(trStr('Score'))} ${E(d.score)}/5</span>`:''}</div>`;
-  const body=
-    sec('Company',[
-      row('Legal name',E(d.legal_name)),
-      row('Company reg. no.',E(d.reg_no)),
-      row('Country',E(cname)),
-      row('Address',E(d.address)),
-      row('Website',web(d.website)),
-      row('Brands sold',E(d.brands)),
-      row('Interest fit',E(d.fit)),
-      row('Premium cars listed (€30k+)',(d.premium_stock!=null&&d.premium_stock!=='')?E(d.premium_stock):'')
-    ])+
-    sec('Contact',[
-      row('Contact person',E(d.contact_name)),
-      row('Job title',E(d.contact_title)),
-      row('Contact phone (published)',tel(d.contact_phone)),
-      row('Contact email (published)',mail(d.contact_email)),
-      row('General phone',tel(d.phone)),
-      row('General email',mail(d.email))
-    ])+
-    sec('Sales',[
-      row('Score reason',E(d.score_reason)),
-      row('Outreach language',E(d.language)),
-      row('Owner (team member)',E(d.owner)),
-      row('Last contact',E(d.last_contact))
-    ])+
-    sec('Notes',[
-      row('Notes',d.notes?E(d.notes).replace(/\n/g,'<br>'):''),
-      row('Source URLs (one per line)',links(d.sources))
-    ]);
+  const fld=(l,v)=>has(v)?`<div class="dv2f"><span class="dv2l">${E(trStr(l))}</span><span class="dv2v">${v}</span></div>`:'';
+  const sec=(icon,title,inner,cls)=>inner?`<section class="dv2sec ${cls||''}"><div class="dv2sh">${icon}<h4>${E(trStr(title))}</h4></div>${inner}</section>`:'';
+  const pins=[];
+  if(cname||d.city)pins.push(`<span class="dv2pill">${IV.pin}${E([d.city,cname].filter(Boolean).join(', '))}</span>`);
+  if(has(d.status))pins.push(`<span class="dv2pill">${E(trStr(d.status))}</span>`);
+  if(d.tier)pins.push(`<span class="dv2pill">${IV.layers}${E(trStr(TIER[d.tier]||('Tier '+d.tier)))}</span>`);
+  if(has(d.score))pins.push(`<span class="dv2pill">${IV.star}${E(trStr('Score'))} ${E(d.score)}/5</span>`);
+  const head=`<div class="dv2head"><div class="dv2av">${IV.car}</div><div class="dv2htx"><h2 class="dv2ttl">${E(d.name||'')}</h2><div class="dv2pills">${pins.join('')}</div></div></div>`;
+  const company=sec(IV.bld,'Company',(()=>{const r=[fld('Legal name',E(d.legal_name)),fld('Company reg. no.',E(d.reg_no)),fld('Country',E(cname)),fld('Address',E(d.address)),fld('Website',web(d.website))].filter(Boolean).join('');return r?`<div class="dv2grid">${r}</div>`:''})());
+  const phone=d.contact_phone||d.phone, mailv=d.contact_email||d.email;
+  const contactInner=(()=>{const parts=[];
+    if(has(d.contact_name))parts.push(`<div class="dv2f"><span class="dv2l">${E(trStr('Contact person'))}</span><span class="dv2v">${E(d.contact_name)}</span></div>`);
+    if(has(d.contact_title))parts.push(`<div class="dv2f"><span class="dv2l">${E(trStr('Job title'))}</span><span class="dv2v">${E(d.contact_title)}</span></div>`);
+    if(has(phone))parts.push(`<div class="dv2f"><a class="dv2call" href="${E(telHref(phone))}">${IV.phone}<span><b>${E(phone)}</b><small>${E(trStr('Phone'))}</small></span></a></div>`);
+    if(has(mailv))parts.push(`<div class="dv2f"><span class="dv2l">${E(trStr('Email'))}</span><a class="dv2a" href="mailto:${E(mailv)}">${IV.mail}${E(mailv)}</a></div>`);
+    else parts.push(`<div class="dv2f"><span class="dv2l">${E(trStr('Email'))}</span><button type="button" class="dv2addmail" data-dealeredit="1">${IV.plus}${E(trStr('Add email'))}</button></div>`);
+    return parts.length?`<div class="dv2grid">${parts.join('')}</div>`:'';})();
+  const contact=sec(IV.ppl,'Contact',contactInner,'tint');
+  const bp=[];
+  if(has(d.brands))bp.push(`<div class="dv2bp"><span class="dv2bpi">${IV.car}</span><span>${E(d.brands)}</span></div>`);
+  if(has(d.premium_stock))bp.push(`<div class="dv2bp"><span class="dv2bpi">${IV.car}</span><span>${E(d.premium_stock)} ${E(trStr('Premium cars listed (€30k+)'))}</span></div>`);
+  if(has(d.fit))bp.push(`<div class="dv2bp"><span class="dv2bpi">${IV.globe}</span><span>${E(trStr('Interest fit'))}: ${E(d.fit)}</span></div>`);
+  const bprofile=sec(IV.tag,'Business profile',bp.length?`<div class="dv2bpg">${bp.join('')}</div>`:'');
+  const sales=sec(IV.chart,'Sales',(()=>{const r=[fld('Score reason',E(d.score_reason)),fld('Outreach language',E(d.language)),fld('Owner (team member)',E(d.owner)),fld('Last contact',E(d.last_contact))].filter(Boolean).join('');return r?`<div class="dv2grid">${r}</div>`:''})());
+  const notesInner=(()=>{const parts=[];if(has(d.notes))parts.push(`<div class="dv2f wide"><span class="dv2v note">${E(d.notes)}</span></div>`);const lk=links(d.sources);if(lk)parts.push(`<div class="dv2f"><span class="dv2l">${E(trStr('Source'))}</span><span class="dv2v">${lk}</span></div>`);return parts.length?`<div class="dv2grid">${parts.join('')}</div>`:''})();
+  const notes=sec(IV.note,'Sales notes',notesInner);
+  const body=company+contact+bprofile+sales+notes;
   return head+(body||`<p class="dvempty">—</p>`);
 }
 function openDealerView(d){
@@ -2354,17 +2413,17 @@ $('#ofList').addEventListener('click',async e=>{
     try{const r=await fetch('/api/desk/stocklist/price',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,withdraw:!c.off})});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
       const i=SL.data.cars.findIndex(x=>x.id===c.id);if(i>=0){SL.data.cars[i]=Object.assign({},SL.data.cars[i],j.car,j.car.off?{}:{off:undefined});patchCard(SL.data.cars[i])}if(c.desk&&window.__setOffDesk)window.__setOffDesk(c.desk,!!j.car.off)}
     catch(err){status(err.message);b.disabled=false}});
-  $('#slRows').addEventListener('click',e=>{const b=e.target.closest('[data-sldel]');if(!b)return;e.preventDefault();const c=carOf(b.dataset.sldel);if(!c||!c.chosen)return;
-    const back=c.chosen.orig?c.chosen.orig.net:c.chosen.prev;
+  function slAskDelete(id){const c=carOf(id);if(!c||!c.chosen)return;const back=c.chosen.orig?c.chosen.orig.net:c.chosen.prev;
     ofDialog(t('sl_del_q'),`<p>${esc(t('sl_del_help')).replace('{p}',back?'<b>'+eur(back)+'</b>':'—')}</p>`,`<button type="button" onclick="this.closest('dialog').close()">${esc(t('l_cancel'))}</button><button type="button" class="pri" id="slDelGo">${esc(t('sl_del'))}</button>`);
-    $('#slDelGo').onclick=()=>{$('#ofDlg').close();savePrice(c.id,null,null,true)}});
+    $('#slDelGo').onclick=()=>{$('#ofDlg').close();savePrice(id,null,null,true)}}
+  $('#slRows').addEventListener('click',e=>{const b=e.target.closest('[data-sldel]');if(!b)return;e.preventDefault();slAskDelete(b.dataset.sldel)});
   $('#slRows').addEventListener('change',e=>{const r=e.target.closest('input[data-slp]');if(!r||!SL.data.canPrice)return;const id=r.dataset.slp;
     if(r.value==='custom'){const f=document.querySelector(`input[data-slc="${CSS.escape(id)}"]`);if(f)f.focus();return}
     r.closest('.slopts2').querySelectorAll('.slo').forEach(l=>l.classList.toggle('on',l.contains(r)));savePrice(id,r.value,'document')});
   $('#slRows').addEventListener('input',e=>{const f=e.target.closest('input[data-slc]');if(!f)return;const id=f.dataset.slc;const r=document.querySelector(`input[data-slp="${CSS.escape(id)}"][value=custom]`);if(r)r.checked=true;
-    const b=document.querySelector(`[data-sls="${CSS.escape(id)}"]`);if(b)b.hidden=!f.value.trim()});
-  $('#slRows').addEventListener('keydown',e=>{const f=e.target.closest('input[data-slc]');if(f&&e.key==='Enter'&&f.value.trim()){e.preventDefault();savePrice(f.dataset.slc,f.value,'typed')}});
-  $('#slRows').addEventListener('click',e=>{const b=e.target.closest('[data-sls]');if(!b)return;e.preventDefault();const f=document.querySelector(`input[data-slc="${CSS.escape(b.dataset.sls)}"]`);if(f&&f.value.trim())savePrice(b.dataset.sls,f.value,'typed')});
+    const c=carOf(id),b=document.querySelector(`[data-sls="${CSS.escape(id)}"]`);if(b){const v=f.value.trim(),del=!v&&c&&c.chosen;b.hidden=!(v||del);b.textContent=del?t('sl_del'):t('sl_save');b.classList.toggle('danger',!!del)}});
+  $('#slRows').addEventListener('keydown',e=>{const f=e.target.closest('input[data-slc]');if(!f||e.key!=='Enter')return;e.preventDefault();if(f.value.trim())savePrice(f.dataset.slc,f.value,'typed');else slAskDelete(f.dataset.slc)});
+  $('#slRows').addEventListener('click',e=>{const b=e.target.closest('[data-sls]');if(!b)return;e.preventDefault();const f=document.querySelector(`input[data-slc="${CSS.escape(b.dataset.sls)}"]`);if(f&&f.value.trim())savePrice(b.dataset.sls,f.value,'typed');else slAskDelete(b.dataset.sls)});
 })();
 
 function renderLogs(){try{renderLeads()}catch(e){}
