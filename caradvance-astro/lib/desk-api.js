@@ -346,6 +346,7 @@ async function makeOffer(request, env, ctx) {
 const VAT_F = 1 + VAT;
 const CC_BY_TLD = { hu: 'HU', sk: 'SK', cz: 'CZ', pl: 'PL', ch: 'CH', de: 'DE', at: 'AT', ro: 'RO' };
 const CC_BY_LANG = { hu: 'HU', sk: 'SK', cs: 'CZ', pl: 'PL', de: 'DE', en: '' };
+const TEAM_DE = { hu: 'Ungarn', sk: 'Slowakei', cz: 'Tschechien', pl: 'Polen', ch: 'Schweiz', eu: 'Europa', ro: 'Rumänien' };
 const COUNTRY_DE = { HU: 'Ungarn', SK: 'Slowakei', CZ: 'Tschechien', PL: 'Polen', CH: 'Schweiz', DE: 'Deutschland', AT: 'Österreich', RO: 'Rumänien' };
 export function countryOf(host, lang) {
   const tld = String(host || '').split('.').pop().toLowerCase();
@@ -378,7 +379,7 @@ async function linkSig(env, id) {
   const s = await crypto.subtle.sign('HMAC', k, new TextEncoder().encode('offer-check|' + id));
   return [...new Uint8Array(s)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
 }
-function germanCheck(offer, car, rk, base, sig) {
+function germanCheck(offer, car, rk, base, sig, from) {
   // 2 lines: where the offer comes from · model + year · our price vs offer · link to the car · accept / reject
   const p = parseOffer(offer);
   const land = COUNTRY_DE[p.country] || p.country || '—';
@@ -388,10 +389,11 @@ function germanCheck(offer, car, rk, base, sig) {
   const carUrl = `${base}/sales/#car=${encodeURIComponent(car.id)}`;
   const dec = `${base}/api/desk/offer-decision?id=${encodeURIComponent(offer.id)}&sig=${sig}`;
   const l1 = `Angebot aus ${land}: ${car.model || ''} (EZ ${year}) – unser Preis ${eurDe(ours)} ${vat}, Angebot ${eurDe(p.price)} ${vat}.`;
-  const l2 = `Fahrzeug: ${carUrl} · Annehmen/Ablehnen: ${dec}`;
+  const by = from && from.name ? `Gesendet von ${from.name}${from.team ? ', ' + from.team : ''} · ` : '';
+  const l2 = `${by}Fahrzeug: ${carUrl} · Annehmen/Ablehnen: ${dec}`;
   const subject = `Angebot ${car.id} aus ${land}: ${eurDe(p.price)} – annehmen?`;
   const btn = (t, d, bg) => `<a href="${dec}&d=${d}" style="display:inline-block;margin:0 6px 0 0;padding:8px 18px;border-radius:999px;background:${bg};color:#fff;font-weight:bold;text-decoration:none">${t}</a>`;
-  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519">Angebot aus <b>${escH(land)}</b>: <a href="${carUrl}" style="color:#e30613;font-weight:bold">${escH(car.model || '')} (EZ ${escH(year)})</a> – unser Preis ${eurDe(ours)} ${vat}, Angebot <b>${eurDe(p.price)} ${vat}</b>.<div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519">Angebot aus <b>${escH(land)}</b>: <a href="${carUrl}" style="color:#e30613;font-weight:bold">${escH(car.model || '')} (EZ ${escH(year)})</a> – unser Preis ${eurDe(ours)} ${vat}, Angebot <b>${eurDe(p.price)} ${vat}</b>.${from && from.name ? `<div style="margin-top:4px;font-size:13px;color:#5a6270">Gesendet von <b style="color:#141519">${escH(from.name)}</b>${from.team ? ' · ' + escH(from.team) : ''}</div>` : ''}<div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
   return { subject, text: l1 + '\n' + l2, html };
 }
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -427,7 +429,9 @@ async function offerAction(request, env, ctx, me) {
   const cat = await fetch(new URL('/sales/catalogue.json', request.url)).then(r => r.ok ? r.json() : {}).catch(() => ({}));
   const ex = cat[car.id] || {}; const photo = [...(ex.real_photos || []), ...(ex.photos || [])][0];
   const base = new URL(request.url).origin;
-  const mail = germanCheck(offer, { ...car, photo }, rankFor(all, offer), base, await linkSig(env, offer.id));
+  const mk = deskMarketOf(new URL(request.url).hostname);
+  const team = `Team ${TEAM_DE[mk] || mk.toUpperCase()} (caradvance.${mk})`;
+  const mail = germanCheck(offer, { ...car, photo }, rankFor(all, offer), base, await linkSig(env, offer.id), { name: who, team });
   // Default decision maker: Alexander (has the authority to accept) — his email from Kapcsolat contacts, else DESK_CHECK_EMAIL
   let alex = '';
   if (env.DB) { try { await ensureMsg(env); const r = await env.DB.prepare("SELECT email FROM desk_contacts WHERE k = 'alexander'").first(); alex = (r && r.email) || ''; } catch (e) {} }
@@ -557,45 +561,79 @@ async function ensureStock(env) {
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_stocklist (id TEXT PRIMARY KEY, sort INTEGER, data TEXT NOT NULL, updated INTEGER)').run();
 }
 const STOCK_ADMIN_ONLY = ['ek', 'vk_plan', 'fleet_status', 'fleet_sales'];
+/* Damages per car (from the fleet system, matched by VIN) — team only, never public. */
+async function ensureDmg(env) { await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_damages (vin TEXT PRIMARY KEY, data TEXT NOT NULL, updated INTEGER)').run(); }
+async function damagesList(env) {
+  await ensureDmg(env);
+  const rows = (await env.DB.prepare('SELECT vin, data, updated FROM desk_damages').all()).results || [];
+  return { damages: Object.fromEntries(rows.map(r => [r.vin, JSON.parse(r.data)])), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
+}
 async function stockList(env, me) {
   if (!env.DB) throw bad('Not available here.', 503);
   await ensureStock(env);
   const rows = (await env.DB.prepare('SELECT data, updated FROM desk_stocklist ORDER BY sort').all()).results || [];
   const admin = me.role === 'admin';
   const cars = rows.map(r => { const d = JSON.parse(r.data); if (!admin) for (const k of STOCK_ADMIN_ONLY) delete d[k]; return d; });
-  return { cars, admin, canPrice: ['admin', 'sales_manager'].includes(me.role), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
+  return { cars, admin, canPrice: !!priceMode(me), priceMode: priceMode(me), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
 }
 
 /* Choosing the right price when the documents disagree (admins / sales managers). Optionally also sets the desk price in Notion. */
+// Only Alexander decides stock-list prices; everyone else can see them but not choose.
+// Only Alexander decides stock-list prices; everyone else can see them but not choose.
+const PRICE_DECIDERS = ['a.roether@caradvance.de'];
+// Temporary testers: can try choosing / deleting prices, but nothing is stored (remove when testing is done).
+const PRICE_TESTERS = ['tszeredi@gmail.com'];
+const priceMode = me => { const e = String((me && me.email) || '').trim().toLowerCase(); return PRICE_DECIDERS.includes(e) ? 'live' : PRICE_TESTERS.includes(e) ? 'test' : null; };
 async function stockChoosePrice(request, env, ctx, me) {
-  if (!['admin', 'sales_manager'].includes(me.role)) throw bad('Only an admin or a sales manager can set the price.', 403);
+  const mode = priceMode(me);
+  if (!mode) throw bad('Only Alexander (a.roether@caradvance.de) can choose the price.', 403);
   const b = await request.json().catch(() => ({}));
-  const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
-  if (!(net > 1000 && net < 5000000)) throw bad('Enter a valid net price.');
   await ensureStock(env);
   const row = await env.DB.prepare('SELECT data FROM desk_stocklist WHERE id = ?').bind(String(b.id || '')).first();
   if (!row) throw bad('Car not found.', 404);
   const d = JSON.parse(row.data);
   const who = me.name || nameOf(me.email), at = new Date().toISOString().slice(0, 10);
-  d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document' };
-  d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
-  await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
+  if (b.withdraw != null) { // "No longer for sale": greys the car out of the price selection (and back)
+    if (b.withdraw) d.off = { by: who, at }; else delete d.off;
+    if (mode === 'live') await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
+    if (me.role !== 'admin') for (const k of STOCK_ADMIN_ONLY) delete d[k];
+    return { ok: true, car: d, test: mode === 'test' };
+  }
+  let deskTo = null; // B2B/B2C to write to the desk (Vehicles in Notion)
+  if (b.clear) { // delete the chosen price: back to the price the car had before anyone chose
+    if (!d.chosen) throw bad('No chosen price to delete.');
+    const o = d.chosen.orig || { net: d.chosen.prev, from: '' };
+    if (d.chosen.deskPrev) deskTo = d.chosen.deskPrev;
+    d.net = o.net; d.gross = o.net != null ? Math.round(o.net * (1 + VAT) * 100) / 100 : null; d.net_from = o.from || d.net_from; delete d.chosen; delete d.price_ok;
+  } else {
+    const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
+    if (!(net > 1000 && net < 5000000)) throw bad('Enter a valid net price.');
+    const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
+    d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document', orig, deskPrev: d.chosen && d.chosen.deskPrev };
+    d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
+    if (d.desk) deskTo = { net, gross: d.gross };
+  }
   let desk = false;
-  if (b.desk && d.desk) {
-    const all = await loadAll(env, ctx, true);
-    const car = all.vehicles.find(v => v.id === d.desk);
-    if (car) {
-      await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', net), B2C: writeProp('number', d.gross) } });
-      memo = null; desk = true;
+  if (mode === 'live') {
+    // the chosen price goes to every list: the stock list and the desk (B2B / B2C in Notion)
+    if (deskTo && d.desk) {
+      const all = await loadAll(env, ctx, true);
+      const car = all.vehicles.find(v => v.id === d.desk);
+      if (car) {
+        if (!b.clear && d.chosen && !d.chosen.deskPrev) d.chosen.deskPrev = { net: car.dealer_net ?? null, gross: car.dealer_gross ?? null };
+        await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', deskTo.net), B2C: writeProp('number', deskTo.gross) } });
+        memo = null; desk = true;
+      }
     }
+    await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
   }
   if (me.role !== 'admin') for (const k of STOCK_ADMIN_ONLY) delete d[k];
-  return { ok: true, car: d, desk };
+  return { ok: true, car: d, desk, test: mode === 'test' };
 }
 
 
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
- *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are left out. */
+ *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are shown without prices (26 Nov 2026). */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
   'highlights', 'msrp_gross', 'dealer_net', 'dealer_gross', 'pct_vs_list', 'status', 'available_until', 'vin',
   'prev_owners', 'condition', 'paint', 'trim', 'climate', 'park_assist', 'seats', 'doors', 'engine_cc', 'equipment', 'rent_sale'];
@@ -614,7 +652,9 @@ export async function handle(request, env, ctx) {
   if (request.method === 'GET' && route === 'public') {
     try {
       const { vehicles } = await loadAll(env, ctx, false);
-      return json({ vehicles: vehicles.filter(v => (v.status || 'Available') !== 'Sold').map(publicCar), public: true, at: new Date().toISOString() });
+      // Sold cars are shown too (crossed out), so visitors see how many we sold — but without their prices.
+      const pub = v => { const o = publicCar(v); if ((v.status || 'Available') === 'Sold') for (const k of ['dealer_net', 'dealer_gross', 'msrp_gross', 'pct_vs_list']) delete o[k]; return o; };
+      return json({ vehicles: vehicles.map(pub), public: true, at: new Date().toISOString() });
     } catch (e) { return json({ error: 'Could not load the cars.' }, 503); }
   }
   try {
@@ -624,6 +664,7 @@ export async function handle(request, env, ctx) {
       return json({ vehicles, dealers, outreach, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
+    if (request.method === 'GET' && route === 'damages') return json(await damagesList(env));
   if (request.method === 'POST' && route === 'stocklist/price') {
       if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
       return json(await stockChoosePrice(request, env, ctx, me));
