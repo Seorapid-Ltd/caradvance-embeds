@@ -957,6 +957,11 @@ tr.det .offerrow{margin:0}
 #lb.single .lbnav{display:none}
 #lb.fs{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0}
 #lb.fs img{max-height:calc(100vh - 66px)}
+@media(max-width:700px){#lb{width:100vw;max-width:100vw;border-radius:0}#lb #lbFs{display:none}
+  #lb .lbtop{position:absolute;top:0;left:0;right:0;z-index:3;padding:10px 10px 26px 16px;background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,0));font-size:16px}
+  #lb #lbX{width:48px;height:48px;background:rgba(11,11,13,.45);border:1px solid rgba(255,255,255,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  #lb #lbX svg{width:24px;height:24px;stroke-width:2.4}
+  #lb img{max-height:88vh;min-height:220px;width:100%;object-fit:contain}}
 
 /* Készletlista kártya — tisztább, kontrasztosabb (világos és sötét) */
 .slc{--sl-line:color-mix(in srgb,var(--line) 70%,var(--ink) 12%);border-color:var(--sl-line)}
@@ -1079,7 +1084,9 @@ dialog .db,dialog .cs-scroll,#ofDlg .db{overscroll-behavior:contain;-webkit-over
 .vdgal{max-width:none;width:100%;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);height:clamp(300px,36vw,560px)}
 .vdgal.one{grid-template-columns:minmax(0,1fr);height:clamp(260px,42vw,560px)}
 .vdgal .vdmain{aspect-ratio:auto;height:100%}
-.vdthumbs{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));grid-auto-rows:0;height:100%}
+.vdthumbs{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));grid-auto-rows:0;height:100%}
+.vdthumbs button:nth-child(n+5),.vdthumbs .vm6{display:none}
+@media(max-width:700px){.vdthumbs{grid-template-columns:repeat(3,minmax(0,1fr))}.vdthumbs button:nth-child(n+5){display:block}.vdthumbs .vm6{display:grid}.vdthumbs .vm4{display:none}}
 .vdthumbs button{aspect-ratio:auto;height:100%}
 .vdgrid{grid-template-columns:minmax(0,1fr) 340px}
 .vdprices dl{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);row-gap:10px}
@@ -1092,13 +1099,16 @@ dialog .db,dialog .cs-scroll,#ofDlg .db{overscroll-behavior:contain;-webkit-over
 @media(max-width:700px){.vdgal{height:auto;grid-template-columns:1fr}.vdgal .vdmain{aspect-ratio:4/3;height:auto}.vdthumbs{height:auto;grid-template-rows:none;grid-auto-rows:auto}.vdthumbs button{aspect-ratio:4/3;height:auto}.vdfacts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Kapcsolat — belső üzenetek */
-.msgwrap{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start;width:100%}
+.msgwrap{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start;width:100%}
 .msgside,.msgmain{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
 .msgside{padding:14px;display:flex;flex-direction:column;gap:8px}.msgside h3{margin:2px 4px 4px;font-size:14px;font-weight:800}
 .mperson{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer;text-align:left;font:inherit}
 .mperson.on{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
-.mperson .av{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--red);color:#fff;font-size:14px}
-.mperson b{display:block;font-size:14px}.mperson small{display:block;color:var(--muted);font-size:11.5px}
+.mperson .av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--red);color:#fff;font-size:15px;overflow:hidden}
+.mperson .av img{width:100%;height:100%;object-fit:cover;display:block}
+.mperson .mpt{min-width:0;display:flex;flex-direction:column;gap:1px}
+.mperson .mpt i{font-style:normal;font-size:12.5px;font-weight:700;color:var(--red);line-height:1.3}
+.mperson b{display:block;font-size:15px;line-height:1.25}.mperson small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mperson .un{margin-left:auto;min-width:20px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:800;line-height:20px;text-align:center}
 .mperson .ed{margin-left:auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px}
 .mperson .un+.ed{margin-left:6px}
@@ -1117,7 +1127,8 @@ dialog .db,dialog .cs-scroll,#ofDlg .db{overscroll-behavior:contain;-webkit-over
 .msgbar select{max-width:240px}
 .msgbar button{min-height:40px;padding:0 16px;border-radius:999px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .msgbar .wa{background:#25d366;border:1px solid #25d366;color:#fff}.msgbar .pri{background:var(--red);border:1px solid var(--red);color:#fff}
-@media(max-width:800px){.msgwrap{grid-template-columns:1fr}.msgside{flex-direction:row;flex-wrap:wrap}.msgside h3{width:100%}.mperson{width:auto;flex:1 1 140px}.msgthread{max-height:46vh}.msgbar select{max-width:100%;flex:1 1 100%}}
+@media(max-width:800px){.msgwrap{grid-template-columns:1fr}.msgside h3{font-size:16px}.mperson{padding:12px 14px;gap:12px}.mperson .av{width:52px;height:52px;font-size:17px}.mperson b{font-size:16px}.mperson .mpt i{font-size:14px}.mperson small{font-size:14px}.mperson .ed{font-size:18px;padding:8px}
+  .ghostbtn{min-height:48px;font-size:16px}.mbub{font-size:16px;max-width:88%}.mbub .mh{font-size:13px}.msgto{font-size:14px}.msgthread{max-height:46vh}.msgbar select{max-width:100%;flex:1 1 100%}.msgbar button{min-height:48px;font-size:16px;flex:1 1 0;justify-content:center}.mempty{font-size:16px}}
 
 /* B2B / B2C szűrés: csak a releváns ár látszik mindenhol */
 .pm-b2b th.pcol.b2c,.pm-b2b td.pcol.b2c,.pm-b2c th.pcol.b2b,.pm-b2c td.pcol:not(.b2c){display:none!important}
@@ -1726,7 +1737,7 @@ function renderStock(){
       const td=[['Make / model',c.model],['Colour',c.colour],[t('vd_paint'),c.paint],['Interior',c.interior],['Wheels',c.wheels],['Body',c.body],[t('vd_trim'),c.trim],[t('vd_cond'),c.condition],[t('vd_seats'),[c.seats,c.doors].filter(v=>v!=null&&v!=='').join(' / ')],[t('vd_cc'),c.engine_cc?Number(c.engine_cc).toLocaleString(loc)+' cm³':''],[t('vd_clim'),c.climate],[t('vd_park'),c.park_assist],['VIN',c.vin],['Plate',c.plate],['Available until',c.available_until]].filter(x=>x[1]!=null&&x[1]!=='');
       const EQ=Array.isArray(c.equipment)?c.equipment:[],eqOpen=S.eqOpen===c.id,EQN=24;
       h+=`<tr class="det"><td colspan="6"><div class="vd">
-      ${P.length?`<div class="vdgal${P.length===1?' one':''}"><button type="button" class="vdmain" data-lb="${esc(c.id)}" data-i="0" aria-label="Open photo 1"><img src="img/${esc(P[0])}" alt=""><span class="vdn">1 / ${P.length}</span></button>${P.length>1?`<div class="vdthumbs">${P.slice(1,7).map((p,i)=>`<button type="button" data-lb="${esc(c.id)}" data-i="${i+1}" aria-label="Open photo ${i+2}"><img loading="lazy" decoding="async" src="img/${esc(p)}" alt="">${i===5&&P.length>7?`<span class="vdmore">+${P.length-7}</span>`:''}</button>`).join('')}</div>`:''}</div>`:''}
+      ${P.length?`<div class="vdgal${P.length===1?' one':''}"><button type="button" class="vdmain" data-lb="${esc(c.id)}" data-i="0" aria-label="Open photo 1"><img src="img/${esc(P[0])}" alt=""><span class="vdn">1 / ${P.length}</span></button>${P.length>1?`<div class="vdthumbs">${P.slice(1,7).map((p,i)=>`<button type="button" data-lb="${esc(c.id)}" data-i="${i+1}" aria-label="Open photo ${i+2}"><img loading="lazy" decoding="async" src="img/${esc(p)}" alt="">${i===3&&P.length>5?`<span class="vdmore vm4">+${P.length-5}</span>`:''}${i===5&&P.length>7?`<span class="vdmore vm6">+${P.length-7}</span>`:''}</button>`).join('')}</div>`:''}</div>`:''}
       <div class="offerrow">${(c.status||'Available')!=='Sold'?`<button type="button" class="pri offerbtn" data-offer="${esc(c.id)}">${esc(OFR().title)}</button>`:''}<button type="button" class="sharebtn" data-share="${esc(c.id)}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="18" cy="5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="18" cy="19" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3" fill="none" stroke="currentColor" stroke-width="1.9"/></svg>${esc(t('vd_share'))}</button>${(c.status||'Available')!=='Sold'?`<span class="sub">${esc(OFR().hint)}</span>`:''}</div>
       ${facts.length?`<div class="vdfacts">${facts.map(([i,v,l])=>`<div class="vdf">${vi(i)}<b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div>`:''}
       <div class="vdgrid"><div class="vdmainc">
@@ -1945,6 +1956,14 @@ $('#ofList').addEventListener('click',async e=>{
   const ini=n=>String(n||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
   const when=s=>{const d=new Date(s*1000);return d.toLocaleString(window.__loc||'en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})};
   const keyOf=c=>c.email?c.email.toLowerCase():c.key;
+  const ROLE_T={hu:{'CEO':'Ügyvezető','Sales director':'Kereskedelmi igazgató','Managing director':'Ügyvezető igazgató','Head of Slovakia & Czech Republic':'Szlovákia és Csehország vezetője','Rental & sales':'Bérlés és értékesítés'},
+    sk:{'CEO':'Generálny riaditeľ','Sales director':'Obchodný riaditeľ','Managing director':'Konateľ','Head of Slovakia & Czech Republic':'Vedúci pre Slovensko a Česko','Rental & sales':'Prenájom a predaj'},
+    cs:{'CEO':'Generální ředitel','Sales director':'Obchodní ředitel','Managing director':'Jednatel','Head of Slovakia & Czech Republic':'Vedoucí pro Slovensko a Česko','Rental & sales':'Pronájem a prodej'},
+    de:{'CEO':'Geschäftsführer','Sales director':'Vertriebsleiter','Managing director':'Geschäftsführer','Head of Slovakia & Czech Republic':'Leiter Slowakei & Tschechien','Rental & sales':'Miete & Verkauf'},
+    pl:{'CEO':'Prezes','Sales director':'Dyrektor handlowy','Managing director':'Dyrektor zarządzający','Head of Slovakia & Czech Republic':'Kierownik Słowacja i Czechy','Rental & sales':'Wynajem i sprzedaż'},
+    ro:{'CEO':'Director general','Sales director':'Director de vânzări','Managing director':'Director general','Head of Slovakia & Czech Republic':'Șef Slovacia și Cehia','Rental & sales':'Închiriere și vânzare'}};
+  const roleT=r=>(ROLE_T[LANG]||{})[r]||r;
+  const fmtPh=p=>{p=String(p||'');const m=p.match(/^\+(36|421|420|48|49|41)(\d{1,3})(\d{3})(\d{3,4})$/);return m?`+${m[1]} ${m[2]} ${m[3]} ${m[4]}`:p};
   const withP=(m,c)=>m.mine?(m.to===c.key||m.to===String(c.email||'').toLowerCase()):(String(m.fromEmail).toLowerCase()===String(c.email||'').toLowerCase()||String(m.fromEmail).toLowerCase()===c.key);
   async function load(){if(document.documentElement.classList.contains('public')||M.busy)return;M.busy=true;
     try{M.data=await api('msg/list');const n=M.data.unread||0;document.querySelectorAll('.nMsg').forEach(e=>e.textContent=n||'');if(location.hash==='#contact')render()}catch(e){}finally{M.busy=false}}
@@ -1952,7 +1971,7 @@ $('#ofList').addEventListener('click',async e=>{
     const d=M.data;if(!d)return;
     if(!M.sel.length&&d.contacts[0])M.sel=[d.contacts[0].key];
     $('#msgPeople').innerHTML=d.contacts.map(c=>{const un=d.msgs.filter(m=>m.unread&&withP(m,c)).length;
-      return `<div class="mperson${M.sel.includes(c.key)?' on':''}" data-k="${esc(c.key)}" role="button" tabindex="0"><span class="av">${esc(ini(c.name))}</span><span><b>${esc(c.name)}</b><small>${esc(c.phone||c.email||t('c_noinfo'))}</small></span>${un?`<span class="un">${un}</span>`:''}${d.me.role==='admin'?`<button type="button" class="ed" data-ed="${esc(c.key)}" title="${esc(t('c_edit'))}">✎</button>`:''}</div>`}).join('');
+      return `<div class="mperson${M.sel.includes(c.key)?' on':''}" data-k="${esc(c.key)}" role="button" tabindex="0"><span class="av">${c.photo?`<img src="${esc(c.photo)}" alt="" loading="lazy" decoding="async">`:esc(ini(c.name))}</span><span class="mpt"><b>${esc(c.name)}</b>${c.role?`<i>${esc(roleT(c.role))}</i>`:''}<small>${esc(fmtPh(c.phone)||c.email||t('c_noinfo'))}</small></span>${un?`<span class="un">${un}</span>`:''}${d.me.role==='admin'?`<button type="button" class="ed" data-ed="${esc(c.key)}" title="${esc(t('c_edit'))}">✎</button>`:''}</div>`}).join('');
     const sel=d.contacts.filter(c=>M.sel.includes(c.key));
     const L=d.msgs.filter(m=>sel.some(c=>withP(m,c))).sort((a,b)=>a.at-b.at);
     $('#msgThread').innerHTML=L.length?L.map(m=>`<div class="mbub${m.mine?' me':''}"><div class="mh"><b>${esc(m.mine?t('c_you'):m.from)}</b><span>${esc(when(m.at))}</span>${m.mine&&sel.length>1?`<span>→ ${esc((d.contacts.find(c=>keyOf(c)===m.to||c.key===m.to)||{}).name||m.to)}</span>`:''}</div><p>${esc(m.body)}</p>${m.car?`<span class="mcar" data-car="${esc(m.car)}">🚗 ${esc(m.car)}</span>`:''}</div>`).join(''):`<p class="mempty">${esc(t('c_empty'))}</p>`;
