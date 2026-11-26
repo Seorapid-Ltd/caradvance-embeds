@@ -1,0 +1,48 @@
+// Build lépés (a home-light.mjs és a home-contact.mjs után): a magyar főoldal VILÁGOS módja „Apple-letisztult” stílusban.
+// Csak a HÁTTÉR változik: hűvös világosszürke (#F5F5F7), színes foltok nélkül. A kártyák és minden más
+// változatlan (üvegkártyák, piros vonalak). A sötét mód nem változik. Idempotens.
+import fs from 'node:fs';
+import path from 'node:path';
+
+const FILE = path.join('dist', 'index.html');
+const BG = '#F5F5F7', BGR = '245,245,247';
+const L = 'html.ca-light body ';
+const CSS = '<style id="ca-apple-css">'
+  // sötétben a lábléc se éles vonallal kezdődjön, hanem puhán fakuljon be
+  + 'footer.cafoot .cafoot-copy span{white-space:normal!important;min-width:0!important;overflow-wrap:anywhere}'
+  // egységes, pontosan középre igazított +/× ikon minden GYIK-kártyán (a karakteres „+” helyett rajzolt kereszt)
+  + 'html body details>summary::after,html body #gyik details.ca-more>summary::after,html body :is(.faq-item,.gyik-item)>summary::after{content:""!important;flex:0 0 28px!important;width:28px!important;height:28px!important;min-width:28px!important;border-radius:50%!important;background:linear-gradient(#fff,#fff) center/12px 2px no-repeat,linear-gradient(#fff,#fff) center/2px 12px no-repeat,#E2001A!important;background-color:#E2001A!important;font-size:0!important;line-height:0!important;color:transparent!important;border:0!important;margin:0 0 0 auto!important;position:static!important;display:block!important;box-shadow:0 4px 12px rgba(226,0,26,.25)!important;transform:none!important;transition:transform .35s cubic-bezier(.2,.8,.2,1)!important}html body details[open]>summary::after,html body #gyik details.ca-more[open]>summary::after,html body :is(.faq-item,.gyik-item)[open]>summary::after{transform:rotate(45deg)!important}html body details>summary .pl{display:none!important}'
+  + 'body section.cav-sec,body section:has(> .wrap > .cav-film-wrap){overflow-x:clip}'
+  + '@media(min-width:641px) and (max-width:1100px){body .stats .stats-in{grid-template-columns:repeat(2,minmax(0,1fr))!important}}'
+  + 'body .stats .stats-in>.stat{min-width:0!important}'
+  + 'html.ca-dark body footer.cafoot{border-top-color:transparent!important;box-shadow:none!important;background:linear-gradient(180deg,rgba(11,11,13,0) 0,#0B0B0D 140px)!important;background-color:transparent!important}'
+  + 'html.ca-light,html.ca-light body{background:' + BG + '!important;background-image:none!important}'
+  // színes foltok ki
+  + L + ':is(#szolgaltatasok,#miert,#rolunk,#velemenyek,#ca-cta,.stats,#autoink,#ai-autokereso,#ca-contact,#gyik,.cav-sec){background:none!important;background-color:transparent!important}'
+  // stg-refl-fix: világosban csak az autó tükröződjön, az árnyéka ne (különben szürke téglalap látszik)
+  + 'html.ca-light body #autoink #ca-stg .stg-cars .stg-car img,html.ca-light body #autoink #ca-stg .stg-bgl .stg-car img{filter:drop-shadow(0 3px 3px rgba(18,19,23,.16))!important;-webkit-box-reflect:below 2px linear-gradient(transparent 80%,rgba(0,0,0,.20))!important}'
+  // Kínálat: a szekció ne legyen külön (melegebb) téglalap; a bérlési kártya árnyéka és a gomb piros ragyogása halkabb
+  + 'html.ca-light body #autoink.ca-show,html.ca-light body #autoink.ca-show.ca-stg-on{background:transparent!important;background-color:transparent!important;background-image:none!important}'
+  + 'html.ca-light body #autoink #ca-stg .stg-card.card.on,html.ca-light body #autoink #ca-stg .stg-card{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.78))!important;box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06)!important}'
+  + 'html.ca-light body #autoink #ca-stg :is(.ca-inq,.sub-btn,.btn-red,.btn-primary,.stg-ar.stg-n){box-shadow:none!important}'
+  // a videó alja lágyan olvad az új háttérbe
+  + 'html.ca-light body section.hero:has(+#autoink)::after{background:linear-gradient(180deg,rgba(' + BGR + ',0) 0%,rgba(' + BGR + ',.18) 30%,rgba(' + BGR + ',.62) 62%,rgba(' + BGR + ',.92) 84%,' + BG + ' 100%)!important;background-color:transparent!important}'
+  // kínálat-autók: tükröződés ki; helyette az autó saját sziluettjéből vetett talajárnyék (stg-shd) + körvonal-árnyék
+  + 'html body #autoink #ca-stg :is(.stg-cars,.stg-bgl) .stg-car img:not(#ca-x),html.ca-light body #autoink #ca-stg :is(.stg-cars,.stg-bgl) .stg-car img:not(#ca-x):not(#ca-y),html.ca-dark body #autoink #ca-stg :is(.stg-cars,.stg-bgl) .stg-car img:not(#ca-x):not(#ca-y){-webkit-box-reflect:unset!important}'
+  + 'html.ca-light body #autoink #ca-stg .stg-cars .stg-car:not(.stg-nocut) img:not(.stg-shd):not(#ca-x):not(#ca-y){filter:drop-shadow(0 4px 3px rgba(18,19,23,.38)) drop-shadow(0 16px 12px rgba(18,19,23,.16))!important}'
+  + 'html.ca-dark body #autoink #ca-stg .stg-cars .stg-car:not(.stg-nocut) img:not(.stg-shd):not(#ca-x):not(#ca-y){filter:drop-shadow(0 4px 3px rgba(0,0,0,.8)) drop-shadow(0 16px 12px rgba(0,0,0,.45))!important}'
+  + 'html body #autoink #ca-stg .stg-car{isolation:isolate}'
+  + 'html body #autoink #ca-stg .stg-car img.stg-shd:not(#ca-x):not(#ca-y){position:absolute!important;left:50%!important;bottom:0!important;max-width:none!important;max-height:none!important;transform:translateX(-50%) scaleY(.13)!important;transform-origin:50% 100%!important;filter:brightness(0) blur(7px)!important;opacity:.55!important;z-index:-1!important;pointer-events:none!important;-webkit-box-reflect:unset!important}'
+  + 'html.ca-dark body #autoink #ca-stg .stg-car img.stg-shd:not(#ca-x):not(#ca-y){opacity:.9!important}'
+  + '</style>';
+const SHD_JS = '<script id="ca-stg-shd">' + String.raw`(function(){function sync(){document.querySelectorAll('#ca-stg .stg-cars .stg-car:not(.stg-nocut) > img:not(.stg-shd)').forEach(function(im){var s=im.parentNode.querySelector(':scope > img.stg-shd');if(!s){s=document.createElement('img');s.className='stg-shd';s.alt='';s.setAttribute('aria-hidden','true');s.decoding='async';im.parentNode.appendChild(s)}if(s.getAttribute('src')!==im.currentSrc&&im.currentSrc)s.src=im.currentSrc||im.src;var w=im.offsetWidth,h=im.offsetHeight;if(w){s.style.width=w+'px';s.style.height=h+'px'}})}
+var t;function q(){clearTimeout(t);t=setTimeout(sync,60)}addEventListener('load',function(){sync();setTimeout(sync,800)});addEventListener('resize',q);document.addEventListener('load',function(e){if(e.target.tagName==='IMG'&&e.target.closest&&e.target.closest('#ca-stg'))q()},true);if(document.readyState==='complete')sync()})();` + '</script>';
+
+try {
+  if (!fs.existsSync(FILE)) console.log('[home-apple] nincs dist/index.html — kihagyva');
+  else {
+    let h = fs.readFileSync(FILE, 'utf8');
+    if (h.indexOf('id="ca-apple-css"') > -1) console.log('[home-apple] már alkalmazva');
+    else { h = h.replace('</head>', () => CSS + '</head>'); h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, () => SHD_JS + '</body>'); fs.writeFileSync(FILE, h); console.log('[home-apple] világos mód: Apple-letisztult stílus'); }
+  }
+} catch (e) { console.log('[home-apple] hiba:', e.message); }

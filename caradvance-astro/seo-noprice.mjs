@@ -24,7 +24,7 @@ const LABEL = 'Ár kérésre';
 // Oldalak, amelyek nem kapnak ár nélküli változatot (jogi szöveg, kalkulátor, belső, ügyfélajánlat).
 // A lefordított tükör (/en/ /de/ /fr/ /uk/ /zh/) is kap ár nélküli változatot — ugyanazokkal a kivételekkel.
 const LP = '^(?:(?:en|de|fr|uk|zh)\\/)?';
-const SKIP = [/^_np\//, /^(sk|cs|pl)\//, ...['belso', 'ajanlat', 'api', 'aszf', 'adatkezeles', 'impresszum', 'berlesi-feltetelek',
+const SKIP = [/^_np\//, /^(sk|cs|pl)\//, ...['belso', 'sales', 'ajanlat', 'api', 'aszf', 'adatkezeles', 'impresszum', 'berlesi-feltetelek',
   'honositas-kalkulator', 'atiras-kalkulator', 'finanszirozas-lizing', 'eladom', 'jotekonysag',
   'hungary-registration-tax-calculator', 'registrierungssteuer-ungarn-rechner', 'taxe-immatriculation-hongrie',
   'reiestratsiinyi-podatok-uhorshchyna', 'hungary-registration-tax'].map((d) => new RegExp(LP + d + '\\/'))];
