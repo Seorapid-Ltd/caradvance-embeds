@@ -664,6 +664,11 @@ export async function handle(request, env, ctx) {
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
+    // Edge-cache the public car list for a short time so mobile visitors get it instantly
+    // (otherwise every cold load waits on Notion). The first visitor warms it for everyone.
+    const cache = (typeof caches !== 'undefined' && caches.default) || null;
+    const cacheKey = new Request(url.origin + '/api/desk/public', { method: 'GET' });
+    if (cache) { const hit = await cache.match(cacheKey); if (hit) return hit; }
     try {
       const { vehicles } = await loadAll(env, ctx, false);
       // Cars Alexander marked "no longer for sale" on the stock list also show as unavailable here (without prices).
@@ -680,7 +685,10 @@ export async function handle(request, env, ctx) {
         if (withdrawn || (v.status || 'Available') === 'Sold') for (const k of ['dealer_net', 'dealer_gross', 'msrp_gross', 'pct_vs_list']) delete o[k];
         return o;
       };
-      return json({ vehicles: vehicles.map(pub), public: true, at: new Date().toISOString() });
+      const body = JSON.stringify({ vehicles: vehicles.map(pub), public: true, at: new Date().toISOString() });
+      const res = new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60, s-maxage=60', 'X-Robots-Tag': 'noindex' } });
+      if (cache && ctx && ctx.waitUntil) ctx.waitUntil(cache.put(cacheKey, res.clone()));
+      return res;
     } catch (e) { return json({ error: 'Could not load the cars.' }, 503); }
   }
   try {
