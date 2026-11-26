@@ -1871,7 +1871,9 @@ $('#ofList').addEventListener('click',async e=>{
   const n0=v=>v==null||v===''?null:Number(v);
   const kmf=v=>v==null||v===''?'—':(isNaN(+v)?esc(v):Number(v).toLocaleString(window.__loc||'en-GB')+' km');
   async function load(){if(SL.loading||document.documentElement.classList.contains('public'))return;SL.loading=true;
-    try{const r=await fetch('/api/desk/stocklist',{credentials:'same-origin'});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);SL.data=j;document.documentElement.classList.toggle('sl-admin',!!j.admin);render()}
+    try{const r=await fetch('/api/desk/stocklist',{credentials:'same-origin'});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
+      try{const ph=await fetch('stockphotos.json',{cache:'no-cache'}).then(x=>x.ok?x.json():{});(j.cars||[]).forEach(c=>{const L=ph[c.id];if(L&&L.length&&!(c.photos&&c.photos.length)){c.photos=L;if(!c.photo)c.photo=L[0]}})}catch(e){}
+      SL.data=j;document.documentElement.classList.toggle('sl-admin',!!j.admin);render()}
     catch(e){$('#slRows').innerHTML=`<p class="empty">${esc(e.message)}</p>`}finally{SL.loading=false}}
   window.__slOpen=()=>{if(SL.data)render();else load()};
   const NT={en:{'same month':'same month','same power':'same power','same colour':'same colour','mo':'mo'},hu:{'same month':'azonos hónap','same power':'azonos teljesítmény','same colour':'azonos szín','mo':'hó'},de:{'same month':'gleicher Monat','same power':'gleiche Leistung','same colour':'gleiche Farbe','mo':'Mon.'},sk:{'same month':'rovnaký mesiac','same power':'rovnaký výkon','same colour':'rovnaká farba','mo':'mes.'},cs:{'same month':'stejný měsíc','same power':'stejný výkon','same colour':'stejná barva','mo':'měs.'},pl:{'same month':'ten sam miesiąc','same power':'ta sama moc','same colour':'ten sam kolor','mo':'mies.'},ro:{'same month':'aceeași lună','same power':'aceeași putere','same colour':'aceeași culoare','mo':'luni'}};
@@ -1886,7 +1888,7 @@ $('#ofList').addEventListener('click',async e=>{
     const sh=x.shared||[];if(sh.length)P.push(sh.slice(0,3).join(' · '));
     return esc(P.join(' · '))};
   const trN=x=>{const d=NT[LANG]||NT.en;return d[x]||String(x).replace(/ mo$/,' '+d.mo)};
-  const slPics=c=>{const dc=c.desk&&(S.cars||[]).find(x=>x.id===c.desk);const p=dc?pics(dc):[];return p.length?p:(c.photo?[c.photo]:[])};
+  const slPics=c=>{const dc=c.desk&&(S.cars||[]).find(x=>x.id===c.desk);const p=dc?pics(dc):[];return p.length?p:(c.photos&&c.photos.length?c.photos:(c.photo?[c.photo]:[]))};
   const pOpts=c=>{const seen=new Set();return (c.prices||[]).slice().sort((a,b)=>String(b.iso||b.date).localeCompare(String(a.iso||a.date))).filter(x=>{const k=Math.round(Number(x.price));if(!k||seen.has(k))return false;seen.add(k);return true})};
   const gapOf=c=>{const g=n0(c.gross),p=(c.comp||[]).map(x=>x.price).filter(Boolean);if(!g||!p.length)return null;const avg=p.reduce((a,b)=>a+b,0)/p.length;return{min:Math.min(...p),avg,d:(avg-g)/g}};
   function render(){
