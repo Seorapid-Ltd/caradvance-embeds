@@ -1136,6 +1136,10 @@ html[data-theme=dark] .davatar{background:hsl(var(--h),40%,24%);color:hsl(var(--
 .dv2acts .dv2logbtn:hover{background:#c40018}
 .dv2acts .dv2offbtn{background:var(--card);color:var(--red);border-color:var(--red)}
 .dv2acts .dv2offbtn:hover{background:color-mix(in srgb,var(--red) 10%,var(--card))}
+:root[data-theme=dark] .dv2acts .dv2offbtn{color:#fff;border-color:var(--red)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .dv2acts .dv2offbtn{color:#fff;border-color:var(--red)}}
+/* touch screens: bigger tick boxes and the car picker on the help page */
+@media(pointer:coarse){.dchk input{width:24px;height:24px}.dchk{width:48px}#msgCar{min-height:44px}}
 .carpick .cpbox{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:6px}
 .carpick .cpchips{display:flex;flex-wrap:wrap;gap:6px}
 .carpick .cpchips:empty{display:none}
@@ -1772,7 +1776,7 @@ const status=t=>{const m=$('#status');m.hidden=!t;m.textContent=t||''};
 /* tabs */
 const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach',leads:'leads',contact:'contact',list:'list'};const ok=map[v]||'stock';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+ok));
-  const navv=ok==='stock'?'stock':ok==='leads'?'leads':ok==='contact'?'contact':ok==='list'?'list':'enq';if(ok==='list'&&window.__slOpen)window.__slOpen();if(ok==='contact'&&window.__msgOpen)window.__msgOpen();
+  const navv=ok==='stock'?'stock':ok==='leads'?'leads':ok==='contact'?'contact':ok==='list'?'list':'enq';if(ok==='list'&&window.__slOpen)window.__slOpen();if(ok==='dealers'&&S.dDirty&&typeof renderDealers==='function')setTimeout(renderDealers,0);if(ok==='contact'&&window.__msgOpen)window.__msgOpen();
   document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v===navv));
   document.querySelectorAll('.subnav a').forEach(a=>a.classList.toggle('on',a.dataset.s===ok));
   if(ok==='stock'&&typeof renderStock==='function'&&S.cars){const want={fordealers:'b2b',private:'priv'}[v]||(S.audSet?'':null);if(want!=null){$('#sCat').value=want;S.audSet=!!want;if(S.raw.length)renderStock();}}};
@@ -2154,6 +2158,9 @@ const DF=[['name','Company name','text',1],['legal_name','Legal name'],['reg_no'
  ['language','Outreach language','sel:HU,SK,CZ,DE,PL,RO,EN'],['score','Lead score 1–5','sel:1,2,3,4,5'],['score_reason','Score reason'],['status','Outreach status','sel:New,Contacted,Interested,Not interested,Do not contact'],
  ['owner','Owner (team member)','team'],['last_contact','Last contact','date'],['sources','Source URLs (one per line)','area'],['notes','Notes','area'],['introduced_by','Introduced by (agent)','sel:,Mr. Job SK'],['introduced_on','Introduced on','date'],['agent_ref','Agent ref.']];
 function renderDealers(){
+  /* the 1369-row list is only drawn while the dealers page is open; counters stay live */
+  const dv=$('#v-dealers');if(dv&&!dv.classList.contains('on')){S.dDirty=true;document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;return}
+  S.dDirty=false;
   const q=$('#dq').value.trim().toLowerCase(),co=$('#dCountry').value,ti=$('#dTier').value,sc=$('#dScore').value,st=$('#dStat').value;
   const L=S.dealers.filter(d=>(!co||d.country===co)&&(!ti||String(d.tier)===ti)&&(!sc||Number(d.score)>=Number(sc))&&(!st||(d.status||'New')===st)&&
     (!q||[d.name,d.city,d.contact_name,d.email,d.brands].join(' ').toLowerCase().includes(q))).sort((a,b)=>(a.country||'').localeCompare(b.country||'')||(Number(b.score)||0)-(Number(a.score)||0)||(a.name||'').localeCompare(b.name||''));
