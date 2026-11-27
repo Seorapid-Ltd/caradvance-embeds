@@ -1,0 +1,13 @@
+/* CarAdvance — magyar oldalak apró, szemmel látható hibáinak javítása (a hu-fix.mjs húzza be, CSAK magyar oldalakra).
+   A <link> id-ja „ca-dark-…” kezdetű, így a dark-mode.js nem írja át ezeket a szabályokat. */
+
+/* Sötét mód: a dark-mode.js egyes díszítő rétegeket (::before/::after) tévesen szürkére fest, ezért szürke téglalapok jelennek meg.
+   - Eladom: Vadnai Zsombor fotója fölött (.tc-photo::after)
+   - Gyakori kérdések, Értékesítési folyamat: a „Nem találod a választ?” doboz mögött (.wrap.center::before) */
+html.ca-dark body :is(#ca-hfx,.tc-photo):is(#ca-hfx2,div)::after,
+html.ca-dark body :is(#ca-hfx,.wrap.center):is(#ca-hfx2,div)::before{background-color:transparent!important}
+
+/* Mobil: a „15% + 15% = 30%” blokkban a + és = jel elforgatva rácsúszott a kártyákra (Eladom) */
+@media(max-width:820px){
+  html body .splitg :is(#ca-hfx,.sg-op){transform:none!important;justify-self:center!important;align-self:center!important;line-height:1!important;height:auto!important;width:auto!important;font-size:26px!important;margin:-2px 0!important}
+}

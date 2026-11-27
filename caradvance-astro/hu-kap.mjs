@@ -213,7 +213,7 @@ b.innerHTML='<span class="ca-ey">Személyes időpont</span><h2>Foglalj időponto
 +'<div class="ca-pane" data-p="1"><div class="ca-sum s1"></div><div class="ca-slots-t">Válassz időpontot</div><div class="ca-slots"></div></div>'
 +'<div class="ca-pane" data-p="2"><div class="ca-sum s2"></div><div class="ca-slots-t">Miben segíthetünk?</div><div class="ca-topics">'+TOP.map(function(t,i){return '<button type="button"'+(i===0?' class="sel"':"")+'>'+t+'</button>'}).join("")+'</div>'
 +'<form class="ca-f" novalidate><label>Név<input name="n" autocomplete="name" required></label><label>Telefon<input name="p" type="tel" autocomplete="tel" required></label><label class="w">E-mail<input name="e" type="email" autocomplete="email" required></label><label class="w"><span>Megjegyzés <i style="opacity:.5;font-weight:500;font-style:normal">(nem kötelező)</i></span><textarea name="m" placeholder="Pl. melyik autó érdekel, hányan jöttök…"></textarea></label><input class="ca-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
-+'<label class="ca-ok w"><input type="checkbox" name="ok"><span>Elfogadom az <a href="/adatkezelesi-tajekoztato/" target="_blank">adatkezelési tájékoztatót</a>.</span></label>'
++'<label class="ca-ok w"><input type="checkbox" name="ok"><span>Elfogadom az <a href="/adatkezeles/" target="_blank">adatkezelési tájékoztatót</a>.</span></label>'
 +'<button class="ca-send w" type="submit">'+IC.cal.replace("<svg",'<svg width="18" height="18"')+'Időpont kérése</button><div class="ca-err w" hidden></div></form></div>'
 +'<div class="ca-pane" data-p="3"></div>';
 grid.appendChild(b);
