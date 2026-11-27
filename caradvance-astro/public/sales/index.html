@@ -895,7 +895,8 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 .slhok{width:24px;height:24px;border-radius:50%;display:grid;place-items:center}.slhr.on .slhok{background:#1f9d55}
 .slhok svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
 .slchkd{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap}
-@media (max-width:900px){.slhistw{grid-template-columns:1fr!important}.slhist .slo.slhr{grid-template-columns:22px 88px minmax(0,1fr) 26px}.slhist .slchip{display:none}}
+@media (max-width:900px){.slhistw{grid-template-columns:1fr!important}.slhist .slo.slhr{grid-template-columns:22px minmax(0,1fr) 26px;grid-template-areas:"r d k" "r p k" "r c k";row-gap:2px;padding:12px 14px}.slhr input[type=radio]{grid-area:r}.slhd{grid-area:d;font-size:12.5px;color:var(--muted)}.slhp{grid-area:p}.slhp .sub{white-space:nowrap}.slhist .slchip{grid-area:c;justify-self:start;margin-top:4px;max-width:100%}.slhok{grid-area:k}}
+@media (max-width:700px){.olpanel .dlrfilters{grid-template-columns:1fr!important;gap:8px}.olpanel .dlrfilters select{height:40px;font-size:14px}.ofbar .ofacts{display:grid;grid-template-columns:1fr;width:100%;margin:0}.ofbar .ofacts button{justify-content:center;width:100%}}
 
 .slopts2:has(.slo:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
 .slopts2 .slo{align-content:center}
