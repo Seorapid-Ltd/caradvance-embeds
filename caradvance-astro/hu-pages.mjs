@@ -792,7 +792,7 @@ html #ca-vipp :is(.vp-reset,.vp-reset2,.vp-reset3){color:var(--vp-ink)!important
 html #ca-vipp .vp-recnote{text-align:center}
 /* autókártyák a Romans mintájára */
 html #ca-vipp .vp-cars{column-gap:40px;row-gap:64px;margin-top:44px}
-html #ca-vipp .vp-car{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible}
+html #ca-vipp .vp-car{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible}html #ca-vipp .vp-car{display:flex!important;flex-direction:column}html #ca-vipp .vp-car>.vp-cb{flex:1;display:flex!important;flex-direction:column;align-items:stretch!important}html #ca-vipp .vp-car .vp-rows{flex:1}html #ca-vipp .vp-car>h3{min-height:2.6em;display:flex;align-items:flex-end}
 html #ca-vipp .vp-car:hover{transform:none!important;box-shadow:none!important}
 html #ca-vipp .vp-car>h3{font-family:var(--hf)!important;text-transform:uppercase;letter-spacing:.12em;font-size:18px!important;font-weight:400!important;margin:0 0 16px!important;color:var(--vp-ink)}
 html #ca-vipp .vp-media{position:relative;overflow:hidden}
