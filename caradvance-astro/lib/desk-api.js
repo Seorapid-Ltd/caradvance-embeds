@@ -400,7 +400,7 @@ async function write(env, ctx, me, body) {
   if (col === 'outreach' && !full.member) full.member = me.name || nameOf(me.email);
   const props = toProps(col, full, all.idx);
   if (col === 'outreach') {
-    const buyer = (String(full.notes || '').match(/^(?:Company|Name):\s*(.+)$/m) || [])[1];
+    const nt = String(full.notes || ''), buyer = (nt.match(/^Company:\s*(.+)$/m) || nt.match(/^Name:\s*(.+)$/m) || [])[1];
     const dn = all.dealers.find(d => d.id === full.dealer)?.name || buyer || full.dealer || 'dealer';
     props.Summary = writeProp('title', full.outcome === 'Sold' ? `Sold — ${full.cars || ''} — ${dn}` : `${full.outcome || full.channel || 'Contact'} — ${dn}`);
     props.Direction ||= writeProp('select', 'Outgoing');
