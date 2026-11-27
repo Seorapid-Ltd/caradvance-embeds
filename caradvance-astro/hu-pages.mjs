@@ -270,11 +270,9 @@ if(!RM){document.documentElement.classList.add('vp-anim');
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vp-in');io.unobserve(e.target)}})},{rootMargin:'0px 0px -8% 0px',threshold:.08});
 $$('[data-rv]').forEach(function(el){io.observe(el)});
 $$('.vp-perk,.vp-tile,.vp-steps li,.vp-car').forEach(function(el,k){el.setAttribute('data-rv','');el.style.setProperty('--d',(k%3)*90+'ms');io.observe(el)});
-var hb=R.querySelector('.vp-hero-bg'),hi=R.querySelector('.vp-hero-in'),gi=[],tk=0;
-var vis=new IntersectionObserver(function(es){es.forEach(function(e){var i=gi.indexOf(e.target);if(e.isIntersecting&&i<0)gi.push(e.target);if(!e.isIntersecting&&i>-1)gi.splice(i,1)})});
-$$('.vp-gal').forEach(function(g){vis.observe(g)});
+var hb=R.querySelector('.vp-hero-bg'),hi=R.querySelector('.vp-hero-in'),tk=0;
 function px(){tk=0;var y=scrollY,h=hero.offsetHeight,wide=innerWidth>700;if(y<h+200){var r=Math.min(1,y/h);hb.style.transform='translate3d(0,'+(y*(wide?.38:.22)).toFixed(1)+'px,0) scale('+(1.06+r*.06).toFixed(3)+')';if(wide){hi.style.transform='translate3d(0,'+(y*.18).toFixed(1)+'px,0)';hi.style.opacity=Math.max(0,1-r*1.5).toFixed(3)}}
-if(wide)gi.forEach(function(g){var b=g.getBoundingClientRect(),c=(b.top+b.height/2-innerHeight/2)/innerHeight;g.style.setProperty('--py',(c*-26).toFixed(1)+'px')})}
+}
 addEventListener('scroll',function(){if(!tk)tk=requestAnimationFrame(px)},{passive:true});addEventListener('resize',px);px()}
 })();</script>`;
 
@@ -662,7 +660,6 @@ html.vp-anim #ca-vipp .vp-tile[data-rv].vp-in:hover{transform:translateY(-4px)}
 html.vp-anim #ca-vipp .vp-perk[data-rv].vp-in:hover{transform:translateY(-3px)}
 #ca-vipp .vp-hero-bg{will-change:transform;transform-origin:50% 30%}
 #ca-vipp .vp-hero-in{will-change:transform,opacity}
-@media(min-width:701px){html.vp-anim #ca-vipp .vp-gal img{transform:translate3d(0,var(--py,0px),0) scale(1.1);transition:transform .1s linear}}
 @media(max-width:700px){#ca-vipp .vp-hero{overflow:hidden}#ca-vipp .vp-hero-in{position:relative;z-index:1;background:var(--vp-bg)}}
 /* lebegő sáv */
 #ca-vipp .vp-bar{position:fixed;left:50%;bottom:18px;z-index:60;display:flex;align-items:center;gap:8px;padding:8px;border-radius:999px;background:color-mix(in srgb,var(--vp-bg) 80%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--vp-line);box-shadow:0 18px 40px -16px rgba(0,0,0,.45);transform:translate(-50%,140%);opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s;pointer-events:none}
