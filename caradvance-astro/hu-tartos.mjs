@@ -136,6 +136,9 @@ const CSS = '<style id="ca-tb-css">'
   + D + P + '.tb-bph.ca-cutb{background:radial-gradient(60% 50% at 50% 80%,rgba(255,255,255,.06),transparent 70%)!important}'
   + P + '.tb-bph.ca-cutb img{object-fit:contain!important;padding:10px 12px 4px;box-sizing:border-box;filter:drop-shadow(0 10px 8px rgba(18,19,23,.16));mix-blend-mode:normal!important;background:transparent!important}'
   + D + P + '.tb-bph.ca-cutb img{filter:drop-shadow(0 12px 10px rgba(0,0,0,.5))}'
+  // márkakártyák: a képdoboz mindig ugyanolyan magas (a magasabb MAN furgon se tolja le a feliratot), az autó alja egy vonalban
+  + P + '.tb-bph.ca-cutb{aspect-ratio:980/520!important;height:auto!important;overflow:hidden;display:block!important}'
+  + P + '.tb-bph.ca-cutb img{width:100%!important;height:100%!important;display:block!important;object-position:50% 100%!important}'
   + P + '.tb-brands>a{border-radius:20px!important;transition:transform .2s,box-shadow .2s}' + P + '.tb-brands>a:hover{transform:translateY(-3px)}'
   // ---- 10) összevető táblázat: Caradvance oszlop kiemelve
   + P + '.tb-cmp{border-collapse:separate!important;border-spacing:0}'
