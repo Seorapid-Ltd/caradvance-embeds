@@ -159,35 +159,50 @@ async function queryAll(env, ds) {
 }
 
 /* ---------------- data snapshot ----------------
- * 1. memory (per isolate, 15 s)  2. a copy in D1 (desk_snap, gzipped), served at once and
- * refreshed from Notion in the background when older than 30 s  3. Notion itself.
- * Every write through the desk marks the D1 copy stale (negative t), so the next read
- * goes to Notion and the change shows straight away. */
-let memo = null; // per-isolate
+ * Reads never wait on Notion (except the very first load ever):
+ * 1. desk_snap (D1, gzipped) – a full copy of the three Notion databases, refreshed in the background
+ *    every 30 s by ONE worker at a time (desk_lock), so many users never hammer Notion.
+ * 2. desk_patch (D1) – every write made through the desk is stored here at once as the finished record,
+ *    and laid over the copy on every read, so a saved activity shows for everyone straight away.
+ *    Patches older than the last refresh are removed (Notion has them by then).
+ * 3. per-isolate memory, re-used as long as the D1 version (copy time + last patch no.) is unchanged –
+ *    checking it is one tiny D1 query. */
+let memo = null; // per-isolate: { st, ps, base, data }
 let refreshing = null; // per-isolate background refresh in flight
+let TABLES = false;
 const SNAP_REFRESH_MS = 30 * 1000;
+const LOCK_MS = 90 * 1000; // a refresh never takes this long; a crashed one frees the lock after this
 const SNAP_CHUNK = 900000; // D1 strings are capped at 2 MB; split the copy into parts
 // The copy is stored gzipped + base64 (the JSON is ~1.2 MB, gzipped ~8x smaller): less to pull from D1 per load.
 async function gz(str) { return new Uint8Array(await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()); }
 async function gunz(bytes) { return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text(); }
 function toB64(b) { let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
 function fromB64(str) { const s = atob(str), b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
-async function ensureSnap(env) { await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_snap (part INTEGER PRIMARY KEY, t INTEGER NOT NULL, data TEXT NOT NULL)').run(); }
+async function ensureTables(env) {
+  if (TABLES) return;
+  await env.DB.batch([
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_snap (part INTEGER PRIMARY KEY, t INTEGER NOT NULL, data TEXT NOT NULL)'),
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_patch (seq INTEGER PRIMARY KEY AUTOINCREMENT, t INTEGER NOT NULL, col TEXT NOT NULL, id TEXT NOT NULL, doc TEXT)'),
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_lock (name TEXT PRIMARY KEY, until INTEGER NOT NULL)'),
+    env.DB.prepare("INSERT OR IGNORE INTO desk_lock (name, until) VALUES ('refresh', 0)"),
+  ]);
+  TABLES = true;
+}
 async function readSnap(env) {
-  let rows;
-  try { rows = (await env.DB.prepare('SELECT part, t, data FROM desk_snap ORDER BY part').all()).results || []; }
-  catch (e) { if (/no such table/i.test(String(e && e.message))) { await ensureSnap(env); return null; } throw e; }
+  const rows = (await env.DB.prepare('SELECT part, t, data FROM desk_snap ORDER BY part').all()).results || [];
   if (!rows.length) return null;
   const t = rows[0].t; if (rows.some(r => r.t !== t)) return null; // half-written copy: ignore it
-  if (t <= 0) return { t, data: null };
+  if (t <= 0) return null; // old-style "stale" marker
   try { return { t, data: JSON.parse(await gunz(fromB64(rows.map(r => r.data).join('')))) }; } catch (e) { return null; }
 }
-async function snapT(env) { try { const r = await env.DB.prepare('SELECT t FROM desk_snap ORDER BY part LIMIT 1').first(); return r ? r.t : null; } catch (e) { return null; } }
 async function writeSnap(env, t, data) {
   const s = toB64(await gz(JSON.stringify(data))), parts = [];
   for (let i = 0; i < s.length; i += SNAP_CHUNK) parts.push(s.slice(i, i + SNAP_CHUNK));
-  await ensureSnap(env);
   await env.DB.batch([env.DB.prepare('DELETE FROM desk_snap'), ...parts.map((p, i) => env.DB.prepare('INSERT INTO desk_snap (part, t, data) VALUES (?, ?, ?)').bind(i, t, p))]);
+}
+async function version(env) {
+  const r = await env.DB.prepare('SELECT (SELECT t FROM desk_snap ORDER BY part LIMIT 1) AS st, (SELECT COALESCE(MAX(seq), 0) FROM desk_patch) AS ps').first();
+  return { st: (r && r.st) || 0, ps: (r && r.ps) || 0 };
 }
 async function fetchAll(env) {
   const [vp, dp, op] = await Promise.all([queryAll(env, DS.vehicles), queryAll(env, DS.dealers), queryAll(env, DS.outreach)]);
@@ -199,36 +214,92 @@ async function fetchAll(env) {
   const outreach = op.map(p => pageToDoc('outreach', p, idx));
   return { vehicles, dealers, outreach, idx };
 }
+/** Lay the desk's own recent writes over the copy (never mutates `base`). */
+function overlay(base, rows) {
+  if (!rows.length) return base;
+  const d = { ...base, vehicles: [...base.vehicles], dealers: [...base.dealers], outreach: [...base.outreach],
+    idx: { ...base.idx, dealerByPid: { ...base.idx.dealerByPid }, dealerPid: { ...base.idx.dealerPid }, vehicleByPid: { ...base.idx.vehicleByPid }, vehiclePid: { ...base.idx.vehiclePid } } };
+  for (const r of rows) {
+    const list = d[r.col]; if (!list) continue;
+    const i = list.findIndex(x => x.id === r.id);
+    if (r.doc == null) { if (i >= 0) list.splice(i, 1); continue; }
+    let doc; try { doc = JSON.parse(r.doc); } catch (e) { continue; }
+    if (i >= 0) list[i] = doc; else list.push(doc);
+    if (r.col === 'dealers' && doc._pid) { d.idx.dealerByPid[doc._pid] = doc.id; d.idx.dealerPid[doc.id] = doc._pid; }
+    if (r.col === 'vehicles' && doc._pid) { d.idx.vehicleByPid[doc._pid] = doc.id; d.idx.vehiclePid[doc.id] = doc._pid; }
+  }
+  return d;
+}
+async function patchesAfter(env, seq) {
+  return (await env.DB.prepare('SELECT seq, col, id, doc FROM desk_patch WHERE seq > ? ORDER BY seq').bind(seq || 0).all()).results || [];
+}
+/** Store a write made through the desk so every reader sees it at once (doc = null → removed). */
+async function recordPatch(env, col, id, doc) {
+  if (!env.DB || !id) return;
+  try { await ensureTables(env); await env.DB.prepare('INSERT INTO desk_patch (t, col, id, doc) VALUES (?, ?, ?, ?)').bind(Date.now(), col, id, doc == null ? null : JSON.stringify(doc)).run(); } catch (e) {}
+  memo = null;
+}
+/** Notion page write + patch in one step; returns the finished record. */
+async function writePage(env, col, method, path, body, idx) {
+  const page = await notion(env, method, path, body);
+  const doc = pageToDoc(col, page, idx);
+  if (body && body.in_trash) await recordPatch(env, col, doc.id, null); else await recordPatch(env, col, doc.id, doc);
+  return doc;
+}
+async function tryLock(env) {
+  const now = Date.now();
+  const r = await env.DB.prepare("UPDATE desk_lock SET until = ? WHERE name = 'refresh' AND until < ?").bind(now + LOCK_MS, now).run();
+  return !!(r && r.meta && r.meta.changes === 1);
+}
 async function refreshAll(env) {
   const start = Date.now();
-  const data = await fetchAll(env);
-  // A write that happened while we were reading Notion may be missing from this copy: don't store it.
-  const cur = await snapT(env);
-  if (cur != null && cur < 0 && -cur > start) { memo = null; return data; }
-  const t = Date.now();
-  memo = { t, data };
-  try { if (env.DB) await writeSnap(env, t, data); } catch (e) {}
-  return data;
-}
-async function bust(env) { // after any write through the desk
-  memo = null;
-  try { if (env.DB) { await ensureSnap(env); await env.DB.prepare('UPDATE desk_snap SET t = ?').bind(-Date.now()).run(); } } catch (e) {}
-}
-async function loadAll(env, ctx, fresh) {
-  if (fresh) return refreshAll(env);
-  if (memo && Date.now() - memo.t < CACHE_SECONDS * 1000) return memo.data;
-  let snap = null;
-  try { if (env.DB) snap = await readSnap(env); } catch (e) {}
-  if (snap && snap.t > 0 && snap.data) {
-    memo = { t: snap.t, data: snap.data };
-    if (Date.now() - snap.t > SNAP_REFRESH_MS && !refreshing) {
-      refreshing = refreshAll(env).catch(() => {}).finally(() => { refreshing = null; });
-      if (ctx && ctx.waitUntil) ctx.waitUntil(refreshing);
+  try {
+    const data = await fetchAll(env);
+    if (env.DB) {
+      await writeSnap(env, Date.now(), data);
+      // these writes were finished before we started reading Notion, so the copy has them now
+      await env.DB.prepare('DELETE FROM desk_patch WHERE t < ?').bind(start - 5000).run();
     }
-    return snap.data;
+    memo = null;
+    return data;
+  } finally {
+    if (env.DB) { try { await env.DB.prepare("UPDATE desk_lock SET until = 0 WHERE name = 'refresh'").run(); } catch (e) {} }
   }
-  return refreshAll(env);
 }
+/** Ask for a background refresh now (after changes Notion makes on its own, e.g. formulas). */
+async function refreshSoon(env, ctx) {
+  if (!env.DB || refreshing) return;
+  try { await ensureTables(env); if (!(await tryLock(env))) return; } catch (e) { return; }
+  refreshing = refreshAll(env).catch(() => {}).finally(() => { refreshing = null; });
+  if (ctx && ctx.waitUntil) ctx.waitUntil(refreshing);
+}
+async function loadAll(env, ctx /*, fresh: no longer needed – every read checks the D1 version */) {
+  if (!env.DB) { // no D1 (local preview): Notion with a short memory cache
+    if (memo && memo.data && Date.now() - memo.st < CACHE_SECONDS * 1000) return memo.data;
+    const data = await fetchAll(env); memo = { st: Date.now(), ps: 0, base: data, data }; return data;
+  }
+  await ensureTables(env);
+  const v = await version(env);
+  if (memo && memo.st === v.st && memo.ps === v.ps) { /* unchanged */ }
+  else if (memo && memo.st === v.st && v.st) { // only new writes since: lay them over what we have
+    memo = { ...memo, ps: v.ps, data: overlay(memo.data, await patchesAfter(env, memo.ps)) };
+  } else {
+    let snap = null; try { snap = await readSnap(env); } catch (e) {}
+    if (!snap) { // first load ever (or broken copy): read Notion now, one worker at a time
+      if (await tryLock(env)) await refreshAll(env);
+      else { for (let i = 0; i < 40 && !(snap = await readSnap(env).catch(() => null)); i++) await new Promise(r => setTimeout(r, 250)); }
+      if (!snap) snap = await readSnap(env).catch(() => null);
+      if (!snap) { const data = await fetchAll(env); return data; }
+    }
+    const rows = await patchesAfter(env, 0);
+    const ps = rows.length ? rows[rows.length - 1].seq : 0;
+    memo = { st: snap.t, ps: Math.max(ps, v.ps), base: snap.data, data: overlay(snap.data, rows) };
+  }
+  if (Date.now() - memo.st > SNAP_REFRESH_MS) await refreshSoon(env, ctx);
+  return memo.data;
+}
+/** Version tag of what loadAll returns — lets the page skip downloading unchanged data. */
+const memoVersion = () => (memo ? memo.st + '.' + memo.ps : '');
 
 /* ---------------- who is signed in (staff login: /admin/, ca_session cookie) ---------------- */
 function cookie(request, name) {
@@ -300,18 +371,20 @@ async function write(env, ctx, me, body) {
   const { op, path, data = {}, prev = {} } = body || {};
   const [col, docId] = String(path || '').split('/');
   if (!MAP[col] || !docId) throw bad('Unknown record.');
-  const all = await loadAll(env, ctx, true); // always check against fresh data before writing
+  const all = await loadAll(env, ctx);
   const list = all[col];
-  const cur = col === 'outreach' ? list.find(d => d.id === docId) : list.find(d => d.id === docId);
+  let cur = list.find(d => d.id === docId);
 
   if (op === 'delete') {
     if (!cur) return { ok: true };
     if (col !== 'outreach') throw bad('Cars and dealers can only be removed in Notion.', 403);
     await notion(env, 'PATCH', `/pages/${cur._pid}`, { in_trash: true });
-    await bust(env); return { ok: true };
+    await recordPatch(env, col, docId, null); return { ok: true };
   }
 
   if (cur && (op === 'update' || op === 'set')) {
+    // check against this one record as it is in Notion right now (one small request, not the whole database)
+    try { cur = pageToDoc(col, await notion(env, 'GET', `/pages/${cur._pid}`), all.idx); } catch (e) { if (e.status === 404) throw bad('This record was removed in Notion.', 404); }
     const changed = Object.keys(data).filter(k => k in prev && !same(cur[k], prev[k]));
     if (changed.length) { const e = bad('Someone else changed this while you were editing. The latest version is now shown — check it and save again.', 409); e.current = cur; e.fields = changed; throw e; }
     if (col === 'vehicles' && 'dealer_net' in data && !('dealer_gross' in data) && (cur.dealer_gross == null || cur.b2c_generated || Math.abs(Number(cur.dealer_gross) - b2c(cur.dealer_net)) <= 1))
@@ -320,8 +393,7 @@ async function write(env, ctx, me, body) {
     const props = toProps(col, data, all.idx);
     if (col === 'outreach' && !data.member && !cur.member) props['Team member'] = writeProp('text', me.name || nameOf(me.email));
     if (!Object.keys(props).length) return { ok: true, doc: cur };
-    const page = await notion(env, 'PATCH', `/pages/${cur._pid}`, { properties: props });
-    await bust(env); return { ok: true, doc: pageToDoc(col, page, all.idx) };
+    return { ok: true, doc: await writePage(env, col, 'PATCH', `/pages/${cur._pid}`, { properties: props }, all.idx) };
   }
 
   // create
@@ -335,8 +407,7 @@ async function write(env, ctx, me, body) {
     props.Summary = writeProp('title', `${full.outcome || full.channel || 'Contact'} — ${dn}`);
     props.Direction ||= writeProp('select', 'Outgoing');
   }
-  const page = await notion(env, 'POST', '/pages', { parent: { type: 'data_source_id', data_source_id: DS[col] }, properties: props });
-  await bust(env); return { ok: true, doc: pageToDoc(col, page, all.idx) };
+  return { ok: true, doc: await writePage(env, col, 'POST', '/pages', { parent: { type: 'data_source_id', data_source_id: DS[col] }, properties: props }, all.idx) };
 }
 const nameOf = email => { const n = (email || '').split('@')[0].split(/[._-]/)[0]; return n ? n[0].toUpperCase() + n.slice(1) : ''; };
 
@@ -374,8 +445,8 @@ async function makeOffer(request, env, ctx) {
   if (!type) return json({ error: 'type' }, 400);
   if (!(price > 0 && price < 10000000)) return json({ error: 'price' }, 400);
   if (!(await offerRateOk(env, request.headers.get('cf-connecting-ip') || 'x'))) return json({ error: 'too_many' }, 429);
-  let car;
-  try { const all = await loadAll(env, ctx, false); car = all.vehicles.find(v => v.id === str(b.car, 20)); } catch (e) { return json({ error: 'unavailable' }, 503); }
+  let car, all;
+  try { all = await loadAll(env, ctx); car = all.vehicles.find(v => v.id === str(b.car, 20)); } catch (e) { return json({ error: 'unavailable' }, 503); }
   if (!car || car.status === 'Sold') return json({ error: 'car' }, 400);
   const eurs = n => n == null || n === '' ? '—' : '€' + Math.round(Number(n)).toLocaleString('en-GB');
   const listed = type === 'b2b' ? `Business to Business ${eurs(car.dealer_net)} (excl. VAT)` : `Business to Customer ${eurs(car.dealer_gross)} (incl. 19% German VAT)`;
@@ -392,9 +463,8 @@ async function makeOffer(request, env, ctx) {
     Channel: writeProp('select', 'Website'), Direction: writeProp('select', 'Incoming'), Outcome: writeProp('select', 'Offer received'),
     'Next step': writeProp('text', 'Reply to the offer'), 'Follow-up': writeProp('date', today), Notes: writeProp('text', notes),
   };
-  try { await notion(env, 'POST', '/pages', { parent: { type: 'data_source_id', data_source_id: DS.outreach }, properties: props }); }
+  try { await writePage(env, 'outreach', 'POST', '/pages', { parent: { type: 'data_source_id', data_source_id: DS.outreach }, properties: props }, all.idx); }
   catch (e) { return json({ error: 'unavailable' }, 503); }
-  await bust(env);
   return json({ ok: true });
 }
 
@@ -456,26 +526,25 @@ function germanCheck(offer, car, rk, base, sig, from) {
   return { subject, text: l1 + '\n' + l2, html };
 }
 const todayIso = () => new Date().toISOString().slice(0, 10);
-async function setOutcome(env, offer, outcome, next, line) {
+async function setOutcome(env, offer, outcome, next, line, idx) {
   const notes = [String(offer.notes || '').trim(), `[${todayIso()}] ${line}`].filter(Boolean).join('\n');
-  await notion(env, 'PATCH', `/pages/${offer._pid || offer.id}`, { properties: {
-    Outcome: writeProp('select', outcome), 'Next step': writeProp('text', next), 'Follow-up': writeProp('date', todayIso()), Notes: writeProp('text', notes) } });
-  await bust(env);
+  if (!idx) idx = (await loadAll(env)).idx;
+  await writePage(env, 'outreach', 'PATCH', `/pages/${offer._pid || offer.id}`, { properties: {
+    Outcome: writeProp('select', outcome), 'Next step': writeProp('text', next), 'Follow-up': writeProp('date', todayIso()), Notes: writeProp('text', notes) } }, idx);
 }
 /* Accepting an offer puts the car "Under offer" (reserved for that buyer); declining the accepted offer frees it again. */
 async function carForOffer(env, all, offer, accepted) {
   const p = parseOffer(offer); const car = all.vehicles.find(v => v.id === p.car); if (!car) return;
   const who = [p.name, p.company && '(' + p.company + ')', p.country && '· ' + p.country].filter(Boolean).join(' ');
   if (accepted) {
-    await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { Status: writeProp('select', 'Under offer'), 'Status changed': writeProp('date', todayIso()), 'Reserved for': writeProp('text', who) } });
+    await writePage(env, 'vehicles', 'PATCH', `/pages/${car._pid}`, { properties: { Status: writeProp('select', 'Under offer'), 'Status changed': writeProp('date', todayIso()), 'Reserved for': writeProp('text', who) } });
   } else if (car.status === 'Under offer' && String(car.reserved_for || '').startsWith(p.name || '\u0000')) {
-    await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { Status: writeProp('select', 'Available'), 'Status changed': writeProp('date', todayIso()), 'Reserved for': writeProp('text', '') } });
+    await writePage(env, 'vehicles', 'PATCH', `/pages/${car._pid}`, { properties: { Status: writeProp('select', 'Available'), 'Status changed': writeProp('date', todayIso()), 'Reserved for': writeProp('text', '') } });
   }
-  await bust(env);
 }
 async function offerAction(request, env, ctx, me) {
   const b = await request.json().catch(() => ({}));
-  const all = await loadAll(env, ctx, true);
+  const all = await loadAll(env, ctx);
   const offer = all.outreach.find(o => o.id === b.id);
   if (!offer || !isOffer(offer)) throw bad('Offer not found.', 404);
   const who = me.name || nameOf(me.email);
@@ -512,7 +581,7 @@ async function offerDecision(request, env, ctx) {
 <style>body{font-family:Arial,Helvetica,sans-serif;background:#f4f5f7;color:#141519;margin:0;padding:24px}main{max-width:560px;margin:0 auto;background:#fff;border-radius:20px;padding:24px}h1{font-size:20px;margin:0 0 6px}.s{color:#6b7280}.big{font-size:26px;font-weight:bold;margin:10px 0}button{border:0;border-radius:999px;padding:13px 20px;font-weight:bold;font-size:15px;color:#fff;cursor:pointer;margin:0 8px 8px 0}.a{background:#15803d}.d{background:#b91c1c}.c{background:#141519}input,textarea{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:12px;padding:11px;font-size:15px;margin:6px 0 10px}.ok{background:#ecfdf3;border-radius:14px;padding:14px;font-weight:bold}</style></head><body><main>${body}</main></body></html>`,
     { status: st, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' } });
   if (!id || sig !== await linkSig(env, id)) return page('<h1>Link ungültig</h1><p class="s">Dieser Link ist nicht (mehr) gültig.</p>', 403);
-  const all = await loadAll(env, ctx, true);
+  const all = await loadAll(env, ctx);
   const offer = all.outreach.find(o => o.id === id);
   if (!offer) return page('<h1>Angebot nicht gefunden</h1>', 404);
   const p = parseOffer(offer); const car = all.vehicles.find(v => v.id === p.car) || { id: p.car };
@@ -693,12 +762,12 @@ async function stockChoosePrice(request, env, ctx, me) {
   if (mode === 'live') {
     // the chosen price goes to every list: the stock list and the desk (B2B / B2C in Notion)
     if (deskTo && d.desk) {
-      const all = await loadAll(env, ctx, true);
+      const all = await loadAll(env, ctx);
       const car = all.vehicles.find(v => v.id === d.desk);
       if (car) {
         if (!b.clear && d.chosen && !d.chosen.deskPrev) d.chosen.deskPrev = { net: car.dealer_net ?? null, gross: car.dealer_gross ?? null };
-        await notion(env, 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', deskTo.net), B2C: writeProp('number', deskTo.gross) } });
-        await bust(env); desk = true;
+        await writePage(env, 'vehicles', 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', deskTo.net), B2C: writeProp('number', deskTo.gross) } });
+        desk = true;
       }
     }
     await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
@@ -732,7 +801,7 @@ export async function handle(request, env, ctx) {
     const cacheKey = new Request(url.origin + '/api/desk/public', { method: 'GET' });
     if (cache) { const hit = await cache.match(cacheKey); if (hit) return hit; }
     try {
-      const { vehicles } = await loadAll(env, ctx, false);
+      const { vehicles } = await loadAll(env, ctx);
       // Cars Alexander marked "no longer for sale" on the stock list also show as unavailable here (without prices).
       let offSet = new Set();
       try {
@@ -756,8 +825,11 @@ export async function handle(request, env, ctx) {
   try {
     const me = await whoAmI(request, env);
     if (request.method === 'GET' && route === 'data') {
-      const { vehicles, dealers, outreach } = await loadAll(env, ctx, url.searchParams.has('fresh'));
-      return json({ vehicles, dealers, outreach, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
+      const { vehicles, dealers, outreach } = await loadAll(env, ctx);
+      const v = memoVersion();
+      // nothing changed since the page last asked: answer with a few bytes instead of the whole database
+      if (v && url.searchParams.get('v') === v) return json({ same: true, v });
+      return json({ vehicles, dealers, outreach, v, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
     if (request.method === 'GET' && route === 'damages') return json(await damagesList(env));
