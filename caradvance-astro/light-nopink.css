@@ -196,7 +196,6 @@ html:not(.ca-dark) .soldnote{border-right-color:rgb(222,222,224)!important}
 html:not(.ca-dark) .soldnote{border-bottom-color:rgb(222,222,224)!important}
 html:not(.ca-dark) .soldnote{border-left-color:rgb(222,222,224)!important}
 html:not(.ca-dark) #panel-berelheto .ca-rbi{background-color:rgba(18,19,23,0.044)!important}
-html:not(.ca-dark) #panel-berelheto .rb-card.ca-rbx:hover .ca-rbi{box-shadow:rgba(18,19,23,0.192) 0px 10px 22px!important}
 html.ca-sl:not(.ca-dark) body #grid > .card .ca-inq:hover{border-top-color:rgba(18,19,23,.35)!important}
 html.ca-sl:not(.ca-dark) body #grid > .card .ca-inq:hover{border-right-color:rgba(18,19,23,.35)!important}
 html.ca-sl:not(.ca-dark) body #grid > .card .ca-inq:hover{border-bottom-color:rgba(18,19,23,.35)!important}
@@ -245,7 +244,6 @@ html:not(.ca-dark) .tb-note2[data-astro-cid-2zgg5vxy]{border-left-color:rgb(230,
 html:not(.ca-dark) .tb-cmp[data-astro-cid-2zgg5vxy] .hl[data-astro-cid-2zgg5vxy]{background-color:rgb(248,248,250)!important}
 html:not(.ca-dark) .tb-faq[data-astro-cid-2zgg5vxy] .pl[data-astro-cid-2zgg5vxy]{background-color:rgb(241,241,243)!important}
 html:not(.ca-dark) body section.tb .ca-rbi{background-color:rgba(18,19,23,0.044)!important}
-html:not(.ca-dark) body section.tb .rb-card.ca-rbx:hover .ca-rbi{box-shadow:rgba(18,19,23,0.192) 0px 10px 22px!important}
 html:not(.ca-dark) body section.tb .tb-steps::before{background-image:linear-gradient(90deg, rgba(18,19,23,0.000), rgba(18,19,23,.35) 12%, rgba(18,19,23,.35) 88%, rgba(18,19,23,0.000))!important}
 html:not(.ca-dark) body section.tb .tb-step .tb-n{box-shadow:rgb(245, 245, 247) 0px 0px 0px 7px, rgba(18,19,23,0.180) 0px 10px 22px!important}
 html:not(.ca-dark) body section.tb .tb-cmp th:last-child, html:not(.ca-dark) body section.tb .tb-cmp td.hl{background-color:rgba(18,19,23,0.033)!important}
