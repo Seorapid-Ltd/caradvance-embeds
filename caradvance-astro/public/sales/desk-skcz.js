@@ -5,15 +5,19 @@
    3) "új közlekedési eszköz" (≤ 6 hónap vagy ≤ 6 000 km): B2C ár német ÁFA nélkül + SK 23 % / CZ 21 % megjegyzés;
       B2B: 138. cikk szerinti adómentes Közösségen belüli értékesítés megjegyzés
    5) SK/CZ e-mail / WhatsApp sablon küldő-azonosítással és leiratkozási mondattal
-   HU hoston semmit nem csinál. */
+   2026-11-27: az adatfordítás (1) minden hoston fut, minden választható nyelven (sk, cs, hu, de, pl, en);
+   a 2), 3), 5) üzleti rész továbbra is csak .sk/.cz hoston. */
 (()=>{
   const H=location.hostname;
   const MK=/\.sk$/.test(H)?'sk':/\.cz$/.test(H)?'cz':((new URLSearchParams(location.search).get('skcz')||'').match(/^(sk|cz)$/)||[])[0];
-  if(!MK)return;
+  const LI={sk:0,cs:1,hu:2,de:3,pl:4,en:5};
+  const curLang=()=>{const s=document.getElementById('lang');return (s&&s.value)||document.documentElement.lang||'en';};
+  let foot=()=>{};
+  if(MK){
   const SK=MK==='sk';
   const VAT=SK?23:21;
   const CT=SK?{mail:'info@caradvance.sk',tel:'+421 915 410 555',web:'www.caradvance.sk'}:{mail:'info@caradvance.cz',tel:'+420 604 313 136',web:'www.caradvance.cz'};
-  const lang=()=>{const s=document.getElementById('lang');const l=(s&&s.value)||document.documentElement.lang||'';return l==='sk'||l==='cs'?l:'en';};
+  const lang=()=>{const l=curLang();return l==='sk'||l==='cs'||l==='de'?l:'en';};
 
   /* ---- csevegő / hívás gomb: SK/CZ telefon ---- */
   try{if(window.CA_CFG){const d=CT.tel.replace(/\D/g,'');Object.assign(window.CA_CFG,{PHONE:CT.tel,WHATSAPP:'https://wa.me/'+d,
@@ -42,6 +46,10 @@
         note:`bez německé DPH – nový dopravní prostředek, kupující platí ${VAT} % DPH v ČR`,
         b2b:'Dodání plátci DPH v ČR je osvobozeno od DPH (čl. 138 směrnice 2006/112/ES).',
         foot:`Nový dopravní prostředek (nejvýše 6 měsíců od první registrace nebo nejvýše 6 000 km): cena B2C je bez německé DPH, DPH ${VAT} % platí kupující v České republice. Ostatní ceny B2C obsahují 19% německou DPH.`},
+    de:{tag:`ohne MwSt. · +${VAT} % MwSt. in ${SK?'SK':'CZ'}`,ttl:`Neues Fahrzeug (≤ 6 Monate ab Erstzulassung oder ≤ 6.000 km): der Käufer zahlt die MwSt. in ${SK?'der Slowakei':'Tschechien'}.`,
+        note:`ohne deutsche MwSt. – neues Fahrzeug, der Käufer zahlt ${VAT} % MwSt. in ${SK?'der Slowakei':'Tschechien'}`,
+        b2b:`Lieferung an einen Steuerpflichtigen in ${SK?'der Slowakei':'Tschechien'} ist umsatzsteuerfrei (Art. 138 MwSt-Richtlinie 2006/112/EG).`,
+        foot:`Neues Fahrzeug (höchstens 6 Monate ab Erstzulassung oder höchstens 6.000 km): der B2C-Preis ist ohne deutsche MwSt.; der Käufer zahlt ${VAT} % MwSt. in ${SK?'der Slowakei':'Tschechien'}. Andere B2C-Preise enthalten 19 % deutsche MwSt.`},
     en:{tag:`excl. VAT · +${VAT}% VAT in ${SK?'SK':'CZ'}`,ttl:`New means of transport (≤ 6 months from first registration or ≤ 6,000 km): the buyer pays VAT in ${SK?'Slovakia':'the Czech Republic'}.`,
         note:`excl. German VAT – new means of transport, buyer pays ${VAT}% VAT in ${SK?'Slovakia':'the Czech Republic'}`,
         b2b:`Supply to a VAT payer in ${SK?'Slovakia':'the Czech Republic'} is VAT-exempt (Art. 138 VAT Directive 2006/112/EC).`,
@@ -79,56 +87,8 @@
     'p.foot.skcz-foot{margin-top:4px}';
   (document.head||document.documentElement).appendChild(st);
 
-  /* ---- 1) adatok fordítása (csak megjelenítés) ---- */
-  let D=null,L2=null;
-  const COL={grau:'Grey',blau:'Blue',rot:'Red',grün:'Green',weiss:'White',weiß:'White',gelb:'Yellow',schwarz:'Black',silber:'Silver'};
-  function one(s,i){
-    const t=s.trim();if(!t)return null;
-    const hit=L2[t.toLowerCase()];if(hit)return hit[i];
-    let m=t.match(/^(\d+)\s*kW\s*\/\s*(\d+)\s*(PS|hp|HP|LE)(\s*\(system\))?$/);
-    if(m)return `${m[1]} kW / ${m[2]} k`+(m[4]?' (systém)':'');
-    m=t.match(/^(\d+)\s*(PS|hp|HP|LE)$/);if(m)return m[1]+' k';
-    m=t.match(/^(.*?)\s+(metallic|met\.)(\s*\(.*\))?$/i);
-    if(m&&m[1].length<40){let b=m[1].replace(/\b(Grau|Blau|Rot|Grün|Weiss|Weiß|Gelb|Schwarz|Silber)\b/gi,w=>COL[w.toLowerCase()]||w);
-      if(b===b.toUpperCase())b=b.toLowerCase().replace(/(^|[\s\-])(\S)/g,(a,p,c)=>p+c.toUpperCase());
-      b=b.replace(/\bIii\b/g,'III').replace(/\bIi\b/g,'II');return b+' metalíza'+(m[3]||'');}
-    return null;
-  }
-  function tr(s,l){
-    const i=l==='cs'?1:0;const r=one(s,i);if(r!=null)return r;
-    for(const sep of [' · ',', ','; ']){if(s.includes(sep)){let ch=false;const o=s.split(sep).map(p=>{const x=one(p,i);if(x!=null&&x!==p.trim()){ch=true;return p.replace(p.trim(),x)}return p});if(ch)return o.join(sep);}}
-    return null;
-  }
-  const SKIP='script,style,textarea,input,code,pre,[contenteditable],#lang,.skcz-off,footer.cafoot';
-  const ORIG=new WeakMap();
-  function node(n){
-    const p=n.parentElement;if(!p||p.closest(SKIP))return;
-    // <option> érték nélkül: a szöveg az érték – rögzítjük az eredetit, hogy a fordítás ne írjon vissza más értéket
-    if(p.tagName==='OPTION'&&!p.hasAttribute('value')){if(ORIG.has(n))return;p.setAttribute('value',p.textContent);}
-    const l=lang();
-    const o=ORIG.has(n)?ORIG.get(n):n.nodeValue;
-    if(l==='en'){if(ORIG.has(n)&&n.nodeValue!==o)n.nodeValue=o;return;}
-    if(!o||o.length>400||!/[A-Za-zÄÖÜäöüß]/.test(o))return;
-    const r=tr(o,l);
-    if(r!=null){ORIG.set(n,o);const v=o.replace(o.trim(),r);if(n.nodeValue!==v)n.nodeValue=v;}
-    else if(ORIG.has(n)&&n.nodeValue!==o)n.nodeValue=o;
-  }
-  function walk(root){
-    if(!D||!root)return;
-    if(root.nodeType===3){node(root);return;}
-    if(root.nodeType!==1&&root.nodeType!==9&&root.nodeType!==11)return;
-    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))node(n);
-  }
-  let q=new Set(),sch=false;
-  const flush=()=>{sch=false;const a=[...q];q.clear();for(const r of a)if(r.isConnected!==false)walk(r);foot();};
-  const obs=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')q.add(m.target);else m.addedNodes.forEach(x=>q.add(x));}if(!sch){sch=true;requestAnimationFrame(flush);}});
-  function start(){walk(document.body);foot();obs.observe(document.body,{childList:true,subtree:true,characterData:true});
-    const ls=document.getElementById('lang');if(ls)ls.addEventListener('change',()=>setTimeout(()=>{walk(document.body);foot();},0));}
-  fetch('desk-skcz-dict.json?v=1127',{credentials:'same-origin'}).then(r=>r.ok?r.json():{}).then(j=>{D=j;L2={};for(const k in D)L2[k.toLowerCase()]=D[k];
-    if(document.body)start();else addEventListener('DOMContentLoaded',start);}).catch(()=>{});
-
   /* ---- lábjegyzet ---- */
-  function foot(){
+  function footNote(){
     document.querySelectorAll('#v-stock p.foot:not(.skcz-foot)').forEach(f=>{
       let x=f.nextElementSibling;if(!x||!x.classList.contains('skcz-foot')){x=document.createElement('p');x.className='foot skcz-foot skcz-off';f.after(x);}
       const T=TX[lang()];const v=T.foot+' '+T.b2b;if(x.textContent!==v)x.textContent=v;});
@@ -149,5 +109,63 @@
     f.querySelectorAll('a[href^="mailto:"][href*="caradvance.hu"]').forEach(a=>{a.href='mailto:'+CT.mail;a.textContent=CT.mail;});
     f.querySelectorAll('a[href*="facebook.com"],a[href*="instagram.com"],a[href*="tiktok.com"],a[href*="linkedin.com"]').forEach(a=>a.remove());
   }
+  foot=()=>footNote();
   if(document.readyState==='loading')addEventListener('DOMContentLoaded',swapFooter);else swapFooter();
+  }
+
+  /* ---- 1) adatok fordítása (csak megjelenítés) – minden hoston ---- */
+  let D=null,L2=null;
+  const COL={grau:'Grey',blau:'Blue',rot:'Red',grün:'Green',weiss:'White',weiß:'White',gelb:'Yellow',schwarz:'Black',silber:'Silver'};
+  const MET=['metalíza','metalíza','metál','metallic','metalik','metallic'];
+  const HP=['k','k','LE','PS','KM','hp'],SYS=['systém','systém','rendszer','System','systemowa','system'];
+  function one(s,i){
+    const t=s.trim();if(!t)return null;
+    const hit=D[t]||L2[t.toLowerCase()];
+    if(hit){let v=hit[i];if(!v||v.toLowerCase()===t.toLowerCase())return null;
+      /* kis-/nagybetűs változat: a megjelenített szöveg írásmódját követjük */
+      if(!D[t]&&t!==t.toUpperCase()&&v===v.toUpperCase())v=v.charAt(0)+v.slice(1).toLowerCase();return v;}
+    let m=t.match(/^(\d+)\s*kW\s*\/\s*(\d+)\s*(PS|hp|HP|LE|KM|k)(\s*\(system\))?$/);
+    if(m)return `${m[1]} kW / ${m[2]} ${HP[i]}`+(m[4]?` (${SYS[i]})`:'');
+    m=t.match(/^(\d+)\s*(PS|hp|HP|LE|KM)$/);if(m)return m[1]+' '+HP[i];
+    m=t.match(/^(.*?)\s+(metallic|met\.)(\s*\(.*\))?$/i);
+    if(m&&m[1].length<40){let b=m[1];if(i!==3)b=b.replace(/\b(Grau|Blau|Rot|Grün|Weiss|Weiß|Gelb|Schwarz|Silber)\b/gi,w=>COL[w.toLowerCase()]||w);
+      if(b===b.toUpperCase())b=b.toLowerCase().replace(/(^|[\s\-])(\S)/g,(a,p,c)=>p+c.toUpperCase());
+      b=b.replace(/\bIii\b/g,'III').replace(/\bIi\b/g,'II');return b+' '+MET[i]+(m[3]||'');}
+    return null;
+  }
+  function tr(s,l){
+    const i=LI[l];if(i==null)return null;const r=one(s,i);if(r!=null)return r;
+    for(const sep of [' · ',', ','; ']){if(s.includes(sep)){let ch=false;const o=s.split(sep).map(p=>{const x=one(p,i);if(x!=null&&x!==p.trim()){ch=true;return p.replace(p.trim(),x)}return p});if(ch)return o.join(sep);}}
+    return null;
+  }
+  const SKIP='script,style,textarea,input,code,pre,[contenteditable],#lang,.skcz-off,footer.cafoot';
+  const ORIG=new WeakMap();
+  function node(n){
+    const p=n.parentElement;if(!p||p.closest(SKIP))return;
+    // <option> érték nélkül: a szöveg az érték – rögzítjük az eredetit, hogy a fordítás ne írjon vissza más értéket
+    if(p.tagName==='OPTION'&&!p.hasAttribute('value')){if(ORIG.has(n))return;p.setAttribute('value',p.textContent);}
+    const l=curLang();
+    const o=ORIG.has(n)?ORIG.get(n):n.nodeValue;
+    if(!o||o.length>400||!/[A-Za-zÄÖÜäöüß]/.test(o))return;
+    const r=tr(o,l);
+    if(r!=null){ORIG.set(n,o);const v=o.replace(o.trim(),r);if(n.nodeValue!==v)n.nodeValue=v;}
+    else if(ORIG.has(n)&&n.nodeValue!==o)n.nodeValue=o;
+  }
+  function walk(root){
+    if(!D||!root)return;
+    if(root.nodeType===3){node(root);return;}
+    if(root.nodeType!==1&&root.nodeType!==9&&root.nodeType!==11)return;
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))node(n);
+  }
+  let q=new Set(),sch=false;
+  const flush=()=>{sch=false;const a=[...q];q.clear();for(const r of a)if(r.isConnected!==false)walk(r);foot();};
+  const obs=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')q.add(m.target);else m.addedNodes.forEach(x=>q.add(x));}if(!sch){sch=true;requestAnimationFrame(flush);}});
+  function start(){walk(document.body);foot();obs.observe(document.body,{childList:true,subtree:true,characterData:true});
+    const re=()=>setTimeout(()=>{walk(document.body);foot();},0);
+    const ls=document.getElementById('lang');if(ls)ls.addEventListener('change',re);
+    /* a nyelvválasztó menü a <html lang> attribútumot állítja – erre is újrafordítunk */
+    new MutationObserver(re).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}
+  fetch('desk-skcz-dict.json?v=1127b',{credentials:'same-origin'}).then(r=>r.ok?r.json():{}).then(j=>{D=j;L2={};for(const k in D)L2[k.toLowerCase()]=D[k];
+    if(document.body)start();else addEventListener('DOMContentLoaded',start);}).catch(()=>{});
+
 })();
