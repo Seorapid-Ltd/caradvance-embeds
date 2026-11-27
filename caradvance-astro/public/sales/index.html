@@ -1651,8 +1651,19 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 #v-sold .sokpis .kpi:first-child b{color:var(--red)}
 @media(max-width:1100px){.oftiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:640px){.ofhdr{padding:14px;border-radius:18px}.ofttl{font-size:21px}.ofbtns{width:100%}.ofbtn1,.ofbtn2{flex:1;justify-content:center;padding:0 10px;gap:6px;font-size:13px;white-space:nowrap;min-width:0}.ofbtn1 svg,.ofbtn2 svg{width:16px;height:16px;flex:none}
- .oftiles{display:flex;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -14px;padding:6px 14px 10px;scrollbar-width:none}.oftiles::-webkit-scrollbar{display:none}
- .oft{flex:0 0 auto;min-width:112px;scroll-snap-align:start}.ofcrow{justify-content:stretch}.ofcl{width:100%}.ofcl select{flex:1;width:auto}}
+ .oftiles{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:4px 0}
+ .oft{grid-column:span 2;order:3;padding:9px 10px;border-radius:12px}
+ .oft small{font-size:11.5px;white-space:normal;line-height:1.2;overflow:visible}
+ .oft b{font-size:19px}
+ .oft-all,.oft-sold{grid-column:span 3;flex-direction:row;align-items:center;justify-content:center;gap:10px;height:44px;padding:0 14px;border-radius:999px}
+ .oft-all{order:1}.oft-sold{order:2}
+ .oft-all small,.oft-sold small{font-size:14px;font-weight:800;color:var(--tx)}
+ .oft-all b,.oft-sold b{font-size:13px;min-width:24px;height:24px;padding:0 7px;border-radius:999px;display:inline-grid;place-items:center;background:rgba(255,255,255,.18);opacity:1}
+ .oft-all.zero b,.oft-sold.zero b{opacity:1}
+ .oft.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--red)}.oft-sold.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px light-dark(var(--navy),#fff)}
+ .oft:hover{transform:none}.ofcrow{justify-content:stretch}.ofcl{width:100%}.ofcl select{flex:1;width:auto}}
+@media(max-width:400px){.ofbtn1 svg,.ofbtn2 svg{display:none}.ofbtn1,.ofbtn2{padding:0 8px;font-size:12.5px}}
+.dmore td{padding:0!important;height:1px;border:0!important}
 </style>
 </head>
 <body>
@@ -1828,7 +1839,7 @@ Ready when you are.</h1>
 <dialog id="lb" aria-label="Photo viewer"><div class="lbtop"><span id="lbCap"></span><div class="lbtools"><button type="button" id="lbFs" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fs-on" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-off" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button><button type="button" id="lbX" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div><div class="lbstage"><button type="button" id="lbPrev" class="lbnav prev" aria-label="Previous photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><img id="lbImg" alt=""><button type="button" id="lbNext" class="lbnav next" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></dialog>
 <dialog id="dlb" aria-label="Damage photo"><button type="button" id="dlbX" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img id="dlbImg" alt=""></dialog>
 <script src="desk-skcz.js?v=1127c"></script>
-<script src="desk-shim.js?v=1127d"></script>
+<script src="desk-shim.js?v=1127e"></script>
 <script>
 /* Telefonos kártyanézethez: minden cella megkapja az oszlop nevét (a fejlécből). */
 (function(){
@@ -2251,9 +2262,11 @@ const DF=[['name','Company name','text',1],['legal_name','Legal name'],['reg_no'
  ['email','General email','email'],['phone','General phone'],['contact_name','Contact person'],['contact_title','Job title'],['contact_email','Contact email (published)','email'],['contact_phone','Contact phone (published)'],
  ['language','Outreach language','sel:HU,SK,CZ,DE,PL,RO,EN'],['score','Lead score 1–5','sel:1,2,3,4,5'],['score_reason','Score reason'],['status','Outreach status','sel:New,Contacted,Interested,Not interested,Do not contact'],
  ['owner','Owner (team member)','team'],['last_contact','Last contact','date'],['sources','Source URLs (one per line)','area'],['notes','Notes','area']];
-function renderDealers(){
-  /* the 1369-row list is only drawn while the dealers page is open; counters stay live */
-  const dv=$('#v-dealers');if(dv&&!dv.classList.contains('on')){S.dDirty=true;document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;return}
+function renderDealers(bg){
+  /* The 1369-row list: while another page is open it is built in the background when the browser is idle;
+     when the page opens the first rows appear at once and the rest are added in small batches. */
+  const dv=$('#v-dealers');if(bg!==true&&dv&&!dv.classList.contains('on')){S.dDirty=true;document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;
+    if(!S.dIdle){S.dIdle=1;const go=()=>{S.dIdle=0;if(S.dDirty&&!(dv&&dv.classList.contains('on')))renderDealers(true)};window.requestIdleCallback?requestIdleCallback(go,{timeout:3000}):setTimeout(go,800)}return}
   S.dDirty=false;
   const q=$('#dq').value.trim().toLowerCase(),co=$('#dCountry').value,ti=$('#dTier').value,sc=$('#dScore').value,st=$('#dStat').value;
   const L=S.dealers.filter(d=>(!co||d.country===co)&&(!ti||String(d.tier)===ti)&&(!sc||Number(d.score)>=Number(sc))&&(!st||(d.status||'New')===st)&&
@@ -2272,7 +2285,7 @@ function renderDealers(){
   const ini=n=>String(n||'?').replace(/[^\p{L}\p{N} ]/gu,'').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';
   const hue=n=>{let h=0;for(const ch of String(n||''))h=(h*31+ch.charCodeAt(0))%360;return h};
   const ST={New:['new','New'],Contacted:['contacted','Contacted'],Interested:['interested','Interested'],'Not interested':['no','Not interested'],'Do not contact':['dnc','Do not contact']};
-  $('#dRows').innerHTML=L.length?L.map(d=>{const h=hue(d.name),st0=d.status||'New',sm=ST[st0]||['new',st0];
+  const rowHtml=d=>{const h=hue(d.name),st0=d.status||'New',sm=ST[st0]||['new',st0];
     const sub=d.city||d.contact_name||d.brands||'';
     return `<tr class="row" data-id="${esc(d.id)}"><td class="dchk"><input type="checkbox" class="drchk" aria-label="${esc(d.name)}"></td>
     <td class="ddealer"><span class="dwrap"><span class="davatar" style="--h:${h}">${esc(ini(d.name))}</span><span class="dinfo"><b>${esc(d.name)}</b>${sub?`<span class="sub">${esc(sub)}</span>`:''}</span></span></td>
@@ -2281,14 +2294,33 @@ function renderDealers(){
     <td class="num dscore" data-label="Score">${d.score!=null&&d.score!==''?`<span class="pill score">${esc(d.score)}</span>`:'<span class="sub">—</span>'}</td>
     <td class="dstat" data-label="Status"><span class="pill stat s-${sm[0]}"><i class="sdot"></i>${esc(sm[1])}</span></td>
     <td class="hide-s downer" data-label="Account owner">${d.owner?`<span class="downerv">${esc(d.owner)}</span>`:'<span class="sub">—</span>'}</td>
-    <td class="dact"><button type="button" class="dmenu" data-dmenu="${esc(d.id)}" aria-label="Actions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button></td></tr>`}).join('')
+    <td class="dact"><button type="button" class="dmenu" data-dmenu="${esc(d.id)}" aria-label="Actions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button></td></tr>`};
+  const tok=S.dTok=(S.dTok||0)+1,box=$('#dRows'),FIRST=100,STEP=150;
+  box.innerHTML=L.length?L.slice(0,FIRST).map(rowHtml).join('')
+
    :`<tr><td colspan="8" class="empty">${S.dealers.length?'No dealers match these filters.':'No dealers yet — Claude is researching them country by country (Hungary first). You can also add one yourself.'}</td></tr>`;
   const all=$('#dAll');if(all)all.checked=false;
+  // only the rows near the screen are on the page (1369 rows at once made phones wait ~1.5 s for layout);
+  // the next batch is added as you scroll towards the end of the list
+  if(S.dObs){S.dObs.disconnect();S.dObs=null}S.dFlush=null;
+  let at=FIRST;
+  if(L.length>FIRST){
+    box.insertAdjacentHTML('beforeend','<tr class="dmore" aria-hidden="true"><td colspan="8"></td></tr>');
+    const sent=box.querySelector('.dmore');
+    const more=()=>{if(tok!==S.dTok)return;sent.insertAdjacentHTML('beforebegin',L.slice(at,at+STEP).map(rowHtml).join(''));at+=STEP;
+      if(all&&all.checked)box.querySelectorAll('.drchk').forEach(c=>{c.checked=true});
+      if(at>=L.length){sent.remove();S.dObs&&S.dObs.disconnect();S.dObs=null}};
+    S.dFlush=()=>{while(tok===S.dTok&&at<L.length)more()};
+    if('IntersectionObserver' in window){S.dObs=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))more()},{rootMargin:'1500px 0px'});S.dObs.observe(sent)}
+    else{const all2=()=>{while(at<L.length)more()};setTimeout(all2,0)}
+  }
 }
 ['#dq','#dCountry','#dTier','#dScore','#dStat'].forEach(s=>$(s).addEventListener('input',renderDealers));
 $('#dCountries')&&$('#dCountries').addEventListener('click',e=>{const b=e.target.closest('[data-dc]');if(!b)return;const cur=$('#dCountry').value;$('#dCountry').value=cur===b.dataset.dc?'':b.dataset.dc;renderDealers()});
 $('#dRows').addEventListener('click',e=>{if(e.target.closest('a,input'))return;const r=e.target.closest('tr.row');if(r)openDealerView(S.dealers.find(d=>d.id===r.dataset.id))});
 $('#dAll')&&$('#dAll').addEventListener('change',e=>{document.querySelectorAll('#dRows .drchk').forEach(c=>{c.checked=e.target.checked})});
+/* Ctrl/Cmd+F must find every dealer: put the remaining rows on the page first */
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'&&S.dFlush&&$('#v-dealers').classList.contains('on'))S.dFlush()});
 $('#addDealer').addEventListener('click',()=>openDealer(null));
 
 /* dialog */
