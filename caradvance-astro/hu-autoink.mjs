@@ -7,6 +7,7 @@
 // Csak a magyar /autoink/ oldalt érinti, idempotens.
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const DIST = process.argv[2] || 'dist';
 const FILE = path.join(DIST, 'autoink', 'index.html');
@@ -138,9 +139,12 @@ const CSS = '<style id="ca-ai-css">'
   + '@media(max-width:600px){' + P + '.ca-bnav button{display:none}' + P + '.sub-brand-h .ct{display:none}}'
   + '</style>';
 
+// tartalom-hash verzió a kivágott képekhez: ha egy kép megváltozik, a böngésző az újat tölti le (nem a régit a gyorsítótárból)
+function cutVer(cuts) { const o = {}; for (const n of cuts) { try { o[n] = crypto.createHash('md5').update(fs.readFileSync(path.join(CUTDIR, n + '.webp'))).digest('hex').slice(0, 8); } catch (e) {} } return o; }
+
 function js(cuts) {
   return '<script id="ca-ai-js">(function(){'
-  + 'var CUTS=' + JSON.stringify(cuts) + ';var H=document.documentElement;'
+  + 'var CUTS=' + JSON.stringify(cuts) + ';var CUTV=' + JSON.stringify(cutVer(cuts)) + ';var H=document.documentElement;'
   + 'function onP(){var p=document.getElementById("panel-berelheto");return p&&p.classList.contains("on")}'
   + 'function slug(t){t=String(t||"").toLowerCase();if(/mercedes/.test(t))return"mercedes";if(/volkswagen|^vw/.test(t))return"vw";return t.replace(/[^a-z]/g,"")}'
   + 'function logo(t){return"/bl-"+slug(t)+".webp"}'
@@ -173,7 +177,7 @@ function js(cuts) {
   + 'var L=document.getElementById("sub-list");if(L)L.classList.toggle("ca-rows",!(b&&b.value))}'
   // 4) kártyák + 5) sorok
   + 'function deco(){var L=document.getElementById("sub-list");if(!L)return;'
-  + '[].forEach.call(L.querySelectorAll(".sub-photo:not([data-ai])"),function(im){im.setAttribute("data-ai","1");var m=(im.getAttribute("src")||"").match(/\\/berles\\/([^\\/?#]+)\\.webp/);if(m&&CUTS.indexOf(m[1])>-1){im.src="/berles-cut/"+m[1]+".webp";var s=im.closest(".sub-slide");if(s)s.classList.add("ca-cutsl")}});'
+  + '[].forEach.call(L.querySelectorAll(".sub-photo:not([data-ai])"),function(im){im.setAttribute("data-ai","1");var m=(im.getAttribute("src")||"").match(/\\/berles\\/([^\\/?#]+)\\.webp/);if(m&&CUTS.indexOf(m[1])>-1){im.src="/berles-cut/"+m[1]+".webp"+(CUTV[m[1]]?"?v="+CUTV[m[1]]:"");var s=im.closest(".sub-slide");if(s)s.classList.add("ca-cutsl")}});'
   + '[].forEach.call(L.querySelectorAll(".sub-det:not([data-dm-skip]),.ca-cmp:not([data-dm-skip])"),function(a){a.setAttribute("data-dm-skip","1");["background-color","color","-webkit-text-fill-color","border-color"].forEach(function(k){a.style.removeProperty(k)})});'
   + '[].forEach.call(L.querySelectorAll(".ca-cmp:not([title])"),function(a){a.title="Összehasonlítás";a.setAttribute("aria-label","Összehasonlítás")});'
   + '[].forEach.call(L.querySelectorAll(".sub-brand-h"),function(h){if(h.querySelector(".ca-ball"))return;var g=h.nextElementSibling;if(!g||!g.classList.contains("sub-grid"))return;var t=(h.querySelector("h3")||{}).textContent||"";'

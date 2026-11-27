@@ -9,6 +9,9 @@
 // Az alapértelmezett fül az Eladó. Csak a magyar főoldalt érinti. Idempotens.
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
+// kivágott bérlési képek tartalom-hash verziója (?v=…), hogy egy lecserélt képet a böngésző újra letöltsön
+function cutVer() { const d = path.join('public', 'berles-cut'), o = {}; try { for (const f of fs.readdirSync(d)) if (f.endsWith('.webp')) o[f.slice(0, -5)] = crypto.createHash('md5').update(fs.readFileSync(path.join(d, f))).digest('hex').slice(0, 8); } catch (e) {} return o; }
 
 const FILE = path.join('dist', 'index.html');
 
@@ -148,7 +151,7 @@ var f0=String(first||"").split("?")[0];out.sort(function(a,b){return (b.split("?
 // ---- egy kártya ----
 function card(o){var c=el("article","cg-c");
 var ph=el("a","cg-ph"+(o.cut?" cg-rent":""));ph.href=o.href||"#";ph.setAttribute("aria-label",o.title);
-var im=new Image();im.alt=o.title;im.loading="lazy";im.decoding="async";im.referrerPolicy="no-referrer";if(o.cut){im.className="cg-cut";var mc=String(o.img).match(/\/berles\/([^\/?#]+)\.webp/);if(mc){im.onerror=function(){im.onerror=null;ph.classList.add("cg-white");im.src=o.img};im.src="/berles-cut/"+mc[1]+".webp"}else{ph.classList.add("cg-white");im.src=o.img}}else im.src=o.img;ph.appendChild(im);
+var im=new Image();im.alt=o.title;im.loading="lazy";im.decoding="async";im.referrerPolicy="no-referrer";if(o.cut){im.className="cg-cut";var mc=String(o.img).match(/\/berles\/([^\/?#]+)\.webp/);if(mc){im.onerror=function(){im.onerror=null;ph.classList.add("cg-white");im.src=o.img};im.src="/berles-cut/"+mc[1]+".webp"+(window.__caCutV&&window.__caCutV[mc[1]]?"?v="+window.__caCutV[mc[1]]:"")}else{ph.classList.add("cg-white");im.src=o.img}}else im.src=o.img;ph.appendChild(im);
 if(o.badge){var b=el("span","cg-bd"+(o.badgeNew?" new":""),"<i></i>"+esc(o.badge));ph.appendChild(b)}
 var dots=el("span","cg-dots");ph.appendChild(dots);
 c.appendChild(ph);
@@ -240,7 +243,7 @@ try {
         .replace('<button class="autok-tab" data-tab="elado"', '<button class="autok-tab on" data-tab="elado"')
         .replace('<div class="autok-panel on" id="panel-berelheto">', '<div class="autok-panel" id="panel-berelheto">')
         .replace('<div class="autok-panel" id="panel-elado">', '<div class="autok-panel on" id="panel-elado">');
-      h = h.replace('</head>', '<script>window.__caGrid=1</script>' + CSS + '</head>').replace(/<\/body>(?![\s\S]*<\/body>)/i, JS + '</body>');
+      h = h.replace('</head>', '<script>window.__caGrid=1;window.__caCutV=' + JSON.stringify(cutVer()) + '</script>' + CSS + '</head>').replace(/<\/body>(?![\s\S]*<\/body>)/i, JS + '</body>');
       fs.writeFileSync(FILE, h);
       console.log('[home-grid] klasszikus autókártyák a Kínálat részben');
     }
