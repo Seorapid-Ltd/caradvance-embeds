@@ -1607,7 +1607,7 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 #soList{display:flex;flex-direction:column;gap:14px}
 .socard{display:grid;grid-template-columns:170px minmax(0,1.3fr) minmax(0,.9fr) minmax(0,1.2fr) auto;gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px 18px}
 .soimg{cursor:pointer}.soimg img,.soimg .noimg{width:170px;height:100px;object-fit:cover;border-radius:14px;background:var(--soft);display:block}
-.sodate{display:inline-block;font-size:12.5px;font-weight:800;color:#166534;background:#dcfce7;border-radius:999px;padding:3px 10px;margin-bottom:6px}
+.sodate{display:inline-block;font-size:12.5px;font-weight:800;color:var(--gold-ink);background:var(--gold-bg);border-radius:999px;padding:3px 10px;margin-bottom:6px}
 .socar h3{font-size:19px;font-weight:800;margin:0 0 4px;line-height:1.2}
 .soprice,.sobuyer{display:flex;flex-direction:column;gap:3px;padding-left:18px;border-left:1px solid var(--line);min-width:0}
 .soprice small,.sobuyer small{font-size:12.5px;color:var(--muted)}.soprice b{font-size:22px;font-weight:800;white-space:nowrap}
@@ -1616,6 +1616,38 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 .sohdr{margin:10px 0 0;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 @media(max-width:1100px){.socard{grid-template-columns:140px minmax(0,1fr) minmax(0,1fr)}.soimg img,.soimg .noimg{width:140px;height:84px}.sobuyer{grid-column:2/-1;padding-left:0;border-left:0}.soact{grid-column:1/-1;flex-direction:row;justify-content:space-between}}
 @media(max-width:640px){.sokpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sokpis .kpi{padding:12px 14px}.sokpis .kpi b{font-size:18px}.socard{grid-template-columns:1fr;gap:12px}.soimg img,.soimg .noimg{width:100%;height:auto;aspect-ratio:16/10}.soprice,.sobuyer{padding-left:0;border-left:0;grid-column:auto}.subnav.ofsub{display:flex;width:100%}.subnav.ofsub a{flex:1;justify-content:center;padding:0 10px}}
+
+/* Ajánlatok fejléc — CarAdvance színek, arany = eladva */
+:root{--gold:#C9A227;--gold-deep:#A8841A;--gold-bg:light-dark(#FBF4DF,#2a2414);--gold-line:light-dark(#E9D38F,#5c4c1f);--gold-ink:light-dark(#7A5C0B,#E9CD72)}
+.ofhdr{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px;display:flex;flex-direction:column;gap:14px}
+.ofhtop{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.ofttl{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.ofsum{margin:2px 0 0;color:var(--muted);font-size:14px}.ofsum b{color:var(--ink);font-weight:800}.ofsum .ofsc{color:var(--red)}.ofsum .ofss{color:var(--gold-deep)}
+.ofbtns{display:flex;gap:10px;flex-wrap:wrap}
+.ofbtn1,.ofbtn2{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;font:inherit;font-weight:800;font-size:14.5px;cursor:pointer}
+.ofbtn1 svg,.ofbtn2 svg{width:18px;height:18px}
+.ofbtn1{background:var(--red);color:#fff;border:0;box-shadow:0 6px 16px rgba(226,0,26,.25)}.ofbtn1:hover{background:var(--red-dark);color:#fff}
+.ofbtn1.gold{background:var(--gold);color:#1a1405;box-shadow:0 6px 16px rgba(201,162,39,.3)}.ofbtn1.gold:hover{background:var(--gold-deep);color:#fff}
+.ofbtn2{background:transparent;color:var(--ink);border:1.5px solid var(--line)}.ofbtn2:hover{background:var(--navy);border-color:var(--navy);color:#fff}
+.oftiles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.oft{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer;font:inherit;text-align:left;min-width:0}
+.oft small{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.oft b{font-size:22px;font-weight:800;line-height:1.1}
+.oft:hover{border-color:var(--muted);background:var(--soft)}
+.oft.zero b{color:var(--muted);font-weight:700}
+.oft-chk:not(.zero){background:light-dark(#FDECEE,#2b1418);border-color:light-dark(#F6B8C0,#5a2029)}.oft-chk:not(.zero) small,.oft-chk:not(.zero) b{color:var(--red)}
+.oft-sold{background:var(--gold-bg);border-color:var(--gold-line)}.oft-sold small,.oft-sold b{color:var(--gold-ink)}.oft-sold:hover{border-color:var(--gold);background:var(--gold-bg)}
+.oft.on{background:light-dark(var(--navy),#fff);border-color:light-dark(var(--navy),#fff);box-shadow:0 6px 16px rgba(11,11,13,.25)}.oft.on small{color:light-dark(#c7ccd6,#5A6B82)}.oft.on b{color:light-dark(#fff,var(--navy))}
+.oft-chk.on b{color:light-dark(#ff4d61,var(--red))}
+.oft-sold.on{background:var(--gold);border-color:var(--gold)}.oft-sold.on small{color:#3d2f06}.oft-sold.on b{color:#1a1405}
+.ofcrow{display:flex;justify-content:flex-end;background:none;border:0;box-shadow:none;padding:0;margin:0}
+.ofcl{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);font-weight:700}
+.ofcl select{width:220px;height:40px}
+#v-sold .sokpis .kpi:first-child b{color:var(--gold-deep)}
+@media(max-width:1100px){.oftiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:640px){.ofhdr{padding:14px;border-radius:18px}.ofttl{font-size:21px}.ofbtns{width:100%}.ofbtn1,.ofbtn2{flex:1;justify-content:center;padding:0 10px;gap:6px;font-size:13px;white-space:nowrap;min-width:0}.ofbtn1 svg,.ofbtn2 svg{width:16px;height:16px;flex:none}
+ .oftiles{display:flex;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -14px;padding:0 14px 4px;scrollbar-width:none}.oftiles::-webkit-scrollbar{display:none}
+ .oft{flex:0 0 auto;min-width:112px;scroll-snap-align:start}.ofcrow{justify-content:stretch}.ofcl{width:100%}.ofcl select{flex:1;width:auto}}
 </style>
 </head>
 <body>
@@ -1735,12 +1767,11 @@ Ready when you are.</h1>
   </section>
 
   <section class="view" id="v-leads">
-    <nav class="subnav ofsub"><a href="#leads" data-s="leads"><i>Open offers</i> <span class="nLeads"></span></a><a href="#sold" data-s="sold"><i>Closed offers</i> <span class="nSold"></span></a></nav>
-    <div class="bar ofbar">
-      <div class="dv2acts ofacts"><button type="button" class="dv2logbtn" id="leadLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>Log activity</span></button><button type="button" class="dv2offbtn" id="recOffer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></svg><span>Record offer</span></button></div>
-      <select id="ofCountry" aria-label="Country"></select>
-      <select id="ofState" aria-label="Status"></select>
-      <span class="count" id="lCount"></span>
+    <div class="ofhdr">
+      <div class="ofhtop"><div class="ofhtl"><h2 class="ofttl"></h2><p class="ofsum"></p></div>
+        <div class="ofbtns"><button type="button" class="ofbtn2" id="leadLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>Log activity</span></button><button type="button" class="ofbtn1" id="recOffer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></svg><span>Record offer</span></button></div></div>
+      <div class="oftiles" role="tablist"></div>
+      <div class="ofcrow bar"><label class="ofcl"><span class="ofclt"></span><select id="ofCountry" aria-label="Country"></select></label><select id="ofState" aria-label="Status" hidden></select><span class="count" id="lCount" hidden></span></div>
     </div>
     <div id="ofList"><p class="empty ofempty">…</p></div>
     <p class="foot" data-i18n="l_foot">Offers sent from the car pages, grouped by car — highest offer first.</p>
@@ -1749,8 +1780,12 @@ Ready when you are.</h1>
   <dialog id="ofDlg"><form method="dialog" id="ofForm"><div class="dh"><h2 id="ofDlgT"></h2><button value="cancel" type="button" id="ofDlgX" aria-label="Close">✕</button></div><div class="db" id="ofDlgB"></div><div class="df" id="ofDlgF"></div></form></dialog>
 
   <section class="view" id="v-sold">
-    <nav class="subnav ofsub"><a href="#leads" data-s="leads"><i>Open offers</i> <span class="nLeads"></span></a><a href="#sold" data-s="sold"><i>Closed offers</i> <span class="nSold"></span></a></nav>
-    <div class="bar ofbar"><div class="dv2acts ofacts"><button type="button" class="dv2offbtn" id="recSale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Record a sale</span></button></div><span class="count" id="soCount" hidden></span></div>
+    <div class="ofhdr">
+      <div class="ofhtop"><div class="ofhtl"><h2 class="ofttl"></h2><p class="ofsum"></p></div>
+        <div class="ofbtns"><button type="button" class="ofbtn1 gold" id="recSale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Record a sale</span></button></div></div>
+      <div class="oftiles" role="tablist"></div>
+      <span class="count" id="soCount" hidden></span>
+    </div>
     <div class="kpis sokpis" id="soKpis"></div>
     <div id="soMissing"></div>
     <div id="soList"></div>
@@ -1812,7 +1847,7 @@ const status=t=>{const m=$('#status');m.hidden=!t;m.textContent=t||''};
 /* tabs */
 const show=()=>{const v=(location.hash||'#stock').slice(1);const map={stock:'stock',fordealers:'stock',private:'stock',dealers:'dealers',outreach:'outreach',leads:'leads',sold:'sold',contact:'contact',list:'list'};const ok=map[v]||'stock';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+ok));
-  const navv=ok==='stock'?'stock':(ok==='leads'||ok==='sold')?'leads':ok==='contact'?'contact':ok==='list'?'list':'enq';if(ok==='list'&&window.__slOpen)window.__slOpen();if(ok==='dealers'&&S.dDirty&&typeof renderDealers==='function')setTimeout(renderDealers,0);if(ok==='contact'&&window.__msgOpen)window.__msgOpen();
+  const navv=ok==='stock'?'stock':(ok==='leads'||ok==='sold')?'leads':ok==='contact'?'contact':ok==='list'?'list':'enq';if(ok==='list'&&window.__slOpen)window.__slOpen();if(ok==='dealers'&&S.dDirty&&typeof renderDealers==='function')setTimeout(renderDealers,0);if((ok==='leads'||ok==='sold')&&typeof renderOfHeader==='function')setTimeout(renderOfHeader,0);if(ok==='contact'&&window.__msgOpen)window.__msgOpen();
   document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.v===navv));
   document.querySelectorAll('.subnav a').forEach(a=>a.classList.toggle('on',a.dataset.s===ok));
   if(ok==='stock'&&typeof renderStock==='function'&&S.cars){const want={fordealers:'b2b',private:'priv'}[v]||(S.audSet?'':null);if(want!=null){$('#sCat').value=want;S.audSet=!!want;if(S.raw.length)renderStock();}}};
@@ -2394,6 +2429,7 @@ function renderLeads(){
   const stKey=o=>/accepted/i.test(o.outcome||'')?'acc':/declined/i.test(o.outcome||'')?'dec':/check/i.test(o.outcome||'')?'chk':/counter/i.test(o.outcome||'')?'ctr':'new';
   const all=(S.logs||[]).filter(isOffer).map(o=>({o,p:parse(o),st:stKey(o)}));S.ofParsed={};all.forEach(x=>S.ofParsed[x.o.id]=x.p);
   const openN=all.filter(x=>x.st==='new'||x.st==='ctr').length;
+  S.ofCounts={all:all.length,open:all.filter(x=>x.st==='new'||x.st==='chk'||x.st==='ctr').length};['new','chk','ctr','acc','dec'].forEach(k=>S.ofCounts[k]=all.filter(x=>x.st===k).length);
   document.querySelectorAll('.nLeads').forEach(e=>e.textContent=openN||'');
   // filters
   const ccs=[...new Set(all.map(x=>x.p.cc).filter(Boolean))].sort();
@@ -2405,7 +2441,7 @@ function renderLeads(){
   Object.values(byCar).forEach(L=>{const r=L.filter(x=>x.st!=='dec'&&x.p.net!=null).sort((a,b)=>b.p.net-a.p.net);r.forEach((x,i)=>{x.rank=i+1;x.of=r.length;const c=r.filter(y=>y.p.cc===x.p.cc);x.crank=c.indexOf(x)+1;x.cof=c.length});});
   const want=x=>(!cv||x.p.cc===cv)&&(sv==='all'||(sv==='open'?(x.st==='new'||x.st==='chk'||x.st==='ctr'):x.st===sv));
   const cars=Object.entries(byCar).map(([id,L])=>({id,L:L.filter(want).sort((a,b)=>(a.rank||99)-(b.rank||99)||(b.p.net||0)-(a.p.net||0)),best:Math.max(...L.map(x=>x.p.net||0))})).filter(g=>g.L.length).sort((a,b)=>b.best-a.best);
-  $('#lCount').textContent=`${all.length} · ${openN} ${t('l_open')}`;
+  $('#lCount').textContent=`${all.length} · ${openN} ${t('l_open')}`;try{renderOfHeader()}catch(e){}
   const carOf=id=>(S.cars||S.raw||[]).find(c=>c.id===id)||{id};
   const FLC={HU:'hu',SK:'sk',CZ:'cs',PL:'pl',DE:'de',RO:'ro',GB:'en'};const flag=cc=>FLC[cc]&&FLAG[FLC[cc]]?`<span class="flag">${FLAG[FLC[cc]]}</span>`:'';
   const CN={GB:{en:'United Kingdom',hu:'Egyesült Királyság',sk:'Spojené kráľovstvo',cs:'Spojené království',de:'Vereinigtes Königreich',pl:'Wielka Brytania',ro:'Regatul Unit'},HU:{ro:'Ungaria',en:'Hungary',hu:'Magyarország',sk:'Maďarsko',cs:'Maďarsko',de:'Ungarn',pl:'Węgry'},SK:{en:'Slovakia',hu:'Szlovákia',sk:'Slovensko',cs:'Slovensko',de:'Slowakei',pl:'Słowacja'},CZ:{en:'Czechia',hu:'Csehország',sk:'Česko',cs:'Česko',de:'Tschechien',pl:'Czechy'},PL:{en:'Poland',hu:'Lengyelország',sk:'Poľsko',cs:'Polsko',de:'Polen',pl:'Polska'},DE:{en:'Germany',hu:'Németország',sk:'Nemecko',cs:'Německo',de:'Deutschland',pl:'Niemcy'},AT:{en:'Austria',hu:'Ausztria',sk:'Rakúsko',cs:'Rakousko',de:'Österreich',pl:'Austria'},CH:{en:'Switzerland',hu:'Svájc',sk:'Švajčiarsko',cs:'Švýcarsko',de:'Schweiz',pl:'Szwajcaria'},RO:{ro:'România',en:'Romania',hu:'Románia',sk:'Rumunsko',cs:'Rumunsko',de:'Rumänien',pl:'Rumunia'}};
@@ -2459,10 +2495,34 @@ function parseSale(o){const n=o.notes||'';const f=k=>{const m=n.match(new RegExp
   const h=(n.match(/^SALE:.*$/m)||[''])[0];const price=Number(((h.match(/€\s*([\d\s.,]+)/)||[,''])[1]).replace(/[\s.,](?=\d{3}\b)/g,'').replace(',','.'))||null;
   const type=/B2C/.test(h)?'b2c':'b2b';const car=(String(o.cars||'').match(/\b(?:P1|P2|S26|V|CA)-\d{1,3}\b/i)||[''])[0].toUpperCase();
   return{price,type,net:price==null?null:type==='b2c'?Math.round(price/1.19):price,car,name:f('Name'),company:f('Company'),email:f('Email'),phone:f('Phone'),country:f('Country'),offer:f('Offer'),note:f('Note')}}
+
+/* Ajánlatok fejléc: státusz-csempék darabszámmal (a régi fülsor és státusz-legördülő helyett) */
+const OFT={hu:{title:'Ajánlatok',open:'Folyamatban',all:'Összes',new:'Új',chk:'Döntésre vár',ctr:'Ellenajánlat',acc:'Elfogadva',dec:'Elutasítva',sold:'Eladva',sO:'nyitott',sC:'döntésre vár',sS:'eladva',cty:'Ország'},
+ en:{title:'Offers',open:'In progress',all:'All',new:'New',chk:'Awaiting decision',ctr:'Counter offer',acc:'Accepted',dec:'Declined',sold:'Sold',sO:'open',sC:'awaiting decision',sS:'sold',cty:'Country'},
+ de:{title:'Angebote',open:'In Bearbeitung',all:'Alle',new:'Neu',chk:'Wartet auf Entscheidung',ctr:'Gegenangebot',acc:'Angenommen',dec:'Abgelehnt',sold:'Verkauft',sO:'offen',sC:'warten auf Entscheidung',sS:'verkauft',cty:'Land'},
+ sk:{title:'Ponuky',open:'Rozpracované',all:'Všetky',new:'Nové',chk:'Čaká na rozhodnutie',ctr:'Protiponuka',acc:'Prijaté',dec:'Zamietnuté',sold:'Predané',sO:'otvorené',sC:'čaká na rozhodnutie',sS:'predané',cty:'Krajina'},
+ cs:{title:'Nabídky',open:'Rozpracované',all:'Všechny',new:'Nové',chk:'Čeká na rozhodnutí',ctr:'Protinabídka',acc:'Přijaté',dec:'Zamítnuté',sold:'Prodané',sO:'otevřené',sC:'čeká na rozhodnutí',sS:'prodané',cty:'Země'},
+ pl:{title:'Oferty',open:'W toku',all:'Wszystkie',new:'Nowe',chk:'Czeka na decyzję',ctr:'Kontroferta',acc:'Przyjęte',dec:'Odrzucone',sold:'Sprzedane',sO:'otwarte',sC:'czeka na decyzję',sS:'sprzedane',cty:'Kraj'},
+ ro:{title:'Oferte',open:'În lucru',all:'Toate',new:'Noi',chk:'Așteaptă decizia',ctr:'Contraofertă',acc:'Acceptate',dec:'Respinse',sold:'Vândute',sO:'deschise',sC:'așteaptă decizia',sS:'vândute',cty:'Țara'}};
+function renderOfHeader(){
+  const T=OFT[typeof LANG!=='undefined'&&OFT[LANG]?LANG:'en'],c=S.ofCounts||{};const sold=(S.logs||[]).filter(o=>o.outcome==='Sold').length;
+  const onSold=location.hash.replace('#','')==='sold',cur=onSold?'sold':($('#ofState')&&$('#ofState').value)||'open';
+  const K=[['all',c.all],['open',c.open],['new',c.new],['chk',c.chk],['ctr',c.ctr],['acc',c.acc],['dec',c.dec],['sold',sold]];
+  const html=K.map(([k,n])=>`<button type="button" role="tab" class="oft oft-${k}${k===cur?' on':''}${n?'':' zero'}" data-oft="${k}" aria-selected="${k===cur}"><small>${esc(T[k])}</small><b>${n||0}</b></button>`).join('');
+  document.querySelectorAll('.oftiles').forEach(e=>{e.innerHTML=html;const on=e.querySelector('.oft.on');if(on&&e.scrollWidth>e.clientWidth)e.scrollLeft=Math.max(0,on.offsetLeft-e.offsetLeft-14)});
+  document.querySelectorAll('.ofttl').forEach(e=>e.textContent=T.title);
+  document.querySelectorAll('.ofclt').forEach(e=>e.textContent=T.cty);
+  const sum=[`<b>${c.open||0}</b> ${esc(T.sO)}`,c.chk?`<b class="ofsc">${c.chk}</b> ${esc(T.sC)}`:'',`<b class="ofss">${sold}</b> ${esc(T.sS)}`].filter(Boolean).join(' · ');
+  document.querySelectorAll('.ofsum').forEach(e=>e.innerHTML=sum);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-oft]');if(!b)return;const k=b.dataset.oft;
+  if(k==='sold'){if(location.hash!=='#sold')location.hash='#sold';else renderOfHeader();return}
+  const fs=$('#ofState');if(fs){if(![...fs.options].some(o=>o.value===k))fs.insertAdjacentHTML('beforeend',`<option value="${k}">${k}</option>`);fs.value=k}
+  if(location.hash!=='#leads')location.hash='#leads';renderLeads();});
 function renderSales(){
   const box=$('#soList');if(!box)return;
   const L=(S.logs||[]).filter(o=>o.outcome==='Sold').map(o=>({o,p:parseSale(o)})).sort((a,b)=>String(b.o.date||'').localeCompare(String(a.o.date||'')));
-  S.soldOffers=new Set(L.map(x=>x.p.offer).filter(Boolean));
+  S.soldOffers=new Set(L.map(x=>x.p.offer).filter(Boolean));try{renderOfHeader()}catch(e){}
   document.querySelectorAll('.nSold').forEach(e=>e.textContent=L.length||'');
   const cars=S.cars||S.raw||[];const carOf=id=>cars.find(c=>c.id===id)||{id};
   const net=L.reduce((a,x)=>a+(x.p.net||0),0),list=L.reduce((a,x)=>{const c=carOf(x.p.car);return a+(x.p.net&&c.dealer_net?Number(c.dealer_net):0)},0),withList=L.filter(x=>x.p.net&&carOf(x.p.car).dealer_net).reduce((a,x)=>a+x.p.net,0);
