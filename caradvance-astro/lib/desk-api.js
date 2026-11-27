@@ -296,6 +296,7 @@ async function loadAll(env, ctx /*, fresh: no longer needed – every read check
   return memo.data;
 }
 /** Version tag of what loadAll returns — lets the page skip downloading unchanged data. */
+let PUB_REFRESHING = false; // one background rebuild of the public list at a time per worker
 const memoVersion = () => (memo ? memo.st + '.' + memo.ps : '');
 
 /* ---------------- who is signed in (staff login: /admin/, ca_session cookie) ---------------- */
@@ -454,7 +455,7 @@ async function makeOffer(request, env, ctx) {
     `Name: ${name}`, company && `Company: ${company}`, email && `Email: ${email}`, phone && `Phone: ${phone}`,
     msg && `Message: ${msg}`, countryOf(url.hostname, b.lang) && `Country: ${countryOf(url.hostname, b.lang)}`, request.cf && request.cf.country && `Location: ${request.cf.country}`, `Sent from: ${url.hostname} (${str(b.lang, 5) || '—'})`,
   ].filter(Boolean).join('\n');
-  const today = new Date().toISOString().slice(0, 10);
+  const today = budDay(Date.now());
   const props = {
     Summary: writeProp('title', `Offer ${eurs(price)} — ${name}${company ? ' (' + company + ')' : ''} — ${car.id}`),
     Date: writeProp('date', today), 'Cars (as typed)': writeProp('text', car.id),
@@ -523,7 +524,7 @@ function germanCheck(offer, car, rk, base, sig, from) {
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#141519">Angebot aus <b>${escH(land)}</b>: <a href="${carUrl}" style="color:#e30613;font-weight:bold">${escH(car.model || '')} (EZ ${escH(year)})</a> – unser Preis ${eurDe(ours)} ${vat}, Angebot <b>${eurDe(p.price)} ${vat}</b>.${from && from.name ? `<div style="margin-top:4px;font-size:13px;color:#5a6270">Gesendet von <b style="color:#141519">${escH(from.name)}</b>${from.team ? ' · ' + escH(from.team) : ''}</div>` : ''}<div style="margin-top:8px">${btn('Annehmen', 'accept', '#15803d')}${btn('Ablehnen', 'decline', '#b91c1c')}</div></div>`;
   return { subject, text: l1 + '\n' + l2, html };
 }
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = () => budDay(Date.now());
 async function setOutcome(env, offer, outcome, next, line, idx) {
   const notes = [String(offer.notes || '').trim(), `[${todayIso()}] ${line}`].filter(Boolean).join('\n');
   if (!idx) idx = (await loadAll(env)).idx;
@@ -733,7 +734,7 @@ async function stockChoosePrice(request, env, ctx, me) {
   const row = await env.DB.prepare('SELECT data FROM desk_stocklist WHERE id = ?').bind(String(b.id || '')).first();
   if (!row) throw bad('Car not found.', 404);
   const d = JSON.parse(row.data);
-  const who = me.name || nameOf(me.email), at = new Date().toISOString().slice(0, 10);
+  const who = me.name || nameOf(me.email), at = budDay(Date.now());
   if (b.withdraw != null) { // "No longer for sale": greys the car out of the price selection (and back)
     if (b.withdraw) d.off = { by: who, at }; else delete d.off;
     if (mode === 'live') await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(Date.now() / 1000), d.id).run();
@@ -911,12 +912,12 @@ export async function handle(request, env, ctx) {
   }
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
-    // Edge-cache the public car list for a short time so mobile visitors get it instantly
-    // (otherwise every cold load waits on Notion). The first visitor warms it for everyone.
+    // The public car list is kept in the edge cache. A copy up to 60 s old is served as is; up to 15 min old it is
+    // served at once and rebuilt in the background (stale-while-revalidate), so visitors almost never wait on the
+    // database. Older than that (or none), it is built now. A save on the desk drops the copy at that location.
     const cache = (typeof caches !== 'undefined' && caches.default) || null;
     const cacheKey = new Request(url.origin + '/api/desk/public', { method: 'GET' });
-    if (cache) { const hit = await cache.match(cacheKey); if (hit) return hit; }
-    try {
+    const build = async () => {
       const { vehicles } = await loadAll(env, ctx);
       // Cars Alexander marked "no longer for sale" on the stock list also show as unavailable here (without prices).
       let offSet = new Set();
@@ -933,8 +934,20 @@ export async function handle(request, env, ctx) {
         return o;
       };
       const body = JSON.stringify({ vehicles: vehicles.map(pub), public: true, at: new Date().toISOString() });
-      const res = new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60, s-maxage=60', 'X-Robots-Tag': 'noindex' } });
-      if (cache && ctx && ctx.waitUntil) ctx.waitUntil(cache.put(cacheKey, res.clone()));
+      return new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60, s-maxage=900', 'X-Built-At': String(Date.now()), 'X-Robots-Tag': 'noindex' } });
+    };
+    const bg = p => { if (ctx && ctx.waitUntil) ctx.waitUntil(p.catch(() => {})); };
+    if (cache) {
+      const hit = await cache.match(cacheKey).catch(() => null);
+      if (hit) {
+        const age = Date.now() - Number(hit.headers.get('X-Built-At') || 0);
+        if (age > 60 * 1000 && !PUB_REFRESHING) { PUB_REFRESHING = true; bg(build().then(r => cache.put(cacheKey, r)).finally(() => { PUB_REFRESHING = false; })); }
+        return hit;
+      }
+    }
+    try {
+      const res = await build();
+      if (cache) bg(cache.put(cacheKey, res.clone()));
       return res;
     } catch (e) { return json({ error: 'Could not load the cars.' }, 503); }
   }
@@ -978,7 +991,10 @@ export async function handle(request, env, ctx) {
     }
     if (request.method === 'POST' && route === 'write') {
       if (request.headers.get('Origin') && new URL(request.headers.get('Origin')).host !== url.host) throw bad('Cross-site request refused.', 403);
-      return json(await write(env, ctx, me, await request.json()));
+      const out = await write(env, ctx, me, await request.json());
+      // the public car list at this edge location is rebuilt on its next request
+      try { if (typeof caches !== 'undefined' && caches.default) { const p = caches.default.delete(new Request(url.origin + '/api/desk/public', { method: 'GET' })); if (ctx && ctx.waitUntil) ctx.waitUntil(p.catch(() => {})); } } catch (e) {}
+      return json(out);
     }
     return json({ error: 'Not found' }, 404);
   } catch (e) {
