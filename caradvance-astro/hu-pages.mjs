@@ -176,11 +176,13 @@ const FLEET = [ // [név, kategória, napidíj, hétvége, hét, adatok, mappa, 
   ['Audi SQ7', 'SUV', 594, 2374, 4165, ['Automata', '507 LE', '7 ülés'], '4940', ['1718552-2026.02.24.14.49.39-WUAZZZ4M0SD042434_0.jpg', '1718552-2026.02.24.14.49.44-WUAZZZ4M0SD042434_6.jpg', '1718552-2026.02.24.14.49.43-WUAZZZ4M0SD042434_4.jpg', '1718552-2026.02.24.14.49.41-WUAZZZ4M0SD042434_2.jpg']],
   ['Mercedes S 350', 'Limuzin', 0, 0, 0, ['Automata'], '5589', ['S350_M-CC8476_01.jpg', 'S350_M-CC8476_02.jpg', 'S350_M-CC8476_03.jpg', 'S350_M-CC8476_04.jpg', 'S350_M-CC8476_05.jpg', 'S350_M-CC8476_06.jpg']],
 ];
+const AVAIL = { '5532': '2026. dec. 1-től', '4946': '2026. dec. 1-től', '1110': '2026. dec. 29-től', '4940': '2027. febr. 1-től' };
+const NOPHOTO = { '5532': 1 }; // a caradvance.de-n is hiányzik a fotója
 const eur = n => '€' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
 const FLEET_HTML = FLEET.map(([name, cat, price, we, wk, specs, id, imgs]) => `<article class="vp-car">
-    <div class="vp-gal" tabindex="0" aria-label="${name} fotói">${imgs.map((f, i) => `<img src="${IMG(id, f)}" alt="${name}${i ? ' – ' + (i + 1) + '. fotó' : ''}" loading="lazy" decoding="async" width="1080" height="720">`).join('')}</div>
-    ${imgs.length > 1 ? `<div class="vp-dots">${imgs.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}
-    <span class="vp-av"><i></i>Azonnal elérhető</span>
+    <div class="vp-gal" tabindex="0" aria-label="${name} fotói">${NOPHOTO[id] ? `<div class="vp-nophoto"><span>${name.split(' ')[0]}</span>Fotó hamarosan</div>` : imgs.map((f, i) => `<img src="${IMG(id, f)}" alt="${name}${i ? ' – ' + (i + 1) + '. fotó' : ''}" loading="lazy" decoding="async" width="1080" height="720">`).join('')}</div>
+    ${imgs.length > 1 && !NOPHOTO[id] ? `<div class="vp-dots">${imgs.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}
+    <span class="vp-av${AVAIL[id] ? ' vp-av-later' : ''}"><i></i>${AVAIL[id] ? 'Elérhető ' + AVAIL[id] : 'Azonnal elérhető'}</span>
     <div class="vp-cb">
       <div class="vp-cat">${cat}</div>
       <h3>${name}</h3>
@@ -218,7 +220,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
 </div></section>
 <section class="vp-sec" id="flotta"><div class="vp-wrap">
   <div class="vp-ey">VIP flotta</div><h2>Válaszd ki az autódat</h2>
-  <p>Minden autó azonnal elérhető, napi 200 km-rel. Az árak áfával értendők. Írd meg, melyiket és melyik napra szeretnéd — személyre szabott ajánlattal jelentkezünk.</p>
+  <p>Napi 200 km minden autónál, az árak áfával értendők. Néhány autó csak később lesz elérhető, a dátum a fotón látszik. Írd meg, melyiket és melyik napra szeretnéd — személyre szabott ajánlattal jelentkezünk.</p>
   <div class="vp-cars">
   ${FLEET_HTML}
   </div>
@@ -285,6 +287,9 @@ html.ca-dark #ca-vipp .vp-ey{color:#D4B062}
 #ca-vipp .vp-dots i.on{width:18px;background:#fff}
 #ca-vipp .vp-av{position:absolute;left:14px;top:14px;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:rgba(10,10,12,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:12px;font-weight:700}
 #ca-vipp .vp-av i{width:7px;height:7px;border-radius:50%;background:#30D158}
+#ca-vipp .vp-av-later i{background:#FF9F0A}
+#ca-vipp .vp-nophoto{flex:0 0 100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:radial-gradient(70% 70% at 50% 40%,#2A2620,#0B0B0E);color:#A9A08E;font-size:13px;letter-spacing:.08em}
+#ca-vipp .vp-nophoto span{font-size:34px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;background:linear-gradient(135deg,#F3DFA2,#C9A24B 45%,#8E6A22);-webkit-background-clip:text;background-clip:text;color:transparent}
 #ca-vipp .vp-cb{display:grid;grid-template-columns:1fr auto;column-gap:16px;padding:20px 22px 22px;flex:1;align-items:end}
 #ca-vipp .vp-cb>.vp-cat,#ca-vipp .vp-cb>h3,#ca-vipp .vp-cb>.vp-specs{grid-column:1/-1}
 #ca-vipp .vp-cb>.vp-more{grid-column:1;grid-row:5;display:flex;gap:16px;margin-top:6px;font-size:12.5px;color:var(--vp-mut)}
