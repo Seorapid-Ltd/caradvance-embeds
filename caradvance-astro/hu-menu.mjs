@@ -37,7 +37,7 @@ html.ca-dark #ca-am-dim{background:rgba(0,0,0,.45)}
 .ca-am .am-h{font-size:12px;font-weight:500;color:var(--am-mut);margin:0 0 12px}
 .ca-am .am-tiles{display:flex;flex-direction:column;gap:10px}
 .ca-am .am-t{position:relative;display:flex;gap:14px;align-items:center;padding:14px 40px 14px 14px;border-radius:18px;background:var(--am-tile);border:1px solid var(--am-line);overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .2s}
-.ca-am .am-t:before{content:"";position:absolute;right:-60px;top:-90px;width:220px;height:220px;background:radial-gradient(circle,rgba(226,0,26,.32),transparent 65%);opacity:0;transition:opacity .25s}
+.ca-am .am-t:before{content:"";position:absolute;right:-60px;top:-90px;width:220px;height:220px;background-color:transparent;background-image:radial-gradient(circle,rgba(226,0,26,.32),transparent 65%);opacity:0;transition:opacity .25s}
 .ca-am .am-t:hover,.ca-am .am-t:focus-visible,.ca-am .am-tiles:not(:hover) .am-t.am-main{border-color:rgba(226,0,26,.5);box-shadow:0 0 0 1px rgba(226,0,26,.18),0 14px 34px rgba(226,0,26,.14);outline:none}
 .ca-am .am-t:hover:before,.ca-am .am-tiles:not(:hover) .am-t.am-main:before{opacity:1}
 .ca-am .am-t:hover{transform:translateX(2px)}
@@ -75,7 +75,7 @@ html.ca-dark #ca-am-dim{background:rgba(0,0,0,.45)}
 .ca-am .am-car.out{opacity:0;transform:translateX(-46%)}
 .ca-am .am-st-bot{position:relative;z-index:2;margin-top:auto}
 .ca-am .am-avail{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--am-mut);margin-top:6px}
-.ca-am .am-avail:before{content:"";width:7px;height:7px;border-radius:50%;background:none;box-shadow:inset 0 0 0 4px #30D158}
+.ca-am .am-avail:before{content:"";width:7px;height:7px;border-radius:50%;background-color:transparent;background-image:none;box-shadow:inset 0 0 0 4px #30D158}
 .ca-am .am-slide{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--am-in);border:1px solid var(--am-line);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .ca-am .am-slide label{font-size:12px;color:var(--am-mut);white-space:nowrap}
 .ca-am .am-slide label b{display:block;font-size:15px;color:var(--am-ink)}
@@ -174,6 +174,9 @@ html.ca-dark .ca-am .am-lg img.col[src*="vw-color"],html.ca-dark .ca-am .am-lg i
 .ca-am .am-soc a:hover{transform:translateY(-2px)}
 .ca-am .am-soc svg{width:32px;height:32px;display:block}
 
+</style>
+<style id="ca-dark-mmfix">/* a sötét mód szkript (dark-mode.js) ne festhesse szürkére a menü csempék díszítő rétegeit */
+html.ca-dark .ca-am :is(#ca-mmx,*)::before,html.ca-dark .ca-am :is(#ca-mmx,*)::after{background-color:transparent!important}
 </style>`;
 
 // ikonok (vonalas, 24x24)
