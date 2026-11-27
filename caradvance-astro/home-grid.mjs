@@ -24,7 +24,7 @@ const CSS = '<style id="ca-grid-css">'
   + S + ' .cg-ph img.ld{opacity:.45}'
   + S + ' .cg-c:hover .cg-ph img:not(.cg-cut){transform:scale(1.025)}'
   + S + ' .cg-ph.cg-rent{background:radial-gradient(120% 90% at 50% 100%,#E4E5EA 0%,#F3F3F6 55%,#F7F7F9 100%)}'
-  + S + ' .cg-ph.cg-white{background:#fff}html.ca-dark body #autoink.ca-grid .cg-ph.cg-white{background:#fff}' + S + ' .cg-ph img.cg-cut{object-fit:contain;padding:9% 7% 6%;box-sizing:border-box;filter:drop-shadow(0 14px 14px rgba(18,19,23,.18))}'
+  + S + ' .cg-ph.cg-white{background:#fff}html.ca-dark body #autoink.ca-grid .cg-ph.cg-white{background:#fff}' + S + ' .cg-ph img.cg-cut{object-fit:contain;padding:14% 15% 9%;box-sizing:border-box;filter:drop-shadow(0 12px 12px rgba(18,19,23,.16))}'
   + S + ' .cg-bd{position:absolute;left:14px;top:14px;z-index:2;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:#121317;background:rgba(255,255,255,.94);padding:6px 11px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.08)}'
   + S + ' .cg-bd i{width:7px;height:7px;border-radius:50%;background:#16A34A}'
   + S + ' .cg-bd.new{background:#16A34A;color:#fff}' + S + ' .cg-bd.new i{display:none}'
@@ -70,7 +70,9 @@ const CSS = '<style id="ca-grid-css">'
   + S + ' .cg-vp .cg-c.off{opacity:.62}' + S + ' .cg-vp .cg-c.off *{cursor:pointer}'
   + S + ' .cg-vp.drag .cg-c,' + S + ' .cg-vp.snap .cg-c{transition:opacity .55s ease!important}'
   + S + ' .cg-vp .cg-ph img{transition:opacity .25s,transform 1.1s cubic-bezier(.2,.7,.2,1)}'
-  + S + ' .cg-vp.mvr .cg-ph img{transform:scale(1.07) translateX(-3.5%);transition:opacity .25s,transform .35s ease-out}' + S + ' .cg-vp.mvl .cg-ph img{transform:scale(1.07) translateX(3.5%);transition:opacity .25s,transform .35s ease-out}'
+  // lapozáskor a fotók nem nagyítanak/ugranak (korábban scale 1.07 + eltolás volt)
+  // sötét módban a dark-mode.js átszínezéskor .dm-nt-vel minden átmenetet kikapcsol — a kártyák csúszását ez ne vágja el
+  + 'html.ca-dark body #autoink.ca-grid .cg-vp:not(.drag):not(.snap) .cg-c{transition:transform .9s cubic-bezier(.65,0,.15,1),opacity .55s!important}html.ca-dark body #autoink.ca-grid .cg-vp .cg-ph img{transition:opacity .25s,transform 1.1s cubic-bezier(.2,.7,.2,1)!important}'
   + S + ' .cg-vp img{-webkit-user-drag:none}'
   + S + ' .cg-seg{display:flex;gap:8px}' + S + ' .cg-seg i{position:relative;flex:1;height:4px;border-radius:4px;background:rgba(18,19,23,.12);overflow:hidden;cursor:pointer}'
   + S + ' .cg-seg i::after{content:"";position:absolute;inset:0;background:#E2001A;transform:scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.65,0,.15,1)}' + S + ' .cg-seg i.on::after{transform:scaleX(1)}' + S + ' .cg-seg i.past::after{transform:scaleX(1);background:rgba(18,19,23,.35)}'
@@ -105,7 +107,8 @@ const CSS = '<style id="ca-grid-css">'
   + S + ' .cg-bmw .cg-tg.now{background:#121317;color:#fff}'
   + S + ' .cg-bmw .cg-hd{order:2;display:block;margin-top:0}'
   + S + ' .cg-bmw .cg-cat{display:none}'
-  + S + ' .cg-bmw .cg-t{font-size:26px;font-weight:400;letter-spacing:-.015em;line-height:1.15;margin-top:0;min-height:2.3em}'
+  // bérelhető kártyák neve ugyanazzal a vastag betűvel, mint az eladó / bizományos kártyáké
+  + S + ' .cg-bmw .cg-t{font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-top:0;min-height:2.4em}'
   + S + ' .cg-bmw .cg-r{text-align:left;margin-top:6px}'
   + S + ' .cg-bmw .cg-p{display:inline;font-size:16px;font-weight:600;letter-spacing:0;margin-top:0;color:#3A3A3F}'
   + S + ' .cg-bmw .cg-pn{display:inline;margin-left:6px;font-size:13px}'
@@ -152,7 +155,7 @@ c.appendChild(ph);
 var hd=el("div","cg-hd",'<div class="cg-l"><span class="cg-cat">'+esc(o.cat)+'</span><a class="cg-t" href="'+esc(o.href||"#")+'" title="'+esc(o.full||o.title)+'">'+esc(o.title)+'</a></div><div class="cg-r"><b class="cg-p">'+esc(o.price)+'</b><span class="cg-pn">'+esc(o.note)+'</span></div>');c.appendChild(hd);
 var f=el("div","cg-f");(o.facts||[]).filter(Boolean).forEach(function(x){f.appendChild(el("span",null,esc(x)))});c.appendChild(f);
 if(o.extra)c.appendChild(el("div","cg-x",esc(o.extra)));
-if(o.cut){c.classList.add("cg-bmw");var tg=el("div","cg-tags");if(o.badge)tg.appendChild(el("span","cg-tg now",esc(o.badge)));if(o.cat)tg.appendChild(el("span","cg-tg",esc(o.cat)));c.insertBefore(tg,c.firstChild)}
+if(o.cut&&window.__caGridBmw){c.classList.add("cg-bmw");var tg=el("div","cg-tags");if(o.badge)tg.appendChild(el("span","cg-tg now",esc(o.badge)));if(o.cat)tg.appendChild(el("span","cg-tg",esc(o.cat)));c.insertBefore(tg,c.firstChild)}
 var cw=el("div","cg-cw"),cta=el("button","cg-cta",'<span>'+esc(o.ctaText||"Érdeklődöm")+'</span>'+ARR);cta.type="button";cta.addEventListener("click",function(e){e.preventDefault();o.inq()});cw.appendChild(cta);c.appendChild(cw);
 // képlapozás a fotón belül
 if(o.gal&&o.href){var L=null,ix=0,p=el("button","cg-a cg-ap","&#8249;"),n=el("button","cg-a cg-an","&#8250;");p.type=n.type="button";p.setAttribute("aria-label","Előző kép");n.setAttribute("aria-label","Következő kép");ph.appendChild(p);ph.appendChild(n);
@@ -192,7 +195,7 @@ R.classList.toggle("cg-one",N<2);
 var sp=R.querySelector(".cg-side.cg-sp"),sn=R.querySelector(".cg-side.cg-sn");
 function arrows(){var sl=parseInt(vp.style.getPropertyValue("--cg-sl"))||0,x=Math.max(10,Math.min(86,sl-10)),ph=G.querySelector(".cg-ph"),t=vp.offsetTop+4+(ph?ph.offsetHeight/2:150)-29;sp.style.top=sn.style.top=t+"px";sp.style.left=(-x)+"px";sn.style.right=(-x)+"px"}
 function side(){var de=document.documentElement,r=R.getBoundingClientRect();vp.style.setProperty("--cg-sl",Math.max(0,Math.round(r.left))+"px");vp.style.setProperty("--cg-sr",Math.max(0,Math.round(de.clientWidth-r.right))+"px");stride=G.clientWidth+32;arrows()}
-function place(dir,inst){var lo=Math.min(prev,i),hi=Math.max(prev,i);C.forEach(function(c){var d=0;if(!inst){var rel=dir>0?c.__g-lo*cols:(hi+1)*cols-1-c.__g;rel=Math.max(0,Math.min(rel,2*cols+1));d=rel*60}c.style.transitionDelay=inst?"0ms":d+"ms, 0ms";c.style.transform="translate3d("+(-i*stride)+"px,0,0)";c.classList.toggle("off",c.__pg!==i)})}
+function place(dir,inst){var lo=Math.min(prev,i),hi=Math.max(prev,i);C.forEach(function(c){var d=0;if(!inst){var rel=dir>0?c.__g-lo*cols:(hi+1)*cols-1-c.__g;rel=Math.max(0,Math.min(rel,2*cols+1));d=rel*60}c.style.setProperty("transition-delay",inst?"0ms":d+"ms, 0ms","important");c.style.transform="translate3d("+(-i*stride)+"px,0,0)";c.classList.toggle("off",c.__pg!==i)})}
 function ui(){[].forEach.call(seg.children,function(d,k){d.classList.toggle("on",k===i);d.classList.toggle("past",k<i)});cn.innerHTML="<b>"+String(i+1).padStart(2,"0")+"</b>/ "+String(N).padStart(2,"0");sp.disabled=i===0;sn.disabled=i===N-1}
 function go(n,inst){side();n=Math.max(0,Math.min(N-1,n));var dir=n>i?1:n<i?-1:0;prev=i;i=n;if(dir&&!inst){vp.classList.remove("mvl","mvr");void vp.offsetWidth;vp.classList.add(dir>0?"mvr":"mvl");clearTimeout(vp.__mt);vp.__mt=setTimeout(function(){vp.classList.remove("mvl","mvr")},380)}place(dir||1,!!inst||!dir);ui()}
 sp.onclick=function(){go(i-1)};sn.onclick=function(){go(i+1)};
