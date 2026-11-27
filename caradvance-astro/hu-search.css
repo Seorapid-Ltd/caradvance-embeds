@@ -1,0 +1,150 @@
+/* CarAdvance — okos kereső ablak, letisztult prémium megjelenés (CSAK magyar oldalak; a hu-search.mjs húzza be).
+   A <link> id-ja „ca-dark-…” kezdetű, így a dark-mode.js nem írja át ezeket a szabályokat.
+   Világos: fehér, semleges szürkék, nincs piros/rózsaszín effekt. Sötét: semleges grafit, nincs kékes tónus.
+   A :is(#ca-csx,…) a dark-mode.js .dm-s/.dm-t/.dm-b szabályai fölé emeli a fajsúlyt. */
+
+/* ---------- elrendezés ---------- */
+html body .cs-ov{padding:11vh 16px 16px}
+html body .cs-ov .cs-bd{backdrop-filter:blur(28px) saturate(1.15);-webkit-backdrop-filter:blur(28px) saturate(1.15)}
+html body .cs-ov :is(#ca-csx,.cs-pn){isolation:isolate;max-width:860px;max-height:min(720px,80vh);border-radius:24px;overflow:hidden;transform:translateY(-14px) scale(.97);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s ease}
+html body .cs-ov.cs-show :is(#ca-csx,.cs-pn){transform:none;opacity:1}
+html body .cs-ov .cs-bd{transition:opacity .22s ease}
+html body .cs-ov .cs-ai,html body .cs-ov :is(#ca-csx,.cs-ft){display:none!important}
+
+/* keresőmező: keret nélkül, nagy betű, alatta egy hajszálvonal */
+html body .cs-ov :is(#ca-csx,.cs-in){margin:0;padding:10px 20px 10px 26px;gap:14px;border:0;border-bottom:1px solid;border-radius:0;background:transparent;box-shadow:none!important}
+html body .cs-ov :is(#ca-csx,.cs-in):focus-within{box-shadow:none!important}
+html body .cs-ov .cs-in .cs-ico{width:24px;height:24px}
+html body .cs-ov .cs-in :is(#ca-csx,input){font-size:21px;font-weight:500;letter-spacing:-.015em;padding:18px 0;background:transparent;border:0;box-shadow:none}
+html body .cs-ov .cs-in input::placeholder{font-weight:400}
+html body .cs-ov :is(#ca-csx,.cs-x){border-radius:8px;padding:4px 8px;font-size:11px;font-weight:600;box-shadow:none}
+
+html body .cs-ov .cs-body{padding:8px 14px 16px}
+html body .cs-ov .cs-h{font-size:11px;font-weight:700;letter-spacing:.08em;padding:16px 12px 10px}
+html body .cs-ov .cs-cl{gap:8px;padding:0 12px 6px}
+html body .cs-ov .cs-cl .cs-c:nth-child(n+7){display:none}
+html body .cs-ov :is(#ca-csx,.cs-c){border-radius:999px;padding:9px 16px;font-size:14px;font-weight:500;border:1px solid;transition:background-color .15s,color .15s,border-color .15s}
+
+/* gyors linkek ikonnal */
+html body .cs-ov .cs-ql{gap:2px 12px;padding:0 2px}
+html body .cs-ov :is(#ca-csx,.cs-r){border-radius:14px;transition:background-color .15s}
+html body .cs-ov .cs-q{padding:11px 12px;gap:14px}
+html body .cs-ov .cs-q:before{content:"";flex:none;width:36px;height:36px;border-radius:11px;background-repeat:no-repeat;background-position:center,center;background-size:19px 19px,100% 100%;transition:transform .2s}
+html body .cs-ov .cs-q:hover:before,html body .cs-ov .cs-q.on:before{transform:scale(1.06)}
+html body .cs-ov .cs-q[href="/autoink/#berelheto"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%228%22 cy=%2215%22 r=%224%22/><path d=%22M10.8 12.2 20 3%22/><path d=%22m17 6 3 3%22/><path d=%22m15 8 2 2%22/></svg>"),linear-gradient(145deg,#3FE0CF,#0FA39A)!important;box-shadow:0 6px 14px -4px #0FA39A99,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q[href="/autoink/"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M5 17h14v-4.5l-1.8-4.6A2 2 0 0 0 15.3 6.6H8.7a2 2 0 0 0-1.9 1.3L5 12.5V17z%22/><path d=%22M5 12.5h14%22/><circle cx=%228%22 cy=%2215%22 r=%22.6%22/><circle cx=%2216%22 cy=%2215%22 r=%22.6%22/><path d=%22M6.5 17v2M17.5 17v2%22/></svg>"),linear-gradient(145deg,#FFD54A,#E9A500)!important;box-shadow:0 6px 14px -4px #E9A50099,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q[href="/auto-rendeles/"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23FFCE00%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%229%22/><path d=%22M3 12h18%22/><path d=%22M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18%22/></svg>"),linear-gradient(145deg,#3A3A3C,#151517)!important;box-shadow:0 6px 14px -4px #15151799,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q[href="/egyedi-auto-rendeles/"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z%22/><path d=%22M19 16v4M17 18h4%22/></svg>"),linear-gradient(145deg,#C77DFF,#9B4DDB)!important;box-shadow:0 6px 14px -4px #9B4DDB99,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q[href="/beszerzesi-folyamat/"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M9 6h11M9 12h11M9 18h11%22/><path d=%22m3.5 6 1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2%22/></svg>"),linear-gradient(145deg,#9A97FF,#6A67E8)!important;box-shadow:0 6px 14px -4px #6A67E899,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q[href="/autot-keresek/"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><circle cx=%2211%22 cy=%2211%22 r=%227%22/><path d=%22m20 20-3.5-3.5%22/></svg>"),linear-gradient(145deg,#FFB340,#FF8A00)!important;box-shadow:0 6px 14px -4px #FF8A0099,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q[href="/honositas-kalkulator/"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><rect x=%225%22 y=%223%22 width=%2214%22 height=%2218%22 rx=%222.5%22/><path d=%22M8.5 7h7%22/><path d=%22M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01%22/></svg>"),linear-gradient(145deg,#D2B48C,#A07D52)!important;box-shadow:0 6px 14px -4px #A07D5299,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q[href="/kapcsolat/"]:before{background-image:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M5 4h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 6.1 6.1l1.4-2.3L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4z%22/></svg>"),linear-gradient(145deg,#5EE07A,#1FA34A)!important;box-shadow:0 6px 14px -4px #1FA34A99,inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .cs-ov .cs-q .cs-t{font-size:15px;font-weight:600}
+html body .cs-ov .cs-arr{transition:transform .15s,color .15s}
+html body .cs-ov .cs-r:hover .cs-arr,html body .cs-ov .cs-r.on .cs-arr{transform:translateX(3px)}
+
+/* találatok: a cím közepes súlyú, az egyező rész félkövér, ugyanabban a színben */
+html body .cs-ov .cs-r:not(.cs-q) .cs-t{font-weight:500}
+html body .cs-ov .cs-r mark{color:inherit!important;background:none!important;font-weight:700}
+html body .cs-ov :is(#ca-csx,.cs-p){border-radius:10px;font-weight:700}
+html body .cs-ov :is(#ca-csx,.cs-btn){border-radius:999px}
+
+/* ---------- világos téma ---------- */
+html:not(.ca-dark) body .cs-ov .cs-bd{background:rgba(20,20,22,.38)}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-pn){background:#fff;color:#1D1D1F;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 40px 120px rgba(0,0,0,.3)}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-in){border-bottom-color:rgba(0,0,0,.08)}
+html:not(.ca-dark) body .cs-ov .cs-in .cs-ico{color:#8E8E93}
+html:not(.ca-dark) body .cs-ov .cs-in input{color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov .cs-in input::placeholder{color:#A1A1A6}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-x){background:#F5F5F7;border:1px solid rgba(0,0,0,.08);color:#86868B}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-chips){background:#FAFAFA;border-bottom-color:rgba(0,0,0,.06)}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-f){background:#F0F0F2;color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov .cs-h{color:#86868B}
+html:not(.ca-dark) body .cs-ov .cs-h span{background:#F0F0F2;color:#6E6E73}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-c){background:#fff;border-color:rgba(0,0,0,.1);color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-c):hover{background:#1D1D1F;border-color:#1D1D1F;color:#fff}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-r):hover,html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-r).on{background:#F5F5F7}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-r).on{box-shadow:none}
+html:not(.ca-dark) body .cs-ov .cs-t{color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov .cs-m{color:#86868B}
+html:not(.ca-dark) body .cs-ov .cs-arr{color:#C7C7CC}
+html:not(.ca-dark) body .cs-ov .cs-r:hover .cs-arr,html:not(.ca-dark) body .cs-ov .cs-r.on .cs-arr{color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-img){background:#F5F5F7;color:#6E6E73}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-p){background:#F5F5F7;color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov .cs-r:hover :is(#ca-csx,.cs-p),html:not(.ca-dark) body .cs-ov .cs-r.on :is(#ca-csx,.cs-p){background:#fff}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-tag){background:#F0F0F2;color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov .cs-more{color:#1D1D1F}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-a){background:#F5F5F7}
+html:not(.ca-dark) body .cs-ov .cs-did a{color:#1D1D1F;text-decoration:underline;text-underline-offset:3px}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-btn){background:#1D1D1F;color:#fff}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-btn):hover{background:#000}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-btn2){background:#fff;color:#1D1D1F;border-color:rgba(0,0,0,.14)}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-btn2):hover{background:#F5F5F7}
+
+/* ---------- sötét téma ---------- */
+html.ca-dark body .cs-ov .cs-bd{background:rgba(0,0,0,.55)!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-pn){background:radial-gradient(80% 50% at 50% 0%,rgba(255,255,255,.05),rgba(255,255,255,0) 60%),rgba(20,21,24,.97)!important;color:#F5F5F7!important;box-shadow:0 0 0 1px rgba(255,255,255,.09),0 40px 120px rgba(0,0,0,.65)}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-in){background:transparent!important;border-bottom-color:rgba(255,255,255,.09)!important}
+html.ca-dark body .cs-ov .cs-in .cs-ico{color:#8E8E93}
+html.ca-dark body .cs-ov .cs-in :is(#ca-csx,input){background:transparent!important;color:#F5F5F7!important;-webkit-text-fill-color:#F5F5F7}
+html.ca-dark body .cs-ov .cs-in input::placeholder{color:#6E6E73!important;-webkit-text-fill-color:#6E6E73}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-x){background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.1)!important;color:#8E8E93!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-chips){background:rgba(255,255,255,.03)!important;border-bottom-color:rgba(255,255,255,.08)!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-f){background:rgba(255,255,255,.08)!important;color:#F5F5F7!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-h){color:#8E8E93!important}
+html.ca-dark body .cs-ov .cs-h span{background:rgba(255,255,255,.08)!important;color:#A1A1A6!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-c){background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.1)!important;color:#F5F5F7!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-c):hover{background:#F5F5F7!important;border-color:#F5F5F7!important;color:#141518!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-r):hover,html.ca-dark body .cs-ov :is(#ca-csx,.cs-r).on{background:rgba(255,255,255,.06)!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-r).on{box-shadow:none}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-t){color:#F5F5F7!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-m){color:#8E8E93!important}
+html.ca-dark body .cs-ov .cs-arr{color:#48484A}
+html.ca-dark body .cs-ov .cs-r:hover .cs-arr,html.ca-dark body .cs-ov .cs-r.on .cs-arr{color:#F5F5F7}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-img){background:rgba(255,255,255,.06)!important;color:#A1A1A6!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-p){background:rgba(255,255,255,.07)!important;color:#F5F5F7!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-tag){background:rgba(255,255,255,.08)!important;color:#D1D1D6!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-more){color:#F5F5F7!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-a){background:rgba(255,255,255,.05)!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-did),html.ca-dark body .cs-ov :is(#ca-csx,.cs-msg),html.ca-dark body .cs-ov .cs-none p{color:#8E8E93!important}
+html.ca-dark body .cs-ov .cs-did a{color:#F5F5F7!important;text-decoration:underline;text-underline-offset:3px}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-btn){background:#F5F5F7!important;color:#141518!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-btn):hover{background:#fff!important}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-btn2){background:transparent!important;color:#F5F5F7!important;border-color:rgba(255,255,255,.18)!important}
+html.ca-dark.dm-nt body .cs-ov :is(#ca-csx,.cs-pn),html.ca-dark body .cs-ov :is(#ca-csx,.cs-pn).dm-nt{transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s ease!important}
+
+@media(max-width:640px){
+  html body .cs-ov{padding:0}
+  html body .cs-ov :is(#ca-csx,.cs-pn){border-radius:0;max-width:none;max-height:none;height:100%}
+  html body .cs-ov :is(#ca-csx,.cs-in){padding:6px 14px 6px 18px}
+  html body .cs-ov .cs-in :is(#ca-csx,input){font-size:18px;padding:14px 0}
+  html body .cs-ov .cs-ql{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){html body .cs-ov :is(#ca-csx,.cs-pn){transition:opacity .15s!important;transform:none!important}}
+
+/* színes pötty a népszerű keresések előtt */
+html body .cs-ov .cs-cl .cs-c{display:inline-flex;align-items:center;gap:8px}
+html body .cs-ov .cs-cl .cs-c:before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:#C7C7CC}
+
+/* a panel tetején finom pontrács-textúra, lefelé elhalványul (nincs színes szivárvány) */
+html body .cs-ov :is(#ca-csx,.cs-pn):before{content:"";position:absolute;left:0;right:0;top:0;height:200px;z-index:-1;pointer-events:none;background-size:14px 14px;-webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.5) 45%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.5) 45%,transparent 100%)}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-pn):before{background-image:radial-gradient(circle,rgba(0,0,0,.09) 1px,transparent 1.3px)}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-pn):before{background-image:radial-gradient(circle,rgba(255,255,255,.08) 1px,transparent 1.3px)}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-pn){background:linear-gradient(180deg,#FAFAFA,#fff 160px)}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-pn){background:linear-gradient(180deg,rgba(32,33,37,.98),rgba(20,21,24,.97) 160px)!important}
+html:not(.ca-dark) body .cs-ov .cs-in .cs-ico{color:#FF9F0A}
+html.ca-dark body .cs-ov .cs-in .cs-ico{color:#FFB340}
+html body .cs-ov .cs-cl .cs-c[data-q*="bérlés" i]:before,html body .cs-ov .cs-cl .cs-c[data-q*="Ft/hó" i]:before{background:#14B8AA;box-shadow:0 0 0 3px rgba(20,184,170,.18)}
+html body .cs-ov .cs-cl .cs-c[data-q*="import" i]:before{background:#1C1C1E;box-shadow:0 0 0 2px #FFCE00}
+html body .cs-ov .cs-cl .cs-c[data-q*="eladó" i]:before,html body .cs-ov .cs-cl .cs-c[data-q*="millió" i]:before{background:#F2C200;box-shadow:0 0 0 3px rgba(242,194,0,.22)}
+html body .cs-ov .cs-cl .cs-c[data-q*="személyes" i]:before,html body .cs-ov .cs-cl .cs-c[data-q*="kombi" i]:before,html body .cs-ov .cs-cl .cs-c[data-q*="GLC" i]:before{background:#FF8A00;box-shadow:0 0 0 3px rgba(255,138,0,.18)}
+html body .cs-ov .cs-cl .cs-c[data-q*="honosítás" i]:before{background:#A07D52;box-shadow:0 0 0 3px rgba(160,125,82,.2)}
+html.ca-dark body .cs-ov .cs-cl .cs-c[data-q*="import" i]:before{background:#000;box-shadow:0 0 0 2px #FFCE00}
+
+/* körbefutó borostyán–fehér fénycsík az ablak szélén + halvány derengés */
+@property --csa{syntax:"<angle>";inherits:false;initial-value:0deg}
+html body .cs-ov :is(#ca-csx,.cs-pn):after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--csa),transparent 0deg,transparent 250deg,rgba(255,179,64,.95) 320deg,#fff 345deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:csSpin 4s linear infinite;pointer-events:none;z-index:2}
+@keyframes csSpin{to{--csa:360deg}}
+html:not(.ca-dark) body .cs-ov :is(#ca-csx,.cs-pn){box-shadow:0 0 0 1px rgba(0,0,0,.06),0 0 60px -12px rgba(255,159,10,.3),0 40px 120px rgba(0,0,0,.28)}
+html.ca-dark body .cs-ov :is(#ca-csx,.cs-pn){box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 60px -10px rgba(255,179,64,.35),0 40px 120px rgba(0,0,0,.6)!important}
+@media(prefers-reduced-motion:reduce){html body .cs-ov :is(#ca-csx,.cs-pn):after{animation:none;--csa:200deg}}
