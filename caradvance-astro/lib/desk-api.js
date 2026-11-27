@@ -849,12 +849,12 @@ async function mdeSync(env, ctx, body) {
       }
       d.price_check = { via: 'mobile.de', ad: gross, basis: 'gross', net: d.net, gross: d.gross, at: day };
       // a new dated entry only when the mobile.de price or mileage changed (or our price was updated from it);
-      // otherwise the latest entry keeps its date and only gets the fresh competitor data (decision of 27 Nov 2026)
+      // otherwise the latest entry is moved to today's date with the fresh competitor data (decision of 27 Nov 2026)
       const comps = JSON.stringify((d.comp || []).map(x => ({ id: x.id, price: x.price, km: x.km, fr: x.fr })));
       const last = await env.DB.prepare("SELECT seq, net, gross, km FROM desk_price_log WHERE car = ? AND source = 'mobile.de' ORDER BY day DESC, at DESC LIMIT 1").bind(d.id).first();
       const sameAsLast = !!last && Math.round(Number(last.gross)) === Math.round(gross) && Math.round(Number(last.net || 0)) === Math.round(net)
         && (km == null || last.km == null || Number(last.km) === km);
-      if (sameAsLast && !priceChanged) await env.DB.prepare('UPDATE desk_price_log SET ref = ?, comps = ? WHERE seq = ?').bind(String(ad.id || ''), comps, last.seq).run();
+      if (sameAsLast && !priceChanged) await env.DB.prepare('UPDATE desk_price_log SET day = ?, at = ?, km = COALESCE(?, km), ref = ?, comps = ? WHERE seq = ?').bind(day, now, km, String(ad.id || ''), comps, last.seq).run();
       else await env.DB.prepare("INSERT INTO desk_price_log (car, day, at, source, net, gross, km, ref, comps) VALUES (?, ?, ?, 'mobile.de', ?, ?, ?, ?, ?)").bind(d.id, day, now, net, gross, km, String(ad.id || ''), comps).run();
       logged = { net, gross, km };
       // Notion (desk): price, mileage and the mobile.de fields
