@@ -2533,7 +2533,7 @@ $('#ofList').addEventListener('click',async e=>{
       const adOk=adP&&net?(Math.abs(adP-net)<1||Math.abs(adP-gNow)<1):null;
       const tick=c.off?'':adP&&net?(adOk?'sl_tick_mde':'warn'):c.chosen?'sl_chosen':!conflict&&(net||onet)?'sl_tick_one':'';
       if(!conflict)P=[{price:onet||net,iso:(P[0]||{}).iso,date:(P[0]||{}).date,own:1}].filter(x=>x.price);
-      const typed=c.chosen&&c.chosen.how==='typed'&&!P.some(x=>Math.round(x.price)===Math.round(net||0));
+      const typed=c.chosen&&(c.chosen.how==='typed'||c.chosen.how==='mobile')&&!P.some(x=>Math.round(x.price)===Math.round(net||0));
       const opt=(x,i)=>{const on=!typed&&net!=null&&Math.round(Number(x.price))===Math.round(net);
         const chip=x.own?(fd(x)?`${esc(t('sl_ours'))} · ${esc(fd(x))}`:esc(t('sl_ours'))):`${esc(t(i===0?'sl_latest':'sl_prev2'))}${fd(x)?' · '+esc(fd(x)):''}`;
         return `<label class="slo${on?' on':''}" title="${esc([x.doc,x.ref,x.what].filter(Boolean).join(' · '))}"><input type="radio" name="slp-${esc(c.id)}" value="${esc(x.price)}"${on?' checked':''}${can?'':' disabled'} data-slp="${esc(c.id)}"><span class="slov"></span>
