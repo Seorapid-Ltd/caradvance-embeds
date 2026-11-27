@@ -713,7 +713,8 @@ async function stockList(env, me) {
   await ensureStock(env);
   const rows = (await env.DB.prepare('SELECT data, updated FROM desk_stocklist ORDER BY sort').all()).results || [];
   const admin = me.role === 'admin';
-  const cars = rows.map(r => { const d = JSON.parse(r.data); if (!admin) for (const k of STOCK_ADMIN_ONLY) delete d[k]; return d; });
+  const logs = await priceLogs(env);
+  const cars = rows.map(r => { const d = JSON.parse(r.data); if (!admin) for (const k of STOCK_ADMIN_ONLY) delete d[k]; d.log = logs[d.id] || []; return d; });
   return { cars, admin, canPrice: !!priceMode(me), priceMode: priceMode(me), updated: rows.reduce((m, r) => Math.max(m, r.updated || 0), 0) };
 }
 
@@ -753,6 +754,7 @@ async function stockChoosePrice(request, env, ctx, me) {
     const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
     d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document', orig, deskPrev: d.chosen && d.chosen.deskPrev };
     d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
+    if (mode === 'live' && b.how === 'typed') { try { await ensurePriceLog(env); await env.DB.prepare("INSERT INTO desk_price_log (car, day, at, source, net, gross, km, ref) VALUES (?, ?, ?, 'manual', ?, ?, NULL, ?)").bind(d.id, budDay(Date.now()), Date.now(), net, d.gross, who).run(); } catch (e) {} }
     if (d.desk) deskTo = { net, gross: d.gross };
   }
   let desk = false;
@@ -774,6 +776,109 @@ async function stockChoosePrice(request, env, ctx, me) {
 }
 
 
+
+/* ---------------- mobile.de checks: morning + evening ----------------
+ * mobile.de does not allow server-side downloads, so the check runs in the team's own browser
+ * (a scheduled Claude task opens suchen.mobile.de and runs /sales/mde-sync.js there). That script asks
+ * /api/desk/mde-plan what to check and posts what it read to /api/desk/mde-sync. Access by key (desk_keys).
+ * Every check is stored with its date (desk_price_log); the mobile.de price is the price we use. */
+async function ensurePriceLog(env) {
+  await env.DB.batch([
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_price_log (seq INTEGER PRIMARY KEY AUTOINCREMENT, car TEXT NOT NULL, day TEXT NOT NULL, at INTEGER NOT NULL, source TEXT NOT NULL, net REAL, gross REAL, km INTEGER, ref TEXT, comps TEXT)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS desk_price_log_car ON desk_price_log (car, day)'),
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_keys (name TEXT PRIMARY KEY, key TEXT NOT NULL)'),
+  ]);
+}
+const MDE_CORS = { 'Access-Control-Allow-Origin': 'https://suchen.mobile.de', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
+const cjson = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...MDE_CORS } });
+async function syncKeyOk(env, k) {
+  if (!k || !env.DB) return false;
+  await ensurePriceLog(env);
+  const r = await env.DB.prepare("SELECT key FROM desk_keys WHERE name = 'mde-sync'").first();
+  return !!(r && r.key && r.key === k);
+}
+const budDay = ms => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date(ms)); // YYYY-MM-DD
+const monthsOf = fr => { const m = String(fr || '').match(/(\d{1,2})\s*\/\s*(\d{4})/); return m ? Number(m[2]) * 12 + Number(m[1]) : null; };
+async function mdePlan(env, ctx) {
+  await ensureStock(env);
+  const rows = (await env.DB.prepare('SELECT data FROM desk_stocklist ORDER BY sort').all()).results || [];
+  let st = {}; try { (await loadAll(env, ctx)).vehicles.forEach(v => { st[v.id] = v.status || 'Available'; }); } catch (e) {}
+  const plan = [];
+  for (const r of rows) {
+    const d = JSON.parse(r.data);
+    if (d.off || (d.desk && st[d.desk] === 'Sold')) continue;
+    const ad = d.mde && d.mde.id ? String(d.mde.id) : null, comps = (d.comp || []).map(x => String(x.id)).filter(Boolean);
+    if (!ad && !comps.length && !d.comp_url) continue;
+    plan.push({ id: d.id, ad, comps, comp_url: d.comp_url || null });
+  }
+  return { ok: true, plan, at: Date.now() };
+}
+async function mdeSync(env, ctx, body) {
+  await ensureStock(env); await ensurePriceLog(env);
+  const now = Date.now(), day = budDay(now), changed = [], all = await loadAll(env, ctx).catch(() => null);
+  const r2 = x => (x == null || x === '' || isNaN(x)) ? null : Math.round(Number(x) * 100) / 100;
+  for (const c of (body && body.cars) || []) {
+    const row = await env.DB.prepare('SELECT data FROM desk_stocklist WHERE id = ?').bind(String(c.id || '')).first();
+    if (!row) continue;
+    const d = JSON.parse(row.data);
+    // competitors: refresh the ones we follow, drop the ones that are gone, fill up to 3 from the search
+    const old = Object.fromEntries((d.comp || []).map(x => [String(x.id), x]));
+    const kept = [];
+    for (const x of c.comps || []) if (x && x.ok && !x.own && old[String(x.id)]) kept.push({ ...old[String(x.id)], price: x.price ?? old[String(x.id)].price, km: x.km ?? old[String(x.id)].km, fr: x.fr || old[String(x.id)].fr });
+    for (const x of c.extra || []) {
+      if (kept.length >= 3) break;
+      if (!x || !x.ok || x.own || kept.some(k => String(k.id) === String(x.id))) continue;
+      const dm = monthsOf(x.fr) != null && monthsOf(d.reg) != null ? monthsOf(x.fr) - monthsOf(d.reg) : null;
+      kept.push({ id: String(x.id), price: x.price, fr: x.fr || null, km: x.km ?? null, title: x.title || '', pw: x.pw || null, col: x.col || null, cn: 'DE', dm, dk: x.km != null && typeof d.km === 'number' ? x.km - d.km : null, shared: [], missing: [], extra: [], added: day });
+    }
+    if ((c.comps || []).length || (c.extra || []).length) { d.comp = kept.slice(0, 3); d.comp_at = day; }
+    d.checked_at = now;
+    let logged = null;
+    const ad = c.ad;
+    if (ad && ad.ok && ad.gross) {
+      const gross = r2(ad.gross), net = r2(ad.net) || Math.round(gross / (1 + VAT)), km = ad.km != null ? Number(ad.km) : null;
+      const prevNet = d.net, prevKm = d.km;
+      d.mde = { ...(d.mde || {}), id: String(ad.id || (d.mde && d.mde.id) || ''), url: (d.mde && d.mde.url) || `https://suchen.mobile.de/fahrzeuge/details.html?id=${ad.id}`, price: gross, km, at: day, checked: now };
+      if (km != null) d.km = km;
+      const priceChanged = Math.round(Number(d.gross || 0)) !== Math.round(gross) || Math.round(Number(d.net || 0)) !== Math.round(net);
+      if (priceChanged) {
+        const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
+        d.chosen = { by: 'mobile.de', at: day, prev: d.net, how: 'mobile', orig, deskPrev: (d.chosen && d.chosen.deskPrev) || null };
+        d.net = net; d.gross = gross; d.net_from = `mobile.de (${day})`; d.price_ok = true;
+      }
+      d.price_check = { via: 'mobile.de', ad: gross, basis: 'gross', net: d.net, gross: d.gross, at: day };
+      // the dated entry: one per car and day (the evening check updates the morning one if the price is the same)
+      const comps = JSON.stringify((d.comp || []).map(x => ({ id: x.id, price: x.price, km: x.km, fr: x.fr })));
+      const same = await env.DB.prepare("SELECT seq FROM desk_price_log WHERE car = ? AND day = ? AND source = 'mobile.de' AND ROUND(gross) = ROUND(?)").bind(d.id, day, gross).first();
+      if (same) await env.DB.prepare('UPDATE desk_price_log SET at = ?, net = ?, km = ?, ref = ?, comps = ? WHERE seq = ?').bind(now, net, km, String(ad.id || ''), comps, same.seq).run();
+      else await env.DB.prepare("INSERT INTO desk_price_log (car, day, at, source, net, gross, km, ref, comps) VALUES (?, ?, ?, 'mobile.de', ?, ?, ?, ?, ?)").bind(d.id, day, now, net, gross, km, String(ad.id || ''), comps).run();
+      logged = { net, gross, km };
+      // Notion (desk): price, mileage and the mobile.de fields
+      const car = all && d.desk ? all.vehicles.find(v => v.id === d.desk) : null;
+      if (car) {
+        const props = {};
+        if (Math.round(Number(car.dealer_net || 0)) !== Math.round(net) || Math.round(Number(car.dealer_gross || 0)) !== Math.round(gross)) { props.B2B = writeProp('number', net); props.B2C = writeProp('number', gross); }
+        if (km != null && Number(car.mileage) !== km) props['Mileage km'] = writeProp('number', km);
+        if (Number(car.mde_price) !== gross) props['mobile.de price'] = writeProp('number', gross);
+        if (km != null && Number(car.mde_km) !== km) props['mobile.de km'] = writeProp('number', km);
+        if (Object.keys(props).length || car.mde_checked !== day) props['mobile.de checked'] = writeProp('date', day);
+        if (Object.keys(props).length) { try { await writePage(env, 'vehicles', 'PATCH', `/pages/${car._pid}`, { properties: props }); } catch (e) {} }
+      }
+      if (priceChanged || (prevKm != null && km != null && prevKm !== km)) changed.push({ id: d.id, desk: d.desk || null, net_from: prevNet, net_to: d.net, km_from: prevKm, km_to: km });
+    }
+    await env.DB.prepare('UPDATE desk_stocklist SET data = ?, updated = ? WHERE id = ?').bind(JSON.stringify(d), Math.floor(now / 1000), d.id).run();
+  }
+  return { ok: true, n: ((body && body.cars) || []).length, changed, day };
+}
+async function priceLogs(env) {
+  try {
+    await ensurePriceLog(env);
+    const rows = (await env.DB.prepare('SELECT car, day, at, source, net, gross, km, ref FROM desk_price_log ORDER BY day DESC, at DESC').all()).results || [];
+    const by = {}; for (const r of rows) { const l = (by[r.car] ||= []); if (l.length < 20) l.push(r); }
+    return by;
+  } catch (e) { return {}; }
+}
+
 /** Fields anyone may see without signing in (both prices included, by decision of 25 Nov 2026).
  *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are shown without prices (26 Nov 2026). */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
@@ -790,6 +895,16 @@ export async function handle(request, env, ctx) {
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
+  if (route === 'mde-plan' || route === 'mde-sync' || route === 'mde-script') {
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: MDE_CORS });
+    if (!(await syncKeyOk(env, url.searchParams.get('key')).catch(() => false))) return cjson({ error: 'key' }, 403);
+    try {
+      if (route === 'mde-script') { const r = await env.ASSETS.fetch(new Request(new URL('/sales/mde-sync.js', url.origin).toString())); return new Response(await r.text(), { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', ...MDE_CORS } }); }
+      if (route === 'mde-plan' && request.method === 'GET') return cjson(await mdePlan(env, ctx));
+      if (route === 'mde-sync' && request.method === 'POST') return cjson(await mdeSync(env, ctx, JSON.parse(await request.text())));
+    } catch (e) { return cjson({ error: e.message || 'error' }, 500); }
+    return cjson({ error: 'Not found' }, 404);
+  }
   if (route === 'offer-decision' && (request.method === 'GET' || request.method === 'POST')) return offerDecision(request, env, ctx);
   if (request.method === 'GET' && route === 'public') {
     // Edge-cache the public car list for a short time so mobile visitors get it instantly
