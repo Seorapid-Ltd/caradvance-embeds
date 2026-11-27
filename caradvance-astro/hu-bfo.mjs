@@ -20,6 +20,8 @@ function seo(h, log) {
   h = h.replace(/(<meta (?:property|name)="(?:og|twitter):title" content=")[^"]*(")/g, '$1' + TITLE + '$2');
   // halott dokumentum-linkek (href="…#") → nem kattintható címke
   h = h.replace(/<a class="pf-lnk" href="https:\/\/www\.caradvance\.hu\/(?:berlesi|beszerzesi)-folyamat\/#"([^>]*)>([^<]*?) →<\/a>/g, (m, a, t) => { log.dead++; return '<span class="pf-lnk ca-doc"' + a + '>' + t + '</span>'; });
+  // „Mi áll a bérleti szerződésben?” kártyák: nem az egész doboz kattintható, csak a piros link (az viszi a Bérlési feltételek megfelelő részére)
+  h = h.replace(/<a class="bf-card" href="([^"]+)"([^>]*)>([\s\S]*?)<em([^>]*)>([\s\S]*?)<\/em><\/a>/g, (m, href, at, body, eat, txt) => '<div class="bf-card"' + at + '>' + body + '<a class="bf-more" href="' + href + '"' + eat + '>' + txt + '</a></div>');
   if (h.indexOf('"BreadcrumbList"') < 0) h = h.replace('</head>', () => '<script type="application/ld+json">' + JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Főoldal', item: SITE + '/' },
     { '@type': 'ListItem', position: 2, name: 'Tartós bérlet', item: SITE + '/tartos-berlet/' },
@@ -183,8 +185,10 @@ const CSS = '<style id="ca-bfo-css">'
   + P + '.bf-card .ca-ic svg{width:22px;height:22px}'
   + P + '.bf-card b{font-size:17px!important;font-weight:800!important;color:inherit!important}'
   + P + '.bf-card span{font-size:14px!important;line-height:1.55!important;opacity:.7;color:inherit!important}'
-  + P + '.bf-card em{margin-top:auto;padding-top:6px;font-style:normal;font-weight:700;font-size:13.5px;color:' + RED + '!important}'
-  + D + '.bf-card em{color:#FF6B7B!important}'
+  + P + '.bf-card :is(em,a.bf-more){margin-top:auto;padding-top:6px;font-style:normal;font-weight:700;font-size:13.5px;color:' + RED + '!important;text-decoration:none!important;align-self:flex-start;transition:opacity .15s}'
+  + P + '.bf-card a.bf-more:hover{text-decoration:underline!important;text-underline-offset:3px}'
+  + P + 'div.bf-card:hover{transform:none!important;cursor:default}'
+  + D + '.bf-card :is(em,a.bf-more){color:#FF6B7B!important}'
   + '@media(max-width:900px){' + P + '.bf-grid{grid-template-columns:1fr 1fr!important}' + P + '.bf-head{flex-direction:column;align-items:flex-start!important}}'
   + '@media(max-width:560px){' + P + '.bf-grid{grid-template-columns:1fr!important}}'
   // ---- záró kártya
@@ -283,7 +287,7 @@ function tlu(){trq=0;var r=bt.getBoundingClientRect(),vh=innerHeight,nb=(documen
 addEventListener("scroll",function(){if(!trq){trq=1;requestAnimationFrame(tlu)}},{passive:true});addEventListener("resize",tlu);tlu()}
 // --- szerződés-kártyák ikonjai
 var BI={kaucio:IC.shield,kezdet:IC.cal,tartalom:IC.check,km:IC.gauge,biztositas:IC.umb,visszaadas:IC.back};
-$$(".bf-card",root).forEach(function(a){var k=(a.getAttribute("href")||"").split("#")[1];if(BI[k]&&!a.querySelector(".ca-ic"))a.insertAdjacentHTML("afterbegin",'<span class="ca-ic">'+BI[k]+'</span>')});
+$$(".bf-card",root).forEach(function(a){var l=a.querySelector("a.bf-more");var k=(a.getAttribute("href")||(l&&l.getAttribute("href"))||"").split("#")[1];if(BI[k]&&!a.querySelector(".ca-ic"))a.insertAdjacentHTML("afterbegin",'<span class="ca-ic">'+BI[k]+'</span>')});
 // --- sötét mód inline-színek takarítása
 function cln(){$$(".ca-facts,.ca-facts *,.ca-hz,.ca-hz *,.bl-term,.bl-term *,.bf-box,.bf-box *,div.pf-cta,div.pf-cta *,.pf-faq,.pf-faq *",root).forEach(function(x){if(x.tagName==="IMG"||(x.getAttribute("style")||"").indexOf("url(")>-1)return;["background","background-color","color","-webkit-text-fill-color","border-color"].forEach(function(k){x.style.removeProperty(k)});x.setAttribute("data-dm-skip","1")})}
 [150,600,1500,3000].forEach(function(t){setTimeout(cln,t)});
