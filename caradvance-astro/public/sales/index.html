@@ -1918,7 +1918,23 @@ $('#mDealer').addEventListener('change',()=>{const d=S.dealers.find(x=>x.id===$(
 $('#mFrom').addEventListener('input',()=>{ls.set('sd_from',$('#mFrom').value);fillMsg();});
 $('#mCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('#mSubj').value+'\n\n'+$('#mBody').value);$('#mCopy').textContent=t('m_copied');setTimeout(()=>$('#mCopy').textContent=t('m_copy'),1500)}catch(e){}});
 $('#mSend').addEventListener('click',()=>{const d=S.dealers.find(x=>x.id===$('#mDealer').value);const to=mailOf(d);
-  const a=document.createElement('a');a.href=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent($('#mSubj').value)}&body=${encodeURIComponent($('#mBody').value)}`;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();});
+  const a=document.createElement('a');a.href=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent($('#mSubj').value)}&body=${encodeURIComponent($('#mBody').value)}`;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
+  logMsgSent(d);});
+/* Help page → dealer email: record it in the activity log and on the dealer (last contact, New → Contacted) */
+let lastMsgLog='';
+async function logMsgSent(d){
+  if(!d||!S.db)return;const subj=$('#mSubj').value.trim(),day=new Date().toISOString().slice(0,10);
+  const key=d.id+'|'+subj+'|'+day;if(key===lastMsgLog)return;lastMsgLog=key;
+  const o=OFFERS[Number($('#mOffer').value)||0]||{},me=(window.claude&&claude.me&&claude.me())||{};
+  const id='o'+Date.now().toString(36);
+  const fd={id,date:day,dealer:d.id,channel:'Email',member:me.name||$('#mFrom').value.trim()||'',outcome:'Sent offer',cars:'',
+    notes:'Email from the Help page'+(o.v?' · '+o.v:'')+(subj?' · "'+subj+'"':'')+($('#mLang').value?' · '+$('#mLang').value.toUpperCase():'')};
+  const ok=await save('outreach/'+id,fd,false);if(ok===false){lastMsgLog='';return}
+  const up={last_contact:day};if((d.status||'New')==='New')up.status='Contacted';
+  await save('dealers/'+d.id,up,true);
+  const L={hu:'✓ Rögzítve az aktivitásnaplóban',sk:'✓ Zaznamenané v aktivitách',cs:'✓ Zaznamenáno v aktivitách',de:'✓ In den Aktivitäten erfasst',pl:'✓ Zapisano w aktywnościach',en:'✓ Logged in the activity log'};
+  const btn=$('#mSend'),was=btn.textContent;btn.textContent=L[LANG]||L.en;btn.classList.add('done');setTimeout(()=>{btn.textContent=was;btn.classList.remove('done')},2500);
+}
 queueMicrotask(applyLang);
 
 
