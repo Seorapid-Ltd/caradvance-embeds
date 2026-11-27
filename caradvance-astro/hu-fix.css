@@ -29,3 +29,37 @@ html.ca-dark body .autok-tabs:not(#autoink.ca-grid .autok-tabs) :is(#ca-hfx,.aut
 html.ca-dark body .autok-tabs:not(#autoink.ca-grid .autok-tabs) :is(#ca-hfx,.autok-tab):hover{color:#F5F5F7!important;-webkit-text-fill-color:#F5F5F7!important;background:rgba(255,255,255,.06)!important}
 html.ca-dark body .autok-tabs:not(#autoink.ca-grid .autok-tabs) :is(#ca-hfx,.autok-tab.on){color:#0B0B0D!important;-webkit-text-fill-color:#0B0B0D!important;background:#fff!important;box-shadow:0 6px 16px rgba(0,0,0,.35)!important}
 html.ca-dark body :is(#ca-hfx,.autok-tabs):not(#autoink.ca-grid .autok-tabs){background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.1)!important}
+
+/* Mobil, Import oldal: a statisztika-kártyák nagy címe („Hitel & lízing”) ne lógjon ki a kártyából */
+@media(max-width:480px){html body .stats .stat :is(#ca-hfx,.num){font-size:clamp(21px,6.4vw,30px)!important;overflow-wrap:normal;white-space:nowrap}}
+
+/* Mobil/tablet, autó adatlap: az ár és az „Ajánlatkérés” közvetlenül a galéria alá kerül (eddig a teljes leírás után, az oldal alján volt) */
+@media(max-width:1079px){
+  html body .layout:has(> .gallery + aside.side):is(#ca-hfx,div){display:flex!important;flex-direction:column!important;gap:18px!important}
+  html body .layout:has(> .gallery + aside.side) > :is(#ca-hfx,.gallery),html body .layout:has(> .gallery + aside.side) > :is(#ca-hfx,aside.side){display:contents!important}
+  html body .layout:has(> .gallery + aside.side) > .gallery > *,html body .layout:has(> .gallery + aside.side) > aside.side > *{margin-top:0!important;margin-bottom:0!important;order:5;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;align-self:stretch!important}
+  html body .layout:has(> .gallery + aside.side) > .gallery > :is(#ca-hfx,.thumbs){overflow-x:auto!important}
+  html body .layout:has(> .gallery + aside.side) > .gallery > :is(#ca-hfx,.stage){order:1}
+  html body .layout:has(> .gallery + aside.side) > .gallery > :is(#ca-hfx,.thumbs){order:2;margin-top:-8px!important}
+  html body .layout:has(> .gallery + aside.side) > aside.side > :is(#ca-hfx,.panel):first-child{order:3}
+  html body .layout:has(> .gallery + aside.side) > .gallery > :is(#ca-hfx,.card){order:4}
+}
+/* az „Áttekintés” értékei (pl. „Hybrid (Benzin/Elektro)”) ne lógjanak ki a dobozból */
+html body .layout .card :is(#ca-hfx,.v){overflow-wrap:break-word;min-width:0}
+html body .layout .card :is(#ca-hfx,.v) *{min-width:0}
+@media(max-width:480px){
+  html body .layout .card :is(#ca-hfx,.iconrow){grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;column-gap:12px!important}
+  html body .layout .card .iconrow :is(#ca-hfx,.ic){gap:8px!important}
+  html body .layout .card .iconrow .ic :is(#ca-hfx,.dot){width:32px!important;height:32px!important;flex:none}
+  html body .layout .card .iconrow .ic .dot :is(#ca-hfx,svg){width:16px!important;height:16px!important}
+  html body .layout .card :is(#ca-hfx,.v){font-size:14px!important;letter-spacing:-.01em}
+}
+
+/* Mobil, Eladom: a „Bizományi díjszabás” táblázat — az euró-sáv ne törjön 3–4 sorba, a fejlécek ne érjenek össze */
+@media(max-width:480px){
+  html body .fee-table :is(#ca-hfx,th){font-size:10px!important;letter-spacing:.04em!important;padding-left:4px!important;padding-right:4px!important;vertical-align:bottom}
+  html body .fee-table :is(#ca-hfx,th):first-child{width:44%}
+  html body .fee-table :is(#ca-hfx,td){padding-left:4px!important;padding-right:4px!important}
+  html body .fee-table td :is(#ca-hfx,.fe),html body .fee-table td :is(#ca-hfx,.fh-range){white-space:nowrap!important;font-size:11.5px!important}
+}
+@media(max-width:370px){html body .layout .card :is(#ca-hfx,.v){font-size:13px!important}}
