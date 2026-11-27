@@ -133,7 +133,52 @@ async function handleLogout(request, env) {
 async function handleMe(request, env) {
   const user = await getSessionUser(request, env);
   if (!user) return json({ error: 'Nincs bejelentkezve.' }, 401);
-  return json({ user });
+  return json({ user, fresh: await sessionIsFresh(request, env) });
+}
+
+// Fresh session = signed in during the last 15 minutes (by password, e-mail link or e-mail code;
+// all of them create 30-day sessions). Someone who forgot the password signs in with a link/code
+// and can then set a new password without the old one.
+const FRESH_MS = 15 * 60 * 1000;
+async function sessionIsFresh(request, env) {
+  const token = parseCookies(request)['ca_session'];
+  if (!token) return false;
+  const row = await env.DB.prepare(`SELECT expires_at FROM sessions WHERE token = ?`).bind(token).first();
+  if (!row) return false;
+  const created = new Date(row.expires_at + 'Z').getTime() - SESSION_DAYS * 86400 * 1000;
+  return Date.now() - created < FRESH_MS;
+}
+
+// Own password change. Signs out every other device; this one stays signed in.
+async function handleChangePassword(request, env) {
+  const user = await getSessionUser(request, env);
+  if (!user) return json({ error: 'Nincs bejelentkezve.', code: 'auth' }, 401);
+  const b = await request.json().catch(() => ({}));
+  const next = String(b.password || '');
+  if (next.length < 8) return json({ error: 'A jelszó legyen legalább 8 karakter.', code: 'short' }, 400);
+  if (next.length > 200) return json({ error: 'Túl hosszú jelszó.', code: 'long' }, 400);
+  const row = await env.DB.prepare(`SELECT salt_hex, hash_hex FROM users WHERE id = ?`).bind(user.id).first();
+  if (!row) return json({ error: 'Nincs bejelentkezve.', code: 'auth' }, 401);
+  const fresh = await sessionIsFresh(request, env);
+  if (!fresh) {
+    const cur = String(b.current || '');
+    if (!cur) return json({ error: 'Add meg a jelenlegi jelszót.', code: 'current' }, 400);
+    const h = row.salt_hex ? await pbkdf2Hex(cur, row.salt_hex) : '';
+    if (!row.hash_hex || !timingSafeEqual(h, row.hash_hex)) return json({ error: 'A jelenlegi jelszó nem jó.', code: 'wrong' }, 403);
+  }
+  const saltHex = randomHex(16);
+  const hashHex = await pbkdf2Hex(next, saltHex);
+  await env.DB.prepare(`UPDATE users SET salt_hex = ?, hash_hex = ? WHERE id = ?`).bind(saltHex, hashHex, user.id).run();
+  const token = parseCookies(request)['ca_session'];
+  await env.DB.prepare(`DELETE FROM sessions WHERE user_id = ? AND token != ?`).bind(user.id, token).run();
+  return json({ ok: true });
+}
+
+// Sign out on every device (including this one).
+async function handleLogoutAll(request, env) {
+  const user = await getSessionUser(request, env);
+  if (user) await env.DB.prepare(`DELETE FROM sessions WHERE user_id = ?`).bind(user.id).run();
+  return json({ ok: true }, 200, { 'Set-Cookie': clearSessionCookieHeader() });
 }
 
 // ---------- Deals ----------
@@ -780,6 +825,8 @@ export async function onRequest(context) {
       if (linkRes) return linkRes;
       if (path === '/login' && method === 'POST') return await handleLogin(request, env);
       if (path === '/logout' && method === 'POST') return await handleLogout(request, env);
+      if (path === '/logout-all' && method === 'POST') return await handleLogoutAll(request, env);
+      if (path === '/password' && method === 'POST') return await handleChangePassword(request, env);
       if (path === '/me' && method === 'GET') return await handleMe(request, env);
 
       if (path === '/deals' && method === 'GET') return await handleGetDeals(request, env);
