@@ -180,17 +180,28 @@ const AVAIL = { '5532': '2026. dec. 1-től', '4946': '2026. dec. 1-től', '1110'
 const NOPHOTO = { '5532': 1 }; // a caradvance.de-n is hiányzik a fotója
 const eur = n => '€' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
 const BRAND = n => n.split(/[ -]/)[0];
+// adatsorok a Romans-féle tiszta kártyához (címke: érték)
+const ROWS = (cat, specs) => {
+  const r = [['Kategória', cat]];
+  const hp = specs.find(x => /LE$/.test(x)); if (hp) r.push(['Teljesítmény', hp]);
+  const seat = specs.find(x => /ülés$/.test(x)); if (seat) r.push(['Ülések', seat.replace(' ülés', '')]);
+  r.push(['Váltó', specs.includes('Automata') ? 'Automata' : '—']);
+  if (specs.includes('Összkerék')) r.push(['Hajtás', 'Összkerék']);
+  r.push(['Futásteljesítmény', '200 km / nap']);
+  return r;
+};
 const FLEET_HTML = FLEET.map(([name, cat, price, we, wk, specs, id, imgs]) => `<article class="vp-car" data-cat="${cat}" data-brand="${BRAND(name)}">
-    <div class="vp-gal" tabindex="0" aria-label="${name} fotói">${NOPHOTO[id] ? `<div class="vp-nophoto"><span>${name.split(' ')[0]}</span>Fotó hamarosan</div>` : imgs.map((f, i) => `<img src="${IMG(id, f)}" data-big="${IMG(id, f, 1920)}" alt="${name}${i ? ' – ' + (i + 1) + '. fotó' : ''}" loading="lazy" decoding="async" width="1080" height="720">`).join('')}</div>
-    ${NOPHOTO[id] ? '' : `<button type="button" class="vp-zoom" aria-label="${name} fotói teljes képernyőn">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', 17)}</button>`}
-    ${imgs.length > 1 && !NOPHOTO[id] ? `<div class="vp-dots">${imgs.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}
-    <span class="vp-av${AVAIL[id] ? ' vp-av-later' : ''}"><i></i>${AVAIL[id] ? 'Elérhető ' + AVAIL[id] : 'Azonnal elérhető'}</span>
+    <h3>${name}</h3>
+    <div class="vp-media">
+      <div class="vp-gal" tabindex="0" aria-label="${name} fotói">${NOPHOTO[id] ? `<div class="vp-nophoto"><span>${name.split(' ')[0]}</span>Fotó hamarosan</div>` : imgs.map((f, i) => `<img src="${IMG(id, f)}" data-big="${IMG(id, f, 1920)}" alt="${name}${i ? ' – ' + (i + 1) + '. fotó' : ''}" loading="lazy" decoding="async" width="1080" height="720">`).join('')}</div>
+      ${NOPHOTO[id] ? '' : `<button type="button" class="vp-zoom" aria-label="${name} fotói teljes képernyőn">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', 17)}</button>`}
+      ${imgs.length > 1 && !NOPHOTO[id] ? `<div class="vp-dots">${imgs.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}
+      <span class="vp-av${AVAIL[id] ? ' vp-av-later' : ''}">${AVAIL[id] ? 'Elérhető ' + AVAIL[id] : 'Azonnal elérhető'}</span>
+    </div>
     <div class="vp-cb">
-      <div class="vp-cat">${cat}</div>
-      <h3>${name}</h3>
-      <div class="vp-specs">${specs.concat(['200 km/nap']).map(x => `<span>${x}</span>`).join('')}</div>
-      <div class="vp-pr">${price ? `<b class="vp-g">${eur(price)}</b><span>/ nap · áfával</span>` : `<b class="vp-g">Ár kérésre</b><span>személyre szabott ajánlat</span>`}</div>
-      ${price ? `<div class="vp-more"><span class="vp-huf" data-eur="${price}" hidden></span><span>Hétvége <b>${eur(we)}</b></span><span>Egy hét <b>${eur(wk)}</b></span></div>` : ''}
+      <div class="vp-prrow"><span>Napidíj</span>${price ? `<b>${eur(price)}</b>` : `<b>Ár kérésre</b>`}</div>
+      ${price ? `<div class="vp-prsub"><span class="vp-huf" data-eur="${price}" hidden></span><span>áfával</span></div>` : ''}
+      <dl class="vp-rows">${ROWS(cat, specs).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}${price ? `<div><dt>Hétvége</dt><dd>${eur(we)}</dd></div><div><dt>Egy hét</dt><dd>${eur(wk)}</dd></div>` : ''}</dl>
       <a class="vp-btn vp-gold vp-ask" href="#foglalas" data-car="${name}">Ajánlatot kérek</a>
     </div>
   </article>`).join('\n  ');
@@ -216,7 +227,7 @@ function resetAll(){F.cat='';F.brand='';F.rec=null;rn.hidden=true;$$('.vp-f butt
 R.querySelector('.vp-reset').addEventListener('click',resetAll);R.querySelector('.vp-reset3').addEventListener('click',resetAll);
 $$('.vp-tile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();resetAll();F.rec=a.dataset.cars.split('|');rn.firstChild.textContent=a.dataset.occ+' — ajánlott autók:';rn.hidden=false;filt();document.getElementById('flotta').scrollIntoView({behavior:'smooth'})})});
 /* forint: napi EUR/HUF árfolyam, tájékoztató jelleggel */
-fetch('https://open.er-api.com/v6/latest/EUR').then(function(r){return r.json()}).then(function(d){var k=d&&d.rates&&d.rates.HUF;if(!k)return;$$('.vp-huf').forEach(function(s){s.textContent='≈ '+(Math.round(s.dataset.eur*k/1000)*1000).toLocaleString('hu-HU')+' Ft / nap';s.hidden=false});var r=R.querySelector('.vp-rate');if(r){r.textContent='Forintban a napi árfolyammal (1 € ≈ '+k.toFixed(1).replace('.',',')+' Ft), tájékoztató jelleggel.';r.hidden=false}}).catch(function(){});
+fetch('https://open.er-api.com/v6/latest/EUR').then(function(r){return r.json()}).then(function(d){var k=d&&d.rates&&d.rates.HUF;if(!k)return;$$('.vp-huf').forEach(function(s){s.textContent='≈ '+(Math.round(s.dataset.eur*k/1000)*1000).toLocaleString('hu-HU')+' Ft';s.hidden=false});var r=R.querySelector('.vp-rate');if(r){r.textContent='Forintban a napi árfolyammal (1 € ≈ '+k.toFixed(1).replace('.',',')+' Ft), tájékoztató jelleggel.';r.hidden=false}}).catch(function(){});
 /* foglalás: 3 lépés + élő összesítő */
 var f=document.getElementById('vp-form'),CARS={},FX=0;try{CARS=JSON.parse(document.getElementById('vp-cars').textContent)}catch(_){}
 var steps=$$('.vp-step',f),pr=$$('.vp-prog li'),cur=1,er=f.querySelector('.vp-err'),bPrev=f.querySelector('.vp-prev'),bNext=f.querySelector('.vp-next'),bSend=f.querySelector('.vp-send');
@@ -271,7 +282,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 $$('[data-rv]').forEach(function(el){io.observe(el)});
 $$('.vp-perk,.vp-tile,.vp-steps li,.vp-car').forEach(function(el,k){el.setAttribute('data-rv','');el.style.setProperty('--d',(k%3)*90+'ms');io.observe(el)});
 var hb=R.querySelector('.vp-hero-bg'),hi=R.querySelector('.vp-hero-in'),tk=0;
-function px(){tk=0;var y=scrollY,h=hero.offsetHeight,wide=innerWidth>700;if(y<h+200){var r=Math.min(1,y/h);hb.style.transform='translate3d(0,'+(y*(wide?.38:.22)).toFixed(1)+'px,0) scale('+(1.06+r*.06).toFixed(3)+')';if(wide){hi.style.transform='translate3d(0,'+(y*.18).toFixed(1)+'px,0)';hi.style.opacity=Math.max(0,1-r*1.5).toFixed(3)}}
+function px(){tk=0;var y=scrollY,h=hero.offsetHeight,wide=innerWidth>700;if(!wide){hb.style.transform='';return}if(y<h+200){var r=Math.min(1,y/h);hb.style.transform='translate3d(0,'+(y*(wide?.38:.22)).toFixed(1)+'px,0) scale('+(1.06+r*.06).toFixed(3)+')';if(wide){hi.style.transform='translate3d(0,'+(y*.18).toFixed(1)+'px,0)';hi.style.opacity=Math.max(0,1-r*1.5).toFixed(3)}}
 }
 addEventListener('scroll',function(){if(!tk)tk=requestAnimationFrame(px)},{passive:true});addEventListener('resize',px);px()}
 })();</script>`;
@@ -711,6 +722,156 @@ html.vp-anim #ca-vipp .vp-perk[data-rv].vp-in:hover{transform:translateY(-3px)}
 @media(max-width:600px){#ca-vipp .vp-wrap{padding:0 18px}#ca-vipp .vp-perks-in{grid-template-columns:1fr 1fr;gap:10px}#ca-vipp .vp-perk{padding:18px 16px;font-size:13px}#ca-vipp .vp-perk .vp-ic{width:44px;height:44px;margin-bottom:8px}#ca-vipp .vp-perk b{font-size:15.5px}#ca-vipp .vp-steps li{display:grid;grid-template-columns:auto 1fr;column-gap:16px;padding:20px 18px}#ca-vipp .vp-steps .vp-num{grid-row:1/3;font-size:32px;margin:0}#ca-vipp .vp-cb>.vp-more{flex-wrap:wrap;row-gap:4px}#ca-vipp .vp-huf{flex:0 0 100%}#ca-vipp .vp-fleet{flex-direction:column;padding:26px}#ca-vipp .vp-btn{width:100%;justify-content:center}#ca-vipp .vp-logo{letter-spacing:.2em;font-size:12.5px}}
 </style>`;
 
+
+const VIP_MONO = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap">
+<style id="ca-dark-hu-vip-mono">
+/* VIP: fekete-fehér, letisztult stílus (arany helyett). Csak a /vip/ oldal. */
+html[data-vip]{--vp-bg:#FFFFFF;--vp-ink:#0B0B0B;--vp-mut:#6E6E6E;--vp-line:rgba(0,0,0,.13);--vp-card:#FFFFFF;--vp-soft:#F6F6F6;--vp-btn:#0B0B0B;--vp-btn-t:#FFFFFF}
+html[data-vip].ca-dark{--vp-bg:#000000;--vp-ink:#FFFFFF;--vp-mut:#9C9C9C;--vp-line:rgba(255,255,255,.16);--vp-card:#000000;--vp-soft:#0E0E0E;--vp-btn:#FFFFFF;--vp-btn-t:#000000}
+html #ca-vipp{--hf:'Montserrat',system-ui,sans-serif}
+/* szövegek */
+html #ca-vipp :is(h1,h2,.vp-lg,.vp-car h3,.vp-logo,.vp-sum-car,.vp-ok h3,.vp-tile b,.vp-steps b,.vp-perk b){font-family:var(--hf)!important}
+html #ca-vipp h2{font-size:clamp(24px,2.6vw,32px)!important;font-weight:400!important;letter-spacing:.14em!important;text-transform:uppercase;line-height:1.25!important}
+html #ca-vipp h2:after{content:"";display:block;width:44px;height:1.5px;background:var(--vp-ink);margin:18px 0 0}
+html #ca-vipp .vp-ey{font-family:var(--hf);color:var(--vp-mut)!important;font-weight:500;letter-spacing:.32em;font-size:11.5px}
+html #ca-vipp p{font-size:15.5px}
+html #ca-vipp .vp-g,html #ca-vipp .vp-hero .vp-g,html:not(.ca-dark) #ca-vipp .vp-hero .vp-g{background:none!important;background-image:none!important;color:inherit!important;-webkit-text-fill-color:currentColor!important}
+/* középre zárt szakaszfejek */
+html #ca-vipp :is(#alkalmak,.vp-how,#flotta)>.vp-wrap>:is(.vp-ey,h2,p),html #ca-vipp .vp-book-head{text-align:center;margin-left:auto;margin-right:auto}
+html #ca-vipp :is(#alkalmak,.vp-how,#flotta)>.vp-wrap>p,html #ca-vipp .vp-book-head p{max-width:640px}
+html #ca-vipp :is(#alkalmak,.vp-how,#flotta,#foglalas) h2:after{margin:18px auto 0}
+html #ca-vipp :is(#alkalmak,.vp-how,#flotta)>.vp-wrap>.vp-ey,html #ca-vipp .vp-book-head .vp-ey{display:block}
+/* fejléc */
+html #ca-vipp .vp-top{background:color-mix(in srgb,var(--vp-bg) 90%,transparent)}
+html #ca-vipp .vp-logo{letter-spacing:.42em;font-weight:500;font-size:13.5px;color:var(--vp-ink)}
+html #ca-vipp .vp-back{color:var(--vp-ink)!important;font-weight:500;letter-spacing:.08em;font-size:13px}
+html #ca-vipp .vp-nav a{font-family:var(--hf);text-transform:uppercase;letter-spacing:.16em;font-size:11.5px}
+/* gombok: szögletes, egyszínű */
+html #ca-vipp .vp-btn{border-radius:0!important;height:50px;padding:0 30px;font-family:var(--hf);font-size:12px!important;font-weight:500!important;letter-spacing:.2em!important;text-transform:uppercase;box-shadow:none!important}
+html #ca-vipp .vp-btn:hover{transform:none;opacity:.86}
+html #ca-vipp .vp-gold{background:var(--vp-btn)!important;color:var(--vp-btn-t)!important;border:1px solid var(--vp-btn)!important}
+html #ca-vipp .vp-ghost{background:transparent!important;color:var(--vp-ink)!important;border:1px solid var(--vp-ink)!important}
+/* hero */
+html #ca-vipp .vp-hero h1{font-family:var(--hf)!important;font-weight:300!important;text-transform:uppercase;letter-spacing:.1em!important;font-size:clamp(30px,3.6vw,52px)!important;text-shadow:0 2px 30px rgba(0,0,0,.5)}
+html #ca-vipp .vp-hero .vp-ey{color:rgba(255,255,255,.82)!important}
+html #ca-vipp .vp-hero .vp-gold{background:#fff!important;color:#000!important;border-color:#fff!important}
+html #ca-vipp .vp-hero .vp-ghost{color:#fff!important;border-color:rgba(255,255,255,.7)!important;background:transparent!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+@media(max-width:700px){html #ca-vipp .vp-hero h1{color:var(--vp-ink)!important;text-shadow:none;font-size:30px!important}html #ca-vipp .vp-hero .vp-ey{color:var(--vp-mut)!important}html #ca-vipp .vp-hero .vp-gold{background:var(--vp-btn)!important;color:var(--vp-btn-t)!important;border-color:var(--vp-btn)!important}html #ca-vipp .vp-hero .vp-ghost{color:var(--vp-ink)!important;border-color:var(--vp-ink)!important}}
+/* előnyök: kártya nélkül, középre */
+html #ca-vipp .vp-perks{padding:56px 0 10px}
+html #ca-vipp .vp-perk{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;align-items:center;text-align:center;padding:10px 12px!important}
+html #ca-vipp .vp-perk:hover{transform:none!important;box-shadow:none!important}
+html #ca-vipp .vp-perk .vp-ic{background:none!important;border:0!important;color:var(--vp-ink)!important;width:auto!important;height:auto!important;margin-bottom:12px!important}
+html #ca-vipp .vp-perk .vp-ic svg{width:28px;height:28px;stroke-width:1.3}
+html #ca-vipp .vp-perk b{text-transform:uppercase;letter-spacing:.14em;font-size:13px!important;font-weight:500}
+html #ca-vipp .vp-perks-in{border-top:1px solid var(--vp-line);border-bottom:1px solid var(--vp-line);padding:30px 0;gap:0}
+html #ca-vipp .vp-perks-in>.vp-perk+.vp-perk{border-left:1px solid var(--vp-line)!important}
+/* alkalmak: egyszínű */
+html #ca-vipp .vp-tile,html.ca-dark #ca-vipp .vp-tile{background:var(--vp-card)!important;border:1px solid var(--vp-line);border-radius:0!important;box-shadow:none!important;padding:30px 28px 26px}
+html #ca-vipp .vp-tile:hover{transform:none!important;border-color:var(--vp-ink)!important;box-shadow:none!important}
+html #ca-vipp .vp-oi{background:none!important;box-shadow:none!important;color:var(--vp-ink)!important;width:auto!important;height:auto!important;border-radius:0!important;justify-content:flex-start;margin-bottom:18px!important}
+html #ca-vipp .vp-oi svg{width:30px;height:30px;stroke-width:1.3}
+html #ca-vipp .vp-tile b{text-transform:uppercase;letter-spacing:.14em;font-size:15px!important;font-weight:500!important}
+html #ca-vipp .vp-tile small{font-weight:400;color:var(--vp-mut)}
+html #ca-vipp .vp-tile em{color:var(--vp-ink)!important;filter:none!important;font-family:var(--hf);text-transform:uppercase;letter-spacing:.18em;font-size:11px!important;font-weight:500!important}
+/* lépések */
+html #ca-vipp .vp-steps li{background:none!important;border:0!important;border-top:1px solid var(--vp-ink)!important;border-radius:0!important;box-shadow:none!important;padding:26px 4px 0!important}
+html #ca-vipp .vp-steps li:after{display:none}
+html #ca-vipp .vp-num{background:none!important;-webkit-text-fill-color:var(--vp-ink);color:var(--vp-ink)!important;font-family:var(--hf);font-weight:300!important;font-size:34px!important}
+html #ca-vipp .vp-steps b{text-transform:uppercase;letter-spacing:.12em;font-size:14px!important;font-weight:500}
+/* szűrők: szöveges fülek aláhúzással */
+html #ca-vipp .vp-filters{background:none!important;border:0!important;border-radius:0!important;border-top:1px solid var(--vp-line)!important;border-bottom:1px solid var(--vp-line)!important;padding:16px 0!important;justify-content:center}
+html #ca-vipp .vp-f button{border:0!important;border-radius:0!important;background:none!important;color:var(--vp-mut)!important;height:36px;padding:0 12px;font-family:var(--hf);text-transform:uppercase;letter-spacing:.16em;font-size:11.5px!important;font-weight:500!important;box-shadow:none!important}
+html #ca-vipp .vp-f[data-k=cat] button[aria-pressed=true]{color:var(--vp-ink)!important;box-shadow:inset 0 -1.5px 0 var(--vp-ink)!important}
+html #ca-vipp .vp-fb{border-left:1px solid var(--vp-line)}
+html #ca-vipp .vp-fb img{filter:grayscale(1);opacity:.55;transition:filter .2s,opacity .2s}
+html #ca-vipp .vp-fb button:hover img,html #ca-vipp .vp-fb button[aria-pressed=true] img{filter:none;opacity:1}
+html #ca-vipp .vp-fb button[aria-pressed=true]{box-shadow:inset 0 -1.5px 0 var(--vp-ink)!important}
+html #ca-vipp .vp-fmeta{font-family:var(--hf);text-transform:uppercase;letter-spacing:.14em;font-size:11px}
+html #ca-vipp :is(.vp-reset,.vp-reset2,.vp-reset3){color:var(--vp-ink)!important}
+html #ca-vipp .vp-recnote{text-align:center}
+/* autókártyák a Romans mintájára */
+html #ca-vipp .vp-cars{column-gap:40px;row-gap:64px;margin-top:44px}
+html #ca-vipp .vp-car{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible}
+html #ca-vipp .vp-car:hover{transform:none!important;box-shadow:none!important}
+html #ca-vipp .vp-car>h3{font-family:var(--hf)!important;text-transform:uppercase;letter-spacing:.12em;font-size:18px!important;font-weight:400!important;margin:0 0 16px!important;color:var(--vp-ink)}
+html #ca-vipp .vp-media{position:relative;overflow:hidden}
+html #ca-vipp .vp-gal{background:var(--vp-soft)}
+html #ca-vipp .vp-av{border-radius:0!important;left:0;top:0;padding:8px 12px;background:rgba(0,0,0,.72)!important;font-family:var(--hf);text-transform:uppercase;letter-spacing:.16em;font-size:10.5px;font-weight:500;gap:0}
+html #ca-vipp .vp-zoom{border-radius:0;right:0;top:0;width:40px;height:40px;background:rgba(0,0,0,.6)}
+html #ca-vipp .vp-dots{margin-top:-26px}
+html #ca-vipp .vp-nophoto span{background:none;-webkit-text-fill-color:#fff;color:#fff;font-family:var(--hf);font-weight:300}
+html #ca-vipp .vp-nophoto{background:#111}
+html #ca-vipp .vp-cb{display:block!important;padding:0!important}
+html #ca-vipp .vp-prrow{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0 4px}
+html #ca-vipp .vp-prrow span,html #ca-vipp .vp-rows dt{font-family:var(--hf);text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:500;color:var(--vp-ink)}
+html #ca-vipp .vp-prrow b{font-family:var(--hf);font-size:22px;font-weight:500;letter-spacing:.02em;color:var(--vp-ink)}
+html #ca-vipp .vp-prsub{display:flex;justify-content:flex-end;gap:10px;font-size:12px;color:var(--vp-mut);margin-bottom:12px}
+html #ca-vipp .vp-huf{color:var(--vp-mut);font-weight:400}
+html #ca-vipp .vp-rows{margin:0 0 22px;border-bottom:1px solid var(--vp-ink)}
+html #ca-vipp .vp-rows div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px 0;border-top:1px solid var(--vp-line)}
+html #ca-vipp .vp-rows dd{margin:0;font-size:14px;color:var(--vp-mut);text-align:right}
+html #ca-vipp .vp-car .vp-ask{display:flex!important;width:max-content!important;margin:0 auto;justify-content:center}
+/* foglalás */
+html #ca-vipp .vp-booksec{background:none!important}
+html #ca-vipp :is(.vp-book-main,.vp-sum-card,.vp-trust,.vp-direct a,.vp-pc,.vp-seg,.vp-seg span,.vp-occp span,.vp-sum-price,.vp-fl :is(input,select,textarea),.vp-pc-img,.vp-err){border-radius:0!important;box-shadow:none!important}
+html #ca-vipp .vp-book-main{border:1px solid var(--vp-line)!important;background:var(--vp-card)!important}
+html #ca-vipp .vp-prog li{border-top-color:var(--vp-line)!important;font-family:var(--hf);text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:500}
+html #ca-vipp .vp-prog li.on,html #ca-vipp .vp-prog li.done{border-top-color:var(--vp-ink)!important;color:var(--vp-ink)}
+html #ca-vipp .vp-prog i{border-radius:0;border-color:var(--vp-line)}
+html #ca-vipp .vp-prog li.on i{background:var(--vp-btn)!important;color:var(--vp-btn-t)!important}
+html #ca-vipp .vp-prog li.done i{background:none!important;border-color:var(--vp-ink)!important;color:var(--vp-ink)!important}
+html #ca-vipp .vp-lg{font-family:var(--hf)!important;text-transform:uppercase;letter-spacing:.12em;font-size:16px!important;font-weight:500!important}
+html #ca-vipp .vp-pc,html.ca-dark #ca-vipp .vp-pc{background:var(--vp-card)!important}
+html #ca-vipp .vp-pc:hover{transform:none;border-color:var(--vp-ink)}
+html #ca-vipp .vp-pc:has(input:checked){border-color:var(--vp-ink)!important;box-shadow:inset 0 0 0 1px var(--vp-ink)!important}
+html #ca-vipp .vp-pc:has(input:checked):after{border-radius:0;background-color:var(--vp-btn);box-shadow:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
+html:not(.ca-dark) #ca-vipp .vp-pc:has(input:checked):after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
+html.ca-dark #ca-vipp .vp-pc:has(input:checked):after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
+html #ca-vipp .vp-pc-img{background:var(--vp-soft)!important;color:var(--vp-ink)!important}
+html #ca-vipp .vp-pc b{font-family:var(--hf);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11.5px}
+html #ca-vipp .vp-seg,html.ca-dark #ca-vipp .vp-seg{background:none!important;padding:0;gap:0}
+html #ca-vipp .vp-seg label+label span{border-left:1px solid var(--vp-line)}
+html #ca-vipp .vp-seg span{font-family:var(--hf);text-transform:uppercase;letter-spacing:.1em;font-size:11.5px!important;font-weight:500!important}
+html #ca-vipp .vp-seg input:checked+span,html.ca-dark #ca-vipp .vp-seg input:checked+span{background:var(--vp-btn)!important;color:var(--vp-btn-t)!important;box-shadow:none!important}
+html #ca-vipp .vp-occp span,html.ca-dark #ca-vipp .vp-occp span{background:var(--vp-card)!important;font-family:var(--hf);text-transform:uppercase;letter-spacing:.08em;font-size:11.5px;font-weight:500}
+html #ca-vipp .vp-occp svg{background:none!important;color:var(--vp-ink)!important;padding:0;width:26px;height:26px;stroke-width:1.4}
+html #ca-vipp .vp-occp input:checked+span{border-color:var(--vp-ink)!important;box-shadow:inset 0 0 0 1px var(--vp-ink)!important;background:var(--vp-card)!important}
+html #ca-vipp .vp-fl{font-family:var(--hf);text-transform:uppercase;letter-spacing:.14em;font-size:10.5px!important;font-weight:500!important;color:var(--vp-ink)!important}
+html #ca-vipp .vp-fl small{text-transform:none;letter-spacing:0;color:var(--vp-mut)}
+html #ca-vipp .vp-fl :is(input,select,textarea),html.ca-dark #ca-vipp .vp-fl :is(input,select,textarea){background:var(--vp-card)!important;border:1px solid var(--vp-line)!important;color:var(--vp-ink)!important;text-transform:none;letter-spacing:0;font-family:inherit}
+html #ca-vipp .vp-fl :is(input,select,textarea):focus{border-color:var(--vp-ink)!important;box-shadow:inset 0 0 0 1px var(--vp-ink)!important}
+html #ca-vipp .vp-ck input{accent-color:var(--vp-ink)}html #ca-vipp .vp-ck a{color:var(--vp-ink)}
+html #ca-vipp .vp-nav2 .vp-btn{height:52px}
+html #ca-vipp .vp-sum-card{border:1px solid var(--vp-line)!important;background:var(--vp-card)!important}
+html #ca-vipp .vp-sum-img{background-color:var(--vp-soft)!important;color:var(--vp-ink)}
+html #ca-vipp .vp-sum-car{text-transform:uppercase;letter-spacing:.1em;font-size:16px!important;font-weight:500!important}
+html #ca-vipp .vp-sum dt{font-family:var(--hf);text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;color:var(--vp-ink);align-self:center}
+html #ca-vipp .vp-sum dd{font-weight:400!important;color:var(--vp-mut)!important}
+html #ca-vipp .vp-sum-price{background:none!important;border:0!important;border-top:1px solid var(--vp-ink)!important;border-bottom:1px solid var(--vp-ink)!important;padding:16px 0!important;margin-top:12px}
+html #ca-vipp .vp-sum-price span{font-family:var(--hf);color:var(--vp-ink)!important;letter-spacing:.18em!important;font-size:10.5px!important;font-weight:500}
+html #ca-vipp .vp-sum-price b{font-family:var(--hf);font-weight:400!important;font-size:28px!important;color:var(--vp-ink)}
+html #ca-vipp .vp-sum-inc svg,html #ca-vipp .vp-trust>div{color:var(--vp-ink)!important}
+html #ca-vipp .vp-trust{border:1px solid var(--vp-line)!important;background:var(--vp-card)!important}
+html #ca-vipp .vp-trust b,html #ca-vipp .vp-direct b{font-family:var(--hf);text-transform:uppercase;letter-spacing:.1em;font-size:12px!important;font-weight:500}
+html #ca-vipp .vp-direct a{background:var(--vp-card)!important;color:var(--vp-ink)!important}
+html #ca-vipp .vp-direct a:hover{transform:none;border-color:var(--vp-ink)}
+html #ca-vipp .vp-direct-t{font-family:var(--hf);text-transform:uppercase;letter-spacing:.14em;font-size:10.5px!important;color:var(--vp-ink)!important}
+html #ca-vipp .vp-ok-ic{border-radius:0!important;background:var(--vp-btn)!important;color:var(--vp-btn-t)!important;box-shadow:none!important}
+html #ca-vipp .vp-ok h3{font-family:var(--hf)!important;text-transform:uppercase;letter-spacing:.12em;font-weight:400!important;font-size:22px!important}
+html #ca-vipp .vp-tl li:before{border-radius:0;border-color:var(--vp-ink);width:10px;height:10px}
+html #ca-vipp .vp-tl li.done:before{background:var(--vp-ink)}
+html #ca-vipp .vp-tl li:not(:last-child):after{background:var(--vp-line)}
+html #ca-vipp .vp-err{background:none!important;border:1px solid var(--vp-ink)!important;color:var(--vp-ink)!important}
+/* lebegő sáv */
+html #ca-vipp .vp-bar{border-radius:0;padding:0;gap:0;box-shadow:0 10px 30px -12px rgba(0,0,0,.4);background:var(--vp-bg)}
+html #ca-vipp .vp-bar-ic{border-radius:0;border:0;border-left:1px solid var(--vp-line);color:var(--vp-ink)!important;height:50px;width:52px}
+/* lábléc */
+html #ca-vipp .vp-foot{text-align:center;font-family:var(--hf);text-transform:uppercase;letter-spacing:.16em;font-size:10.5px}
+@media(max-width:900px){html #ca-vipp .vp-perks-in{grid-template-columns:1fr 1fr}html #ca-vipp .vp-perks-in>.vp-perk:nth-child(3){border-left:0!important}html #ca-vipp .vp-perks-in>.vp-perk:nth-child(n+3){border-top:1px solid var(--vp-line)!important;padding-top:24px!important}html #ca-vipp .vp-fb{border-left:0}}
+@media(max-width:640px){html #ca-vipp .vp-back{white-space:nowrap;font-size:12px}html #ca-vipp .vp-logo{letter-spacing:.3em;font-size:12px}html #ca-vipp .vp-tile em{display:none}html #ca-vipp .vp-tile{padding:22px 16px 20px}html #ca-vipp .vp-tile b{font-size:13px!important;letter-spacing:.1em}html #ca-vipp .vp-cars{row-gap:52px}html #ca-vipp .vp-car .vp-ask{width:100%!important}html #ca-vipp .vp-filters{text-align:center}html #ca-vipp .vp-f{justify-content:flex-start}}
+</style>`;
+
 function make(tpl, slug, title, desc, main, css, extraHtmlAttr) {
   let t = tpl
     .replace(/<link rel="canonical"[^>]*>\s*/g, '')
@@ -739,7 +900,7 @@ function run() {
   make(tpl, 'cegeknek', 'Cégeknek — Benchmark, rendezvények, céges bérlet | CarAdvance',
     'Benchmark: bármely autó beszerzése tesztre, összehasonlításra és rendezvényekre, bérelve vagy megvásárolva. Autós céges rendezvények, céges tartós bérlet.', CORP, CORP_CSS);
   make(tpl, 'vip', 'VIP luxusautó-bérlés — CarAdvance',
-    'Privát luxusautó-bérlés: sport- és luxusautók napi bérlésre, személyes kapcsolattartóval és egyedi ajánlattal.', VIP, VIP_CSS, 'data-vip="1"');
+    'Privát luxusautó-bérlés: sport- és luxusautók napi bérlésre, személyes kapcsolattartóval és egyedi ajánlattal.', VIP, VIP_CSS + VIP_MONO, 'data-vip="1"');
   return 'kész: /cegeknek/, /vip/ (sablon: ' + path.relative(DIST, tplF) + ')';
 }
 try { console.log('[hu-pages] ' + run()); } catch (e) { console.log('[hu-pages] hiba: ' + (e && e.message || e)); }
