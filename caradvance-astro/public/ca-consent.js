@@ -138,7 +138,14 @@
       'Reklama', '— měření a personalizace reklamy. Google Ads, Meta.', 'Uložit']
   };
 
-  function lang() {
+  /* /sales (Sales Desk): the banner follows the language picked on the page; the policy link stays the host's own */
+  function salesLang() {
+    if (!/^\/sales(\/|$)/.test(String(location.pathname || ''))) return null;
+    var hl = String(document.documentElement.getAttribute('lang') || '').slice(0, 2).toLowerCase();
+    return T[hl] ? hl : null;
+  }
+  function lang() { return salesLang() || baseLang(); }
+  function baseLang() {
     var h = String(location.hostname || '');
     var hl = String(document.documentElement.getAttribute('lang') || '').slice(0, 2).toLowerCase();
     if (/(^|\.)caradvance\.eu$/.test(h)) return /^(de|fr|it|es)$/.test(hl) ? hl : 'de';
@@ -221,7 +228,7 @@
       document.head.appendChild(style);
     }
     var l = lang(), t = T[l] || T.hu;
-    var pol = policyUrl(l);
+    var pol = policyUrl(salesLang() ? baseLang() : l);
     var st = existing || { analytics: true, marketing: true };
 
     box = el('div', { class: 'cacb', role: 'dialog', 'aria-live': 'polite', 'aria-label': t[0], lang: l === 'cs' ? 'cs' : l });
@@ -280,6 +287,8 @@
     var saved = read();
     if (saved) { apply(saved, false); return; }
     render(null);
+    if (salesLang() && window.MutationObserver) new MutationObserver(function () { if (box && !read()) render(null); })
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
