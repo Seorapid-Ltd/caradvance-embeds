@@ -209,17 +209,19 @@ lb.addEventListener('click',function(e){var t=e.target.closest('button');if(t&&t
 document.addEventListener('keydown',function(e){if(lb.hidden)return;if(e.key==='Escape')lbClose();if(e.key==='ArrowLeft')lbGo(-1);if(e.key==='ArrowRight')lbGo(1)});
 $$('.vp-car').forEach(function(c){var g=c.querySelector('.vp-gal'),z=c.querySelector('.vp-zoom');if(!g||!z)return;var o=function(){lbOpen(c,Math.round(g.scrollLeft/g.clientWidth))};z.addEventListener('click',o);g.addEventListener('click',function(e){if(e.target.tagName==='IMG')o()});g.addEventListener('keydown',function(e){if(e.key==='Enter')o()})});
 /* szűrők: kategória és márka együtt */
-var F={cat:'',brand:''},cnt=R.querySelector('.vp-fcount');
-function filt(){var n=0;$$('.vp-car').forEach(function(c){var ok=(!F.cat||c.dataset.cat===F.cat)&&(!F.brand||c.dataset.brand===F.brand);c.hidden=!ok;if(ok)n++});cnt.textContent=n+' autó';R.querySelector('.vp-empty').hidden=n>0}
-$$('.vp-f button').forEach(function(b){b.addEventListener('click',function(){var k=b.parentNode.dataset.k,v=b.dataset.v;if(k==='brand'&&F.brand===v)v='';F[k]=v;$$('button',b.parentNode).forEach(function(x){x.setAttribute('aria-pressed',x.dataset.v===v?'true':'false')});filt()})});
-R.querySelector('.vp-reset').addEventListener('click',function(){F.cat='';F.brand='';$$('.vp-f button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.v===''?'true':'false')});filt()});
+var F={cat:'',brand:'',rec:null},cnt=R.querySelector('.vp-fcount'),rn=R.querySelector('.vp-recnote');
+function filt(){var n=0;$$('.vp-car').forEach(function(c){var ok=(!F.cat||c.dataset.cat===F.cat)&&(!F.brand||c.dataset.brand===F.brand)&&(!F.rec||F.rec.indexOf(c.querySelector('h3').textContent)>-1);c.hidden=!ok;if(ok)n++});cnt.textContent=n+' autó';R.querySelector('.vp-empty').hidden=n>0}
+$$('.vp-f button').forEach(function(b){b.addEventListener('click',function(){var k=b.parentNode.dataset.k,v=b.dataset.v;F.rec=null;rn.hidden=true;if(k==='brand'&&F.brand===v)v='';F[k]=v;$$('button',b.parentNode).forEach(function(x){x.setAttribute('aria-pressed',x.dataset.v===v?'true':'false')});filt()})});
+function resetAll(){F.cat='';F.brand='';F.rec=null;rn.hidden=true;$$('.vp-f button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.v===''?'true':'false')});filt()}
+R.querySelector('.vp-reset').addEventListener('click',resetAll);R.querySelector('.vp-reset3').addEventListener('click',resetAll);
+$$('.vp-tile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();resetAll();F.rec=a.dataset.cars.split('|');rn.firstChild.textContent=a.dataset.occ+' — ajánlott autók:';rn.hidden=false;filt();try{f.occ.value=a.dataset.occ}catch(_){}document.getElementById('flotta').scrollIntoView({behavior:'smooth'})})});
 /* forint: napi EUR/HUF árfolyam, tájékoztató jelleggel */
 fetch('https://open.er-api.com/v6/latest/EUR').then(function(r){return r.json()}).then(function(d){var k=d&&d.rates&&d.rates.HUF;if(!k)return;$$('.vp-huf').forEach(function(s){s.textContent='≈ '+(Math.round(s.dataset.eur*k/1000)*1000).toLocaleString('hu-HU')+' Ft / nap';s.hidden=false});var r=R.querySelector('.vp-rate');if(r){r.textContent='Forintban a napi árfolyammal (1 € ≈ '+k.toFixed(1).replace('.',',')+' Ft), tájékoztató jelleggel.';r.hidden=false}}).catch(function(){});
 /* foglalási űrlap */
 var f=document.getElementById('vp-form'),sel=f.car,occ=f.occ;
 function pick(car,o){if(car)sel.value=car;if(o)occ.value=o;document.getElementById('foglalas').scrollIntoView({behavior:'smooth'});setTimeout(function(){f.n.focus({preventScroll:true})},700)}
 $$('.vp-ask').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();pick(a.dataset.car,'')})});
-$$('.vp-tile').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();pick('',a.dataset.occ)})});
+
 var td=new Date(),iso=function(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)};f.from.min=iso(td);f.to.min=iso(td);
 f.from.addEventListener('change',function(){f.to.min=f.from.value||iso(td);if(f.to.value&&f.to.value<f.from.value)f.to.value=f.from.value});
 f.addEventListener('submit',function(e){e.preventDefault();var er=f.querySelector('.vp-err'),btn=f.querySelector('button[type=submit]');er.hidden=true;if(!f.checkValidity()){f.reportValidity();return}
@@ -233,14 +235,22 @@ function bs(){var y=hero.getBoundingClientRect().bottom<60,b=bk.getBoundingClien
 addEventListener('scroll',bs,{passive:true});addEventListener('resize',bs);bs();
 })();</script>`;
 
-// Alkalmak fotós csempéi — ideiglenesen a saját flotta fotóival, amíg a stock fotókat jóvá nem hagyják
-const OCC = [
-  ['Esküvő', 'Elegáns érkezés a nagy napon', IMG('5541', 'Bentley_Continental_GTC_schwarz_front.jpg', 828)],
-  ['Hétvége', 'Nyitott tető, hosszú utak', IMG('5628', 'IMG_4179.jpg', 828)],
-  ['Születésnap', 'Ajándék, amire évekig emlékeznek', IMG('5706', 'IMG_5052.jpg', 828)],
-  ['Céges rendezvény', 'Partnerek és vendégek fogadása', IMG('5589', 'S350_M-CC8476_01.jpg', 828)],
-  ['Forgatás, fotózás', 'Film, reklám, klip, fotózás', IMG('5569', 'IMG_9021.jpg', 828)],
-  ['Üzleti út', 'Kényelem és tekintély', IMG('1110', '1711423-2026.01.19.14.15.04_api_v1_mo-prod_images_0e_0ef4f89a-377a-4547-b32d-750a72eac7e8', 828)],
+// Alkalmak: színes ikonos kártyák kép nélkül — a fotók szerepe a flottáé. Kattintásra a flotta az ajánlott autókra szűr.
+const OI = {
+  wed: '<circle cx="9" cy="14" r="5.5"/><circle cx="15" cy="14" r="5.5"/><path d="M10.5 3.5h3l1.5 2-3 2.5-3-2.5z"/>',
+  sun: '<path d="M3 18h18"/><path d="M6.5 18a5.5 5.5 0 0 1 11 0"/><path d="M12 6v3M4.9 9.9l2.1 2.1M19.1 9.9 17 12M7 21h10"/>',
+  gift: '<rect x="3.5" y="9" width="17" height="11.5" rx="2"/><path d="M2.5 9h19v-.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 8.5z"/><path d="M12 7v13.5"/><path d="M12 7C10.5 4 7 3.5 7 5.5S10 7 12 7zM12 7c1.5-3 5-3.5 5-1.5S14 7 12 7z"/>',
+  glass: '<path d="M7 3h10l-1 7a4 4 0 0 1-8 0z"/><path d="M12 14v6M8.5 21h7"/><path d="M7.4 7h9.2"/>',
+  cam: '<rect x="2.5" y="7" width="13" height="11" rx="2"/><path d="m15.5 11 6-3.5v10l-6-3.5"/><circle cx="6" cy="4.5" r="1.8"/><circle cx="11" cy="4.5" r="1.8"/>',
+  case: '<rect x="3" y="7.5" width="18" height="12.5" rx="2.2"/><path d="M9 7.5V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5v2"/><path d="M3 12.5h18"/><path d="M11 12.5h2v2h-2z"/>',
+};
+const OCC = [ // [alkalom, leírás, ikon, színárnyalat (RGB), ajánlott autók]
+  ['Esküvő', 'Elegáns érkezés a nagy napon', 'wed', '201,162,75', ['Bentley Continental GTC', 'Mercedes S 350']],
+  ['Hétvége', 'Nyitott tető, hosszú utak', 'sun', '240,138,36', ['Ferrari Roma Spider', 'Ferrari F8 Spider', 'Porsche 911 Targa 4S']],
+  ['Születésnap', 'Ajándék, amire évekig emlékeznek', 'gift', '139,92,246', ['Ferrari 296 GTS', 'Ferrari SF90 Spider']],
+  ['Céges rendezvény', 'Partnerek és vendégek fogadása', 'glass', '16,185,129', ['Mercedes S 350', 'BMW X6 M', 'Audi SQ7']],
+  ['Forgatás, fotózás', 'Film, reklám, klip, fotózás', 'cam', '245,158,11', ['Ferrari 812 GTS Superfast', 'Mercedes-AMG GT R', 'Ferrari Amalfi']],
+  ['Üzleti út', 'Kényelem és tekintély', 'case', '156,163,175', ['Mercedes S 350', 'BMW M3 Competition', 'Audi SQ7']],
 ];
 const CATS = ['Sportautó', 'Cabrio', 'SUV', 'Limuzin'];
 // márkalogók (a megküldött logókból, átlátszó háttérrel); az egyszínű Bentley-nek külön világos/sötét változat
@@ -255,7 +265,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
   <a class="vp-back" href="/">← caradvance.hu</a>
 </div></header>
 <section class="vp-hero">
-  <div class="vp-hero-bg" role="img" aria-label="Lamborghini Huracán és Aventador"></div>
+  <div class="vp-hero-bg" role="img" aria-label="Fekete Porsche 911 GT3 RS a garázsban"></div>
   <div class="vp-wrap vp-hero-in">
     <div class="vp-ey">Privát luxusautó-bérlés</div>
     <h1>Egy nap.<br><span class="vp-g">Egy élmény.</span></h1>
@@ -269,7 +279,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
 </div></section>
 <section class="vp-sec" id="alkalmak"><div class="vp-wrap">
   <div class="vp-ey">Alkalmak</div><h2>Minden különleges naphoz a megfelelő autó</h2>
-  <div class="vp-tiles">${OCC.map(([t, d, im]) => `<a class="vp-tile" href="#foglalas" data-occ="${t}"><img src="${im}" alt="" loading="lazy" decoding="async"><span><b>${t}</b><i>${d}</i></span></a>`).join('')}</div>
+  <div class="vp-tiles">${OCC.map(([t, d, ic, rgb, cars]) => `<a class="vp-tile" href="#flotta" data-occ="${t}" data-cars="${cars.join('|')}" style="--oc:${rgb}"><span class="vp-oi">${svg(OI[ic], 26)}</span><b>${t}</b><i>${d}</i><small>Ajánlott: ${cars.join(' · ')}</small><em>Mutasd az autókat ${ARR}</em></a>`).join('')}</div>
 </div></section>
 <section class="vp-sec vp-how"><div class="vp-wrap">
   <div class="vp-ey">Hogyan működik</div><h2>Három lépés a kulcsig</h2>
@@ -288,6 +298,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
     <div class="vp-f vp-fb" data-k="brand" role="group" aria-label="Márka">${BRANDS.map(([b, l, ld]) => `<button type="button" data-v="${b}" aria-pressed="false" title="${b}">${l ? `<img class="vp-bl" src="${l}" alt="${b}" loading="lazy">${ld ? `<img class="vp-bld" src="${ld}" alt="" loading="lazy">` : ''}` : `<span class="vp-bt">${b}</span>`}</button>`).join('')}</div>
     <div class="vp-fmeta"><span class="vp-fcount">${FLEET.length} autó</span><button type="button" class="vp-reset">Szűrők törlése</button></div>
   </div>
+  <p class="vp-recnote" hidden><span></span> <button type="button" class="vp-reset3">Összes autó</button></p>
   <div class="vp-cars">
   ${FLEET_HTML}
   </div>
@@ -345,7 +356,10 @@ html.ca-dark #ca-vipp .vp-g{background-image:linear-gradient(135deg,#F3DFA2,#C9A
 #ca-vipp .vp-nav a:hover,#ca-vipp .vp-back:hover{color:var(--vp-ink)}
 #ca-vipp .vp-back{color:#B08A35;font-weight:700}
 #ca-vipp .vp-hero{position:relative;overflow:hidden;min-height:max(min(100vh - 72px,900px),620px);display:flex;align-items:flex-end;padding:120px 0 44px;background:#0B0B0E}
-#ca-vipp .vp-hero-bg{position:absolute;inset:0;background:url('/vip-hero-lamborghini-hq.jpg') 50% 22%/cover no-repeat}
+/* fejléckép: lucas clarysse, Unsplash (ingyenes licenc). Az Unsplash képszerveréről nagy felbontásban, alatta a helyi másolat tartaléknak */
+#ca-vipp .vp-hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1694026006855-6f4f0cdee8c0?w=2560&q=85&auto=format') 35% 50%/cover no-repeat,url('/vip-hero-porsche.jpg') 35% 50%/cover no-repeat}
+@media(min-width:1400px) and (min-resolution:1.5dppx){#ca-vipp .vp-hero-bg{background-image:url('https://images.unsplash.com/photo-1694026006855-6f4f0cdee8c0?w=3800&q=85&auto=format'),url('/vip-hero-porsche.jpg')}}
+@media(max-width:700px){#ca-vipp .vp-hero-bg{background-image:url('https://images.unsplash.com/photo-1694026006855-6f4f0cdee8c0?w=1200&q=80&auto=format'),url('/vip-hero-porsche.jpg')}}
 /* a kép tisztán látszik: csak alul egy finom sötétítés a szöveg alatt, a legalján átúszik az oldal hátterébe */
 #ca-vipp .vp-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--vp-bg) 0%,rgba(8,8,10,.85) 10%,rgba(8,8,10,.55) 24%,rgba(8,8,10,0) 40%)}
 #ca-vipp .vp-hero-in{position:relative;z-index:1;width:100%}
@@ -388,15 +402,18 @@ html.ca-dark #ca-vipp .vp-ey{color:#D4B062}
 #ca-vipp .vp-ic-lg{width:64px;height:64px;flex:none}
 #ca-vipp .vp-sec{padding:70px 0}
 #ca-vipp .vp-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
-#ca-vipp .vp-tile{position:relative;display:block;aspect-ratio:4/3;border-radius:22px;overflow:hidden;text-decoration:none;background:#111;isolation:isolate}
-#ca-vipp .vp-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
-#ca-vipp .vp-tile:hover img{transform:scale(1.06)}
-#ca-vipp .vp-tile:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(8,8,10,.82),rgba(8,8,10,.25) 45%,rgba(8,8,10,0) 70%)}
-#ca-vipp .vp-tile span{position:absolute;left:20px;right:20px;bottom:18px;z-index:1;display:flex;flex-direction:column;gap:3px}
-#ca-vipp .vp-tile b{color:#fff;font-size:20px;font-weight:800;letter-spacing:-.01em}
-#ca-vipp .vp-tile i{font-style:normal;color:rgba(255,255,255,.8);font-size:13.5px}
-#ca-vipp .vp-tile span:after{content:"Ajánlatot kérek →";margin-top:8px;color:#E9CE86;font-size:12.5px;font-weight:700;letter-spacing:.04em;opacity:0;transform:translateY(6px);transition:.25s}
-#ca-vipp .vp-tile:hover span:after,#ca-vipp .vp-tile:focus-visible span:after{opacity:1;transform:none}
+#ca-vipp .vp-tile{position:relative;display:flex;flex-direction:column;gap:4px;padding:26px 24px 22px;border-radius:24px;overflow:hidden;text-decoration:none;border:1px solid var(--vp-line);background:radial-gradient(120% 90% at 100% 0%,rgba(var(--oc),.30),rgba(var(--oc),0) 62%),#FFFDF8!important;transition:transform .25s,box-shadow .25s,border-color .25s;isolation:isolate}
+html.ca-dark #ca-vipp .vp-tile{background:radial-gradient(120% 90% at 100% 0%,rgba(var(--oc),.30),rgba(var(--oc),0) 62%),linear-gradient(180deg,#121116,#0B0B0E)!important}
+#ca-vipp .vp-tile:hover{transform:translateY(-4px);border-color:rgba(var(--oc),.55);box-shadow:0 26px 50px -30px rgba(var(--oc),.75)}
+#ca-vipp .vp-oi{width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;color:#fff;background:linear-gradient(140deg,rgba(var(--oc),1),rgba(var(--oc),.62));box-shadow:0 12px 24px -12px rgba(var(--oc),.9),inset 0 1px 0 rgba(255,255,255,.35)}
+#ca-vipp .vp-tile b{color:var(--vp-ink);font-size:20px;font-weight:800;letter-spacing:-.01em}
+#ca-vipp .vp-tile i{font-style:normal;color:var(--vp-mut);font-size:14.5px}
+#ca-vipp .vp-tile small{margin-top:14px;padding-top:14px;border-top:1px solid var(--vp-line);color:var(--vp-ink);font-size:13px;font-weight:600;line-height:1.45}
+#ca-vipp .vp-tile em{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-style:normal;font-size:13px;font-weight:800;letter-spacing:.03em;color:rgb(var(--oc));filter:brightness(.85)}
+html.ca-dark #ca-vipp .vp-tile em{filter:none}
+#ca-vipp .vp-tile em svg{transition:transform .2s}#ca-vipp .vp-tile:hover em svg{transform:translateX(4px)}
+#ca-vipp .vp-recnote{max-width:none;margin:18px 0 0;font-size:14.5px;color:var(--vp-ink);font-weight:600}
+#ca-vipp .vp-reset3{border:0;background:none;color:#B08A35;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:0;margin-left:8px;text-decoration:underline;text-underline-offset:3px}
 /* hogyan működik */
 #ca-vipp .vp-how{padding-top:20px}
 #ca-vipp .vp-steps{list-style:none;margin:26px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;counter-reset:s}
@@ -469,7 +486,7 @@ html.ca-dark #ca-vipp .vp-fl :is(input,select,textarea){color-scheme:dark;backgr
 #ca-vipp .vp-bar-ic{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--vp-line);color:var(--vp-ink);text-decoration:none}
 #ca-vipp .vp-bar-ic:first-of-type{color:#25D366}
 @media(max-width:900px){#ca-vipp .vp-tiles{grid-template-columns:1fr 1fr}#ca-vipp .vp-steps{grid-template-columns:1fr}#ca-vipp .vp-steps li:after{display:none}#ca-vipp .vp-book{grid-template-columns:1fr;gap:28px}#ca-vipp .vp-fb{padding-left:0;border-left:0}#ca-vipp .vp-fmeta{margin-left:0;width:100%;justify-content:space-between}}
-@media(max-width:600px){#ca-vipp .vp-tiles{grid-template-columns:1fr 1fr;gap:10px}#ca-vipp .vp-tile{aspect-ratio:1}#ca-vipp .vp-tile span{left:14px;right:14px;bottom:12px}#ca-vipp .vp-tile b{font-size:16px}#ca-vipp .vp-tile i{display:none}#vp-form{grid-template-columns:1fr}#ca-vipp .vp-book-r{padding:20px}#ca-vipp .vp-f{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px}#ca-vipp .vp-f button{flex:none}#ca-vipp .vp-filters{display:block}#ca-vipp .vp-filters>*+*{margin-top:10px}#ca-vipp .vp-bar{left:12px;right:12px;bottom:12px;transform:translateY(140%)}#ca-vipp .vp-bar.on{transform:none}#ca-vipp .vp-bar .vp-btn{flex:1}}
+@media(max-width:600px){#ca-vipp .vp-tiles{grid-template-columns:1fr 1fr;gap:10px}#ca-vipp .vp-tile{padding:18px 14px 16px}#ca-vipp .vp-oi{width:46px;height:46px;border-radius:15px;margin-bottom:10px}#ca-vipp .vp-tile b{font-size:16px}#ca-vipp .vp-tile i{font-size:12.5px}#ca-vipp .vp-tile small{display:none}#ca-vipp .vp-tile em{font-size:12px}#vp-form{grid-template-columns:1fr}#ca-vipp .vp-book-r{padding:20px}#ca-vipp .vp-f{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px}#ca-vipp .vp-f button{flex:none}#ca-vipp .vp-filters{display:block}#ca-vipp .vp-filters>*+*{margin-top:10px}#ca-vipp .vp-bar{left:12px;right:12px;bottom:12px;transform:translateY(140%)}#ca-vipp .vp-bar.on{transform:none}#ca-vipp .vp-bar .vp-btn{flex:1}}
 #ca-vipp .vp-fleet{display:flex;gap:28px;align-items:flex-start;padding:40px;border-radius:28px;border:1px solid var(--vp-line);background:var(--vp-card)}
 #ca-vipp .vp-fleet p{margin:0}
 #ca-vipp .vp-cars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:30px}
