@@ -78,6 +78,11 @@ try {
         if ((rel === 'referenciak/index.html' || rel.startsWith('auto/')) && h3.indexOf('id="ca-cards"') < 0) h3 = h3.replace('</body>', CARDS + '</body>');
         // 27. Autócímek kitisztítása megjelenítéskor (csupa nagybetűs német hirdetéscímek)
         if ((rel === 'referenciak/index.html' || rel === 'bizomanyos/index.html' || h3.indexOf('class="card') > -1 || h3.indexOf('class="ptitle') > -1 || /data-hupath="\/auto\//.test(h3) || rel.startsWith('auto/')) && h3.indexOf('id="ca-titleclean"') < 0) h3 = h3.replace('</body>', TITLECLEAN + '</body>');
+        // Főmenü rövid, egységes nevei (csak magyar oldalak): Bérlés · Vásárlás · Eladás · Import · Rólunk
+        for (const [a, b] of [['Tartós bérlet', 'Bérlés'], ['Megvásárolható autóink', 'Vásárlás'], ['Bizományos értékesítés', 'Eladás']]) {
+          h3 = h3.split('<button class="navlink" type="button">' + a + '<span class="chev">').join('<button class="navlink" type="button">' + b + '<span class="chev">')
+                 .split('<button class="m-accbtn" type="button">' + a + '<span class="m-plus">').join('<button class="m-accbtn" type="button">' + b + '<span class="m-plus">');
+        }
         // oldal-azonosító a <html>-en, hogy a hu-fix.css egy-egy oldalra célzottan is tudjon javítani
         const hp = rel === 'index.html' ? '/' : (rel.endsWith('/index.html') ? '/' + rel.slice(0, -10) : '/' + rel);
         if (!/<html[^>]*data-hupath=/.test(h3)) h3 = h3.replace(/<html\b/, '<html data-hupath="' + hp.replace(/"/g, '') + '"');
