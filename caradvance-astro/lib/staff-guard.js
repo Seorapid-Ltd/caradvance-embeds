@@ -4,7 +4,7 @@
  * Az ilyen fiók a /sales/ felületet használhatja, a belső CRM-et (/admin, /belso és az
  * adataikat kiszolgáló /api/... végpontok) nem. A gyökér _middleware.js minden kérés elején hívja.
  *
- * Engedett: belépés / kilépés / /me / belépő link / e-mail kód, /api/desk/*, /sales/*.
+ * Engedett: belépés / kilépés (mindenhol) / jelszócsere / /me / belépő link / e-mail kód, /api/desk/*, /sales/*.
  * Tiltott: minden más /api/belso…, /api/fiok-admin, /api/szerzodes-admin,
  * valamint a /belso/* és /admin/* szerveroldali oldalai (pl. Ajánlatmotor).
  */
@@ -12,7 +12,7 @@
 export const DESK_ROLE = 'sales_desk';
 
 const API_BLOCK = /^\/api\/(belso|belso-crm|belso-notion|belso-penzugy|fiok-admin|szerzodes-admin)(\/|$)/;
-const API_ALLOW = /^\/api\/belso\/(login|logout|me|link(\/open)?)$/;
+const API_ALLOW = /^\/api\/belso\/(login|logout|logout-all|password|me|link(\/open)?)$/;
 const PAGE_BLOCK = /^\/(belso|admin)\/./; // a /admin/ belépő oldal maga szabad (az irányít tovább a /sales/-re)
 
 function sessionToken(request) {
