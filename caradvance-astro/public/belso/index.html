@@ -457,14 +457,18 @@
             <div class="fld"><label>E-mail</label><input id="u-email" placeholder="nev@caradvance.hu"></div>
           </div>
           <div class="row2">
-            <div class="fld"><label>Szerepkör</label><select id="u-role"><option value="sales_manager">Sales manager</option><option value="admin">Admin</option></select></div>
-            <div class="fld"><label>Ideiglenes jelszó</label><input id="u-pw" placeholder="min. 8 karakter"></div>
+            <div class="fld"><label>Szerepkör</label><select id="u-role"><option value="sales_desk">Csak Sales Desk</option><option value="sales_manager">Sales manager (CRM)</option><option value="admin">Admin</option></select><label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="u-desk" checked style="width:auto"> Sales Desk hozzáférés</label></div>
+            <div class="fld"><label>Jelszó (nem kötelező)</label><input id="u-pw" placeholder="üresen hagyva: belépő linket küldünk"></div>
           </div>
-          <div><button class="btn red sm" onclick="createUser()">Létrehozás</button></div>
+          <div class="row2">
+            <div class="fld"><label>Sales Desk országok</label><input id="u-mk" placeholder="pl. sk,cz — üresen: minden oldal"></div>
+            <div class="fld"></div>
+          </div>
+          <div><button class="btn red sm" onclick="createUser()">Létrehozás</button> <span class="hint">Jelszó nélkül a munkatárs e-mailben kap egy belépő linket a Sales Deskhez (7 napig érvényes), utána bármikor kérhet új linket a belépésnél.</span></div>
           <div id="u-err" class="hint" style="color:#c0392b"></div>
         </div>
       </div>
-      <div class="panel"><table><thead><tr><th>Név</th><th>E-mail</th><th>Szerepkör</th><th>Létrehozva</th><th></th></tr></thead><tbody id="userRows"></tbody></table></div>
+      <div class="panel"><table><thead><tr><th>Név</th><th>E-mail</th><th>Szerepkör</th><th>Sales Desk</th><th>Létrehozva</th><th></th></tr></thead><tbody id="userRows"></tbody></table></div>
     </section>
     <section class="view" id="v-email">
       <div class="page-head"><div><h1>E-mail</h1><div class="crumb">Irányítópult <span>/</span> <b>E-mail</b></div></div></div>
@@ -834,6 +838,8 @@ function assignDeal(sel){
 }
 function loadDesk(id){
   var d=data.find(function(x){return x.id===id;})||data.find(function(x){return x.line==='Eladás';});
+  var wrap=document.getElementById('deskWrap');
+  if(!d){if(wrap)wrap.innerHTML='<div class="hint">Még nincs eladási ügy.</div>';return;}
   var hu=huLink(d.car),mob=mobLink(d.car);
   document.getElementById('deskWrap').innerHTML=
     '<div class="desk"><div class="box"><div style="font-weight:800;margin-bottom:6px">'+esc(d.name)+' — '+esc(d.car)+'</div>'
@@ -1146,10 +1152,10 @@ function renderUsers(){
   var el=document.getElementById('userRows');if(!el)return;
   el.innerHTML=(allUsers||[]).map(function(u){
     var isSelf=currentUser&&u.id===currentUser.id;
-    return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+esc(u.role==='admin'?'Admin':'Sales manager')+'</td><td>'+esc((u.created_at||'').slice(0,10))+'</td>'
-      +'<td style="white-space:nowrap"><button class="btn ghost sm" onclick="resetUserPassword('+u.id+')">Új jelszó</button> '
+    return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+esc(u.role==='admin'?'Admin':u.role==='sales_desk'?'Csak Sales Desk':'Sales manager')+'</td><td>'+(u.role==='sales_desk'?'<span class="hint">mindig</span>':'<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" '+(Number(u.desk_access)===1?'checked ':'')+'onchange="setDeskAccess('+u.id+',this)"> hozzáfér</label>')+'<div class="hint" style="margin-top:3px">'+(u.desk_markets?esc(String(u.desk_markets).toUpperCase().split(',').join(', ')):'minden oldal')+' · <a href="#" onclick="setDeskMarkets('+u.id+');return false">módosít</a></div></td><td>'+esc((u.created_at||'').slice(0,10))+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn ghost sm" onclick="sendUserLink('+u.id+')">Belépő link</button> <button class="btn ghost sm" onclick="resetUserPassword('+u.id+')">Új jelszó</button> '
       +(isSelf?'':'<button class="btn ghost sm" onclick="deleteUser('+u.id+')">Törlés</button>')+'</td></tr>';
-  }).join('')||'<tr><td colspan="5" style="color:#8a93a2">Nincs felhasználó.</td></tr>';
+  }).join('')||'<tr><td colspan="6" style="color:#8a93a2">Nincs felhasználó.</td></tr>';
 }
 function loadUsers(){return apiFetch('/admin/users').then(function(r){allUsers=r.users;renderUsers();}).catch(function(){});}
 function createUser(){
@@ -1157,11 +1163,19 @@ function createUser(){
   var name=document.getElementById('u-name').value.trim();
   var role=document.getElementById('u-role').value;
   var pw=document.getElementById('u-pw').value;
-  var errEl=document.getElementById('u-err');errEl.textContent='';
-  if(!email||!name||!pw){errEl.textContent='Minden mező kötelező.';return;}
+  var errEl=document.getElementById('u-err');errEl.textContent='';errEl.style.color='';
+  if(!email||!name){errEl.textContent='A név és az e-mail kötelező.';return;}
+  if(!pw){
+    apiFetch('/admin/invite',{method:'POST',body:{email:email,name:name,role:role,desk_access:document.getElementById('u-desk').checked,desk_markets:document.getElementById('u-mk').value,next:'/sales/'}}).then(function(r){
+      ['u-email','u-name','u-pw','u-mk'].forEach(function(id){document.getElementById(id).value='';});
+      var T=window.caT||String;errEl.style.color='#1e8e4e';errEl.textContent=(r.created?T('Létrehozva.')+' ':'')+(r.mailed?T('Belépő link elküldve:')+' '+email:'');showInvite(r,email);
+      return loadUsers();
+    }).catch(function(e){errEl.textContent=(e&&e.error)||'Nem sikerült elküldeni a meghívót.';loadUsers();});
+    return;
+  }
   if(pw.length<8){errEl.textContent='A jelszó legyen legalább 8 karakter.';return;}
-  apiFetch('/admin/users',{method:'POST',body:{email:email,name:name,role:role,password:pw}}).then(function(){
-    ['u-email','u-name','u-pw'].forEach(function(id){document.getElementById(id).value='';});
+  apiFetch('/admin/users',{method:'POST',body:{email:email,name:name,role:role,password:pw,desk_access:document.getElementById('u-desk').checked,desk_markets:document.getElementById('u-mk').value}}).then(function(){
+    ['u-email','u-name','u-pw','u-mk'].forEach(function(id){document.getElementById(id).value='';});
     return loadUsers();
   }).catch(function(e){errEl.textContent=(e&&e.error)||'Nem sikerült létrehozni.';});
 }
@@ -1170,6 +1184,27 @@ function resetUserPassword(id){
   if(!pw)return;
   if(pw.length<8){alert('A jelszó legyen legalább 8 karakter.');return;}
   apiFetch('/admin/users/'+id+'/reset-password',{method:'POST',body:{password:pw}}).then(function(){alert('Jelszó frissítve.');}).catch(function(){alert('Nem sikerült frissíteni a jelszót.');});
+}
+function setDeskAccess(id,el){
+  apiFetch('/admin/users/'+id+'/desk',{method:'POST',body:{on:el.checked}}).then(function(){var u=(allUsers||[]).find(function(x){return x.id===id;});if(u)u.desk_access=el.checked?1:0;}).catch(function(){el.checked=!el.checked;alert('Nem sikerült menteni.');});
+}
+function setDeskMarkets(id){
+  var u=(allUsers||[]).find(function(x){return x.id===id;})||{};
+  var v=prompt('Melyik országos oldalakon használhatja a Sales Desket?\nhu, sk, cz, pl, ch, eu — vesszővel elválasztva. Üresen: mindegyiken.',u.desk_markets||'');
+  if(v===null)return;
+  apiFetch('/admin/users/'+id+'/desk',{method:'POST',body:{markets:v}}).then(loadUsers).catch(function(){alert('Nem sikerült menteni.');});
+}
+function showInvite(r,email){
+  if(!r||r.mailed){if(r)alert('Belépő link elküldve e-mailben:\n'+email);return;}
+  // nincs e-mail küldés ezen az oldalon: a linket az admin továbbítja (WhatsApp, e-mail…)
+  var msg='Ezen az oldalon nincs beállítva e-mail küldés.\nMásold ki és küldd el ezt a linket neki:\n'+email+'\nEgyszer használható, 7 napig érvényes.';
+  try{navigator.clipboard&&navigator.clipboard.writeText(r.link);msg+='\n(a vágólapra másolva)';}catch(e){}
+  prompt(msg,r.link);
+}
+function sendUserLink(id){
+  var u=(allUsers||[]).find(function(x){return x.id===id;});if(!u)return;
+  if(!confirm('Belépő link a Sales Deskhez:\n'+u.email+'\nEgyszer használható, 7 napig érvényes.\nMehet?'))return;
+  apiFetch('/admin/invite',{method:'POST',body:{email:u.email,next:'/sales/'}}).then(function(r){showInvite(r,u.email);}).catch(function(e){alert((e&&e.error)||'Nem sikerült elküldeni.');});
 }
 function deleteUser(id){
   if(!confirm('Biztosan törlöd ezt a felhasználót? A hozzá rendelt ügyek/ügyfelek felszabadulnak.'))return;
@@ -1316,6 +1351,12 @@ document.getElementById('nav').addEventListener('click',function(){if(window.inn
 function CA_boot(){
   return apiFetch('/me').then(function(r){
     currentUser=r.user;
+    // "Csak Sales Desk" fiók: a CRM nem az övé, egyből a Sales Deskre megy.
+    if(currentUser.role==='sales_desk'){location.replace('/sales/');return new Promise(function(){});}
+    // Signed in and asked for another page (e.g. the Sales Desk): go straight there, before the CRM loads.
+    var nx0=new URLSearchParams(location.search).get('next');
+    if(nx0==='/sales')nx0='/sales/';
+    if(nx0&&(/^\/belso\/(ugyfel\/\?id=\d+|ajanlatmotor\/[a-z0-9\/_-]*)$/.test(nx0)||/^\/sales\/[a-z0-9\/_-]*$/.test(nx0))){location.replace(nx0);return new Promise(function(){});}
     document.getElementById('curUserLabel').textContent=currentUser.name;
     document.getElementById('curUserRole').textContent=currentUser.role==='admin'?'Admin':'Sales manager';
     document.getElementById('avatarCircle').textContent=(currentUser.name||'?').trim().charAt(0).toUpperCase();
@@ -1330,7 +1371,7 @@ function CA_boot(){
     if(results[3])allUsers=results[3].users||[];
     renderAll();
     var nx=new URLSearchParams(location.search).get('next');
-    if(nx&&/^\/belso\/(ugyfel\/\?id=\d+|ajanlatmotor\/[a-z0-9\/_-]*)$/.test(nx)){location.replace(nx);return;}
+    if(nx&&(/^\/belso\/(ugyfel\/\?id=\d+|ajanlatmotor\/[a-z0-9\/_-]*)$/.test(nx)||/^\/sales\/[a-z0-9\/_-]*$/.test(nx))){location.replace(nx);return;}
     var hv=(location.hash||'').slice(1);if(hv&&document.getElementById('v-'+hv))go(hv);
     LINES.forEach(renderCrm);loadCrm();
     if(currentUser.role==='admin'){loadIntegrations();loadMail();loadCalendar();}
