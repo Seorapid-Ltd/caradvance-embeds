@@ -63,8 +63,22 @@
   if (CFG.GA4_ID && CFG.GA4_ID.indexOf('X') === -1) gAdsIds.push(CFG.GA4_ID);
   if (CFG.ADS_ID && CFG.ADS_ID.indexOf('X') === -1) gAdsIds.push(CFG.ADS_ID);
 
+  /* 2026-11: a Google-szkriptek (gtag, GTM) csak hozzájárulás után töltődnek le (mérés VAGY hirdetés).
+     A parancsok addig a dataLayer sorban várnak; ha valaki elutasít, a Google-hoz semmi nem megy ki. */
+  function okGoogle(st) { return !!(st && (st.analytics || st.marketing)); }
+  var googleLoaded = false, googleSrc = [];
+  function loadGoogle() {
+    if (googleLoaded) return; googleLoaded = true;
+    googleSrc.forEach(inject); log('google szkriptek betöltve hozzájárulás után');
+  }
+  (function () {
+    var st0 = window.CA_CONSENT_STATE || (window.CAConsent && window.CAConsent.get()) || null;
+    if (okGoogle(st0)) setTimeout(loadGoogle, 0);
+    document.addEventListener('ca:consent', function (e) { if (okGoogle(e.detail && e.detail.state)) loadGoogle(); });
+  })();
+
   if (gAdsIds.length) {
-    inject('https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gAdsIds[0]));
+    googleSrc.push('https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gAdsIds[0]));
     gtag('js', new Date());
     gAdsIds.forEach(function (id) {
       gtag('config', id, id.indexOf('AW-') === 0 ? { allow_enhanced_conversions: true } : {});
@@ -75,7 +89,7 @@
   }
 
   if (CFG.GTM_ID && CFG.GTM_ID.indexOf('X') === -1) {
-    inject('https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(CFG.GTM_ID));
+    googleSrc.push('https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(CFG.GTM_ID));
   }
 
   /* Meta Pixel — csak hirdetési hozzájárulás után töltjük be */
