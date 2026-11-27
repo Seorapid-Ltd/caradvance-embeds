@@ -4,6 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
+// okos menüsor minden magyar oldalon (a főoldalon a home-stage már intézi): lefelé görgetve elrejtőzik, felfelé visszajön
+const NAVHIDE = '<script id="ca-navhide">(function(){if(window.__caNavHide)return;window.__caNavHide=1;var y0=scrollY,w=null;addEventListener("scroll",function(){w=w||document.querySelector(".ca-navwrap");if(!w)return;var y=scrollY,d=y-y0;if(Math.abs(d)<6)return;'
+  + 'var mp=w.querySelector(".mobilepanel"),open=mp&&mp.getBoundingClientRect().height>40&&getComputedStyle(mp).visibility!=="hidden"&&getComputedStyle(mp).display!=="none",mm=w.querySelector(".mm-panel.open");'
+  + 'if(d>0&&y>140&&!open&&!mm&&!w.matches(":hover"))w.classList.add("ca-nav-hide");else if(d<0)w.classList.remove("ca-nav-hide");y0=y},{passive:true})})();</script>';
 const TABKEEP = '<script id="ca-tabkeep">(function(){var K="ca-tab:"+location.pathname,nav=(performance.getEntriesByType&&performance.getEntriesByType("navigation")[0])||{},again=nav.type==="reload"||nav.type==="back_forward";'
   + 'document.addEventListener("click",function(e){var t=e.target&&e.target.closest&&e.target.closest(".autok-tab");if(!t||!t.dataset.tab)return;try{sessionStorage.setItem(K,t.dataset.tab)}catch(_){}},true);'
   + 'if(!again)return;var v;try{v=sessionStorage.getItem(K)}catch(_){}if(!v)return;'
@@ -46,7 +50,7 @@ const CORP_M = '<div class="m-acc"><button class="m-accbtn" type="button">Cégek
 const VIP_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
 const VIP_BTN = '<a class="ca-vip" href="/vip/" aria-label="VIP luxusautó-bérlés">' + VIP_SVG + '<span>VIP</span></a>';
 const VIP_M = '<a class="ca-vip ca-vip-m" href="/vip/">' + VIP_SVG + '<span>VIP luxusautó-bérlés</span></a>';
-const VIP_LINKS = [["VIP flotta","/vip/#flotta"],["Alkalmak","/vip/#alkalmak"],["Foglalás","/vip/#foglalas"],["Szolgáltatás","/vip/#szolgaltatas"]];
+const VIP_LINKS = [["VIP luxusautó-bérlés","/vip/"],["VIP flotta","/vip/#flotta"],["Foglalás","/vip/#foglalas"],["Hogyan működik","/vip/hogyan-mukodik/"],["Gyakori kérdések","/vip/gyakori-kerdesek/"]];
 const VIP_LI = '<li class="navitem ca-navvip"><button class="navlink" type="button">VIP<span class="chev">⌄</span></button><div class="dropdown"><div class="dd-inner">' + VIP_LINKS.map(([t, h]) => '<a class="ddi" href="' + h + '">' + t + '</a>').join('') + '</div></div></li>';
 const VIP_MI = '<div class="m-acc ca-mvip"><button class="m-accbtn" type="button">VIP<span class="m-plus">+</span></button><div class="m-sub">' + VIP_LINKS.map(([t, h]) => '<a href="' + h + '">' + t + '</a>').join('') + '</div></div>';
 
@@ -82,6 +86,7 @@ try {
         if (/\/bizomanyos\/index\.html$/.test(p.split(path.sep).join('/'))) h3 = h3.replace('<p class="biz-lead">Bizományban értékesített prémium autók — és minden eladással egy magyar jótékony szervezetet is támogatunk. A jutalékunk', '<p class="biz-lead">A jutalékunk');
         // Fülválasztás megtartása újratöltéskor (főoldal: Bérelhető / Eladó / Bizományos; Autóink: Prémium, Bérbeadva …):
         // kattintáskor a böngésző munkamenetébe menti a fület, újratöltéskor (vagy Vissza gombnál) ugyanazt a fület nyitja meg
+        if (h3.indexOf('class="ca-navwrap"') > -1 && h3.indexOf('ca-nav-hide")') < 0 && h3.indexOf('id="ca-navhide"') < 0) h3 = h3.replace('</body>', NAVHIDE + '</body>');
         if (h3.indexOf('autok-tab') > -1 && h3.indexOf('id="ca-tabkeep"') < 0) h3 = h3.replace('</body>', TABKEEP + '</body>');
         // 17. egységes autókártyák a Referenciák és az adatlap „Hasonló autók” részén
         if ((rel === 'referenciak/index.html' || rel.startsWith('auto/')) && h3.indexOf('id="ca-cards"') < 0) h3 = h3.replace('</body>', CARDS + '</body>');

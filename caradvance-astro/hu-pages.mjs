@@ -347,6 +347,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
     <li><span class="vp-num">02</span><b>Személyes ajánlatot kapsz</b><span>A kapcsolattartód felhív, egyeztetjük a részleteket és az átvételt.</span></li>
     <li><span class="vp-num">03</span><b>Átveszed az autót</b><span>Tiszta, tankolt autó — indulhat a nap.</span></li>
   </ol>
+  <p class="vp-howmore"><a href="/vip/hogyan-mukodik/">A bérlés menete részletesen →</a><a href="/vip/gyakori-kerdesek/">Gyakori kérdések →</a></p>
 </div></section>
 <section class="vp-sec" id="flotta"><div class="vp-wrap">
   <div class="vp-ey">VIP flotta</div><h2>Válaszd ki az autódat</h2>
@@ -946,6 +947,7 @@ html[data-vip] #ca-vipp .vp-tl li:before{border-radius:50%;border-color:var(--vp
 html[data-vip] #ca-vipp .vp-perk .vp-ic,html[data-vip] #ca-vipp .vp-oi{color:var(--vp-red)!important}
 html[data-vip] #ca-vipp .vp-tile:hover{border-color:var(--vp-red)!important}
 html[data-vip] #ca-vipp .vp-steps li{border-top:2px solid var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-howmore{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;max-width:none!important;margin:30px auto 0!important}html[data-vip] #ca-vipp .vp-howmore a{color:var(--vp-red);font-weight:700;text-decoration:none;font-size:15px}
 /* szűrők */
 html[data-vip] #ca-vipp .vp-f button{font-size:14px!important;font-weight:700!important;border-radius:999px!important;height:40px;padding:0 16px}
 html[data-vip] #ca-vipp .vp-f[data-k=cat] button[aria-pressed=true]{background:var(--vp-ink)!important;color:var(--vp-bg)!important;box-shadow:none!important}
@@ -967,6 +969,80 @@ html[data-vip] #ca-vipp .vp-bar .vp-btn{height:48px}
 /* fő menü a VIP oldalon: a fejléckép a menü alá fut, mint a főoldalon */
 html[data-vip] #ca-vipp .vp-hero{padding-top:140px}
 @media(max-width:700px){html[data-vip] #ca-vipp .vp-hero .vp-ey{color:var(--vp-red)!important}html[data-vip] #ca-vipp .vp-hero{padding-top:0}html[data-vip] #ca-vipp .vp-hero-bg{margin-top:84px}}
+</style>`;
+
+
+// ---------------------------------------------------------------- VIP aloldalak: Hogyan működik, Gyakori kérdések
+const VSUB_HEAD = (ey, h1, p) => `<section class="vp-sec vp-subhead"><div class="vp-wrap"><a class="vp-crumb" href="/vip/">← VIP luxusautó-bérlés</a><div class="vp-ey">${ey}</div><h1>${h1}</h1><p>${p}</p></div></section>`;
+const VSUB_CTA = `<section class="vp-sec"><div class="vp-wrap"><div class="vp-subcta"><div><h2>Kérj személyre szabott ajánlatot</h2><p>Díjtalan, és nem kötelez semmire. Az autót, a dátumot és az átvételt személyesen egyeztetjük.</p></div><div class="vp-btns"><a class="vp-btn vp-gold" href="/vip/#foglalas">Ajánlatot kérek</a><a class="vp-btn vp-ghost" href="/vip/#flotta">VIP flotta</a></div></div><div class="vp-subdirect"><a href="tel:${TEL}">${svg(IC.phone, 18)} ${TELTXT}</a><a href="${WA}" target="_blank" rel="noopener">${WAI} WhatsApp</a><a href="mailto:${MAIL}?subject=VIP%20luxusaut%C3%B3-b%C3%A9rl%C3%A9s">${svg(IC.mail, 18)} E-mail</a></div></div></section>`;
+const HOW_STEPS = [
+  ['Válassz autót és időpontot', 'Nézd át a VIP flottát, vagy indulj ki az alkalomból: esküvő, hétvége, születésnap, céges rendezvény, forgatás vagy üzleti út. Ha még nem döntöttél, ez sem gond – segítünk választani.', [['VIP flotta', '/vip/#flotta'], ['Alkalmak', '/vip/#alkalmak']]],
+  ['Küldd el az ajánlatkérést', 'A foglalási űrlapon három rövid lépésben megadod az autót, a dátumokat, az átvétel idejét és helyét, az alkalmat és az elérhetőségedet. Az összesítő közben becsült díjat is mutat. Az ajánlatkérés díjtalan, és nem kötelez semmire.', [['Foglalás', '/vip/#foglalas']]],
+  ['Személyesen egyeztetünk', 'A kapcsolattartód azon a módon keres, amit megadtál – telefonon, WhatsAppon vagy e-mailben, a kért napszakban. Átbeszéljük a részleteket: az autót, az időpontot, az átvételt és a különleges kéréseidet.', []],
+  ['Írásos ajánlatot kapsz', 'Az ajánlatban minden szerepel: a kiválasztott autó, a bérlés időszaka, az átvétel helye és ideje, a végleges ár és a feltételek. Az oldalon látható árak tájékoztató jellegűek, a végleges árat az ajánlat tartalmazza.', []],
+  ['Átveszed az autót', 'A megbeszélt időpontban átveszed az autót a telephelyünkön vagy az egyeztetett helyszínen. Napi 200 km minden bérlésben benne van – indulhat a nap.', []],
+];
+const HOW_INC = [['Napi 200 km', 'Minden VIP bérlésben benne van.'], ['Áfás árak', 'Az oldalon szereplő díjak áfával értendők.'], ['Egy kapcsolattartó', 'Az ajánlatkéréstől az átvételig ugyanaz a személy.'], ['Rugalmas időtartam', 'Egy nap, egy hétvége vagy egy hét.']];
+const VIP_HOW = `<main id="ca-vipp" class="vp-sub" data-dm-skip="1">
+${VSUB_HEAD('Hogyan működik', 'A VIP bérlés menete', 'Az első kattintástól az átvételig – öt lépésben, személyes kapcsolattartóval.')}
+<section class="vp-sec vp-sub-steps"><div class="vp-wrap"><ol class="vp-timeline">${HOW_STEPS.map(([t, d, l], i) => `<li><span class="vp-tn">${String(i + 1).padStart(2, '0')}</span><div><h3>${t}</h3><p>${d}</p>${l.length ? `<div class="vp-tlinks">${l.map(([a, h]) => `<a href="${h}">${a} ${ARR}</a>`).join('')}</div>` : ''}</div></li>`).join('')}</ol></div></section>
+<section class="vp-sec"><div class="vp-wrap"><div class="vp-ey">Minden bérlésben</div><h2>Amire számíthatsz</h2><div class="vp-incs">${HOW_INC.map(([t, d]) => `<div class="vp-inc"><span class="vp-inc-ic">${CHK}</span><b>${t}</b><span>${d}</span></div>`).join('')}</div></div></section>
+${VSUB_CTA}
+</main>`;
+const FAQ = [
+  ['Hogyan tudok VIP autót bérelni?', 'A VIP oldalon a foglalási űrlapon három rövid lépésben kérhetsz ajánlatot, de hívhatsz minket telefonon, vagy írhatsz WhatsAppon és e-mailben is. A kapcsolattartód felveszi veled a kapcsolatot, és személyre szabott ajánlatot küld.'],
+  ['Mennyi időre bérelhetek autót?', 'Egy napra, egy hétvégére vagy egy hétre – az autók kártyáján mindhárom díjat feltüntettük. Ennél hosszabb időszakra egyedi ajánlatot adunk.'],
+  ['Mit tartalmaz a bérleti díj?', 'Minden VIP bérlésben napi 200 km benne van, a díjak áfával értendők. Az oldalon látható árak tájékoztató jellegűek, a végleges árat és a részleteket az írásos ajánlat tartalmazza.'],
+  ['Mi történik, ha napi 200 km-nél többet vezetek?', 'Ha már előre tudod, hogy többet mennél, írd meg az ajánlatkérésben a különleges kéréseknél. A többlet kilométerek díját az ajánlatban rögzítjük.'],
+  ['Kell kauciót fizetni?', 'Igen, a VIP autóknál kaució szükséges. Az összege autónként eltér, a pontos összeget az ajánlatban adjuk meg.'],
+  ['Milyen feltételekkel bérelhetek?', 'A bérlés feltételei autónként eltérhetnek. A személyes egyeztetéskor mindent elmondunk, és az írásos ajánlatban is szerepelnek.'],
+  ['Hol veszem át az autót?', 'A telephelyünkön, vagy egy egyeztetett helyszínen. Az ajánlatkérésben megadhatod, hol és mikor szeretnéd átvenni.'],
+  ['Mikor elérhetők az autók?', 'A legtöbb autó azonnal elérhető. Ahol nem, ott az autó fotóján jelöljük, hogy melyik naptól bérelhető.'],
+  ['Kötelez valamire az ajánlatkérés?', 'Nem. Az ajánlatkérés díjtalan, és nem kötelez semmire – a foglalás csak az írásos ajánlat elfogadásával válik véglegessé.'],
+  ['Bérelhetek autót rendezvényre vagy forgatásra?', 'Igen. Esküvőre, születésnapra, céges rendezvényre, film- és fotóforgatásra is bérelhetők az autók. Céges rendezvényekhez a Cégeknek oldalon további lehetőségeket is találsz.'],
+  ['Hogyan érlek el a leggyorsabban?', 'Telefonon a +36 30 233 6060-as számon, vagy WhatsAppon ugyanezen a számon. Írásban az info@caradvance.hu címen is elérsz minket.'],
+];
+const VIP_FAQ_LD = '<script type="application/ld+json">' + JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }) + '</script>';
+const VIP_FAQP = `<main id="ca-vipp" class="vp-sub" data-dm-skip="1">
+${VSUB_HEAD('Gyakori kérdések', 'Kérdések a VIP bérlésről', 'A legfontosabb tudnivalók röviden. Ha nem találod a választ, kérdezz minket nyugodtan.')}
+<section class="vp-sec vp-sub-faq"><div class="vp-wrap"><div class="vp-faq">${FAQ.map(([q, a], i) => `<details${i ? '' : ' open'}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></div></section>
+${VSUB_CTA}
+</main>${VIP_FAQ_LD}`;
+const VIP_SUB_CSS = `<style id="ca-dark-hu-vip-sub">
+html[data-vip] #ca-vipp.vp-sub .vp-subhead{padding:140px 0 10px}
+html[data-vip] #ca-vipp.vp-sub .vp-subhead .vp-ey{display:block}html[data-vip] #ca-vipp .vp-crumb{display:inline-block;margin-bottom:22px;color:var(--vp-mut);text-decoration:none;font-weight:600;font-size:14px}
+html[data-vip] #ca-vipp .vp-crumb:hover{color:var(--vp-red)}
+html[data-vip] #ca-vipp.vp-sub h1{font-size:clamp(36px,4.6vw,60px)!important;font-weight:800!important;letter-spacing:-.03em!important;text-transform:none!important;margin:0 0 14px;color:var(--vp-ink)}
+html[data-vip] #ca-vipp.vp-sub .vp-subhead p{max-width:620px}
+html[data-vip] #ca-vipp .vp-timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;max-width:880px}
+html[data-vip] #ca-vipp .vp-timeline li{display:grid;grid-template-columns:72px 1fr;gap:18px;padding:26px 28px;border-radius:24px;background:var(--vp-card);border:1px solid var(--vp-line)}
+html[data-vip] #ca-vipp .vp-tn{font-size:34px;font-weight:800;letter-spacing:-.03em;color:var(--vp-red);line-height:1}
+html[data-vip] #ca-vipp .vp-timeline h3{margin:0 0 8px;font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--vp-ink)}
+html[data-vip] #ca-vipp .vp-timeline p{margin:0;max-width:none;font-size:15.5px}
+html[data-vip] #ca-vipp .vp-tlinks{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
+html[data-vip] #ca-vipp .vp-tlinks a{display:inline-flex;align-items:center;gap:6px;color:var(--vp-red);font-weight:700;text-decoration:none;font-size:14.5px}
+html[data-vip] #ca-vipp .vp-incs{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px}
+html[data-vip] #ca-vipp .vp-inc{display:flex;flex-direction:column;gap:6px;padding:24px 22px;border-radius:24px;background:var(--vp-card);border:1px solid var(--vp-line);color:var(--vp-mut);font-size:14.5px;line-height:1.5}
+html[data-vip] #ca-vipp .vp-inc b{color:var(--vp-ink);font-size:17px}
+html[data-vip] #ca-vipp .vp-inc-ic{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(226,0,26,.1);color:var(--vp-red);margin-bottom:8px}
+html[data-vip] #ca-vipp .vp-faq{display:flex;flex-direction:column;gap:10px;max-width:880px}
+html[data-vip] #ca-vipp .vp-faq details{border-radius:20px;background:var(--vp-card);border:1px solid var(--vp-line);overflow:hidden}
+html[data-vip] #ca-vipp .vp-faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:18px;padding:22px 24px;font-size:17px;font-weight:800;letter-spacing:-.01em;color:var(--vp-ink)}
+html[data-vip] #ca-vipp .vp-faq summary::-webkit-details-marker{display:none}
+html[data-vip] #ca-vipp .vp-fx{flex:none;width:30px;height:30px;border-radius:50%;background:var(--vp-soft);position:relative;transition:transform .2s}
+html[data-vip] #ca-vipp .vp-fx:before,html[data-vip] #ca-vipp .vp-fx:after{content:"";position:absolute;left:50%;top:50%;width:12px;height:2px;margin:-1px 0 0 -6px;background:var(--vp-ink);border-radius:2px}
+html[data-vip] #ca-vipp .vp-fx:after{transform:rotate(90deg);transition:opacity .2s}
+html[data-vip] #ca-vipp .vp-faq details[open] .vp-fx{background:var(--vp-red)}
+html[data-vip] #ca-vipp .vp-faq details[open] .vp-fx:before{background:#fff}html[data-vip] #ca-vipp .vp-faq details[open] .vp-fx:after{opacity:0}
+html[data-vip] #ca-vipp .vp-faq details p{margin:0;padding:0 24px 22px;max-width:none;font-size:15.5px}
+html[data-vip] #ca-vipp .vp-subcta{display:flex;justify-content:space-between;align-items:center;gap:30px;padding:36px;border-radius:28px;background:var(--vp-card);border:1px solid var(--vp-line)}
+html[data-vip] #ca-vipp .vp-subcta h2{font-size:clamp(24px,2.6vw,34px)!important;margin:0 0 8px}
+html[data-vip] #ca-vipp .vp-subcta p{margin:0}
+html[data-vip] #ca-vipp .vp-subdirect{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;padding-left:6px}
+html[data-vip] #ca-vipp .vp-subdirect a{display:inline-flex;align-items:center;gap:8px;color:var(--vp-ink);text-decoration:none;font-weight:700;font-size:14.5px}
+html[data-vip] #ca-vipp .vp-subdirect svg{color:var(--vp-red)}
+@media(max-width:900px){html[data-vip] #ca-vipp .vp-incs{grid-template-columns:1fr 1fr}html[data-vip] #ca-vipp .vp-subcta{flex-direction:column;align-items:flex-start}}
+@media(max-width:600px){html[data-vip] #ca-vipp.vp-sub .vp-subhead{padding:120px 0 10px}html[data-vip] #ca-vipp .vp-timeline li{grid-template-columns:1fr;gap:8px;padding:22px 20px}html[data-vip] #ca-vipp .vp-incs{grid-template-columns:1fr}html[data-vip] #ca-vipp .vp-subcta{padding:24px}html[data-vip] #ca-vipp .vp-faq summary{padding:18px 18px;font-size:15.5px}html[data-vip] #ca-vipp .vp-faq details p{padding:0 18px 18px}}
 </style>`;
 
 function make(tpl, slug, title, desc, main, css, extraHtmlAttr) {
@@ -998,6 +1074,10 @@ function run() {
     'Benchmark: bármely autó beszerzése tesztre, összehasonlításra és rendezvényekre, bérelve vagy megvásárolva. Autós céges rendezvények, céges tartós bérlet.', CORP, CORP_CSS);
   make(tpl, 'vip', 'VIP luxusautó-bérlés — CarAdvance',
     'Privát luxusautó-bérlés: sport- és luxusautók napi bérlésre, személyes kapcsolattartóval és egyedi ajánlattal.', VIP, VIP_CSS + VIP_MONO + VIP_MAIN, 'data-vip="1"');
-  return 'kész: /cegeknek/, /vip/ (sablon: ' + path.relative(DIST, tplF) + ')';
+  make(tpl, 'vip/hogyan-mukodik', 'Hogyan működik a VIP luxusautó-bérlés? — CarAdvance',
+    'A VIP luxusautó-bérlés menete öt lépésben: autóválasztás, ajánlatkérés, személyes egyeztetés, írásos ajánlat és átvétel.', VIP_HOW, VIP_CSS + VIP_MONO + VIP_MAIN + VIP_SUB_CSS, 'data-vip="1"');
+  make(tpl, 'vip/gyakori-kerdesek', 'VIP luxusautó-bérlés – gyakori kérdések — CarAdvance',
+    'Gyakori kérdések a VIP luxusautó-bérlésről: bérlési idő, díjak, napi 200 km, kaució, átvétel és ajánlatkérés.', VIP_FAQP, VIP_CSS + VIP_MONO + VIP_MAIN + VIP_SUB_CSS, 'data-vip="1"');
+  return 'kész: /cegeknek/, /vip/, /vip/hogyan-mukodik/, /vip/gyakori-kerdesek/ (sablon: ' + path.relative(DIST, tplF) + ')';
 }
 try { console.log('[hu-pages] ' + run()); } catch (e) { console.log('[hu-pages] hiba: ' + (e && e.message || e)); }

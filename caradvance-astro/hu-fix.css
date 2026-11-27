@@ -133,3 +133,6 @@ html body .mobilepanel :is(#ca-hfx,a.ca-vip-m){display:flex;align-items:center;j
   html body .ca-nav ul.menu :is(#ca-hfx,.navlink){font-size:16px!important;padding-left:12px!important;padding-right:12px!important}
 }
 @media(min-width:1025px) and (max-width:1240px){html body .ca-nav ul.menu :is(#ca-hfx,.navlink){font-size:14.5px!important;padding-left:8px!important;padding-right:8px!important}}
+/* okos menüsor minden magyar oldalon: lefelé görgetve elrejtőzik, felfelé visszajön */
+html .ca-navwrap{transition:transform .38s cubic-bezier(.2,.8,.2,1)!important;will-change:transform}
+html .ca-navwrap.ca-nav-hide{transform:translateY(calc(-100% - 24px))!important}

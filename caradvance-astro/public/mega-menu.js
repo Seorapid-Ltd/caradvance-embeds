@@ -737,10 +737,12 @@
       btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-expanded', 'false');
       li.addEventListener('mouseenter', function () { if (!desktop()) return; clearTimeout(tOpen); clearTimeout(tClose); tOpen = setTimeout(function () { open(i); }, panel.classList.contains('open') ? 60 : 140); });
       li.addEventListener('mouseleave', function () { if (!desktop()) return; clearTimeout(tOpen); closeSoon(); });
-      btn.addEventListener('click', function (e) { if (!desktop()) return; e.preventDefault(); e.stopImmediatePropagation(); if (panel.classList.contains('open') && cur === i) close(); else open(i); }, true);
+      btn.addEventListener('click', function (e) { if (!desktop()) return; e.preventDefault(); e.stopImmediatePropagation(); if (/^\s*VIP\b/.test(btn.textContent)) { close(); location.href = '/vip/'; return; } if (panel.classList.contains('open') && cur === i) close(); else open(i); }, true);
       btn.addEventListener('keydown', function (e) { if (!desktop()) return; if (e.key === 'ArrowDown') { e.preventDefault(); open(i); var a = panel.querySelector('a'); if (a) a.focus(); } });
     });
     panel.addEventListener('mouseenter', function () { clearTimeout(tClose); });
+    /* a panelen belüli linkre kattintva a panel bezárul (ugyanazon az oldalon maradó #horgony-linkeknél is) */
+    panel.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('a[href]'); if (a) setTimeout(close, 0); });
     panel.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('.mm-tab'); if (!b) return;
       e.preventDefault(); e.stopPropagation(); SALE_TAB = b.getAttribute('data-tab');

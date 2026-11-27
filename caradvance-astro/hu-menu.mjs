@@ -222,8 +222,8 @@ const MENUS = [
   { tiles: [['Miért mi?', '/miert-mi/', 'Német háttér, magyar ügyintézés', 'star'], ['Referenciák', '/referenciak/', 'Ügyfeleink történetei', 'users'], ['Kapcsolat', '/kapcsolat/', 'Solymár · Geretsried', 'pin']],
     info: ['Bizalom', [['Átláthatóság', '/atlathatosag/'], ['Minőségbiztosítás', '/minosegbiztositas/'], ['Media', '/media/'], ['Blog', '/blog/']]],
     quick: ['Kövess minket', 'SOCIAL'], stage: 'about' },
-  { tiles: [['VIP flotta', '/vip/#flotta', 'Ferrari, Porsche, Bentley, AMG – napi bérlésre', 'crown'], ['Alkalmak', '/vip/#alkalmak', 'Esküvő, hétvége, forgatás, üzleti út', 'event'], ['Foglalás', '/vip/#foglalas', 'Három lépés, személyre szabott ajánlat', 'key']],
-    info: ['Tudnivalók', [['Szolgáltatás', '/vip/#szolgaltatas'], ['Hogyan működik', '/vip/#flotta'], ['Napi 200 km, áfás árak', '/vip/#flotta']]],
+  { tiles: [['VIP luxusautó-bérlés', '/vip/', 'A VIP oldal: flotta, alkalmak, foglalás', 'crown'], ['VIP flotta', '/vip/#flotta', 'Ferrari, Porsche, Bentley, AMG – napi bérlésre', 'car'], ['Foglalás', '/vip/#foglalas', 'Három lépés, személyre szabott ajánlat', 'key']],
+    info: ['Tudnivalók', [['Hogyan működik', '/vip/hogyan-mukodik/'], ['Gyakori kérdések', '/vip/gyakori-kerdesek/']]],
     quick: ['Kapcsolat', [['+36 30 233 6060', 'tel:+36302336060'], ['WhatsApp', 'https://wa.me/36302336060']]], stage: 'vip' },
 ];
 
@@ -355,7 +355,7 @@ const CLIENT = function (CFG) {
     return '<div class="am-stage am-on-photo" data-st="vip" style="background:#111"><div class="am-photo" style="background-image:url(\'/vip-hero-porsche.jpg\')"></div>'
       + '<div style="position:relative;z-index:2;max-width:58%;text-shadow:0 1px 12px rgba(0,0,0,.55)"><div class="am-st-h">Egy nap. Egy élmény.</div><div class="am-st-p">Sport- és luxusautók napi bérlésre, személyes kapcsolattartóval.</div>'
       + '<div class="am-st-p" style="margin-top:14px">15 autó a flottában,<br>Ferraritól a Bentley-ig.</div></div>'
-      + '<div class="am-st-bot" style="position:relative;z-index:2;display:flex;align-items:center;gap:8px"><a class="am-go" href="/vip/#foglalas">Ajánlatot kérek →</a><a class="am-go wh" href="/vip/#flotta" style="background:#fff;color:#111!important">VIP flotta</a></div></div>';
+      + '<div class="am-st-bot" style="position:relative;z-index:2;display:flex;align-items:center;gap:8px"><a class="am-go" href="/vip/#foglalas">Ajánlatot kérek →</a><a class="am-go wh" href="/vip/" style="background:#fff;color:#111!important">VIP oldal megnyitása</a></div></div>';
   }
   // ---- panel felépítése: balra a fő pontok és alattuk a tudnivalók, jobbra a nagy színpad ----
   function build(p, i) {
