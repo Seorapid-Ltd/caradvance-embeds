@@ -63,3 +63,43 @@ html body .layout .card :is(#ca-hfx,.v) *{min-width:0}
   html body .fee-table td :is(#ca-hfx,.fe),html body .fee-table td :is(#ca-hfx,.fh-range){white-space:nowrap!important;font-size:11.5px!important}
 }
 @media(max-width:370px){html body .layout .card :is(#ca-hfx,.v){font-size:13px!important}}
+
+
+/* ===== Átnézés, 15–26. pont ===== */
+
+/* 16. Fejléc-szövegek olvashatósága mozgalmas háttérképen (Import, Gyakori kérdések, Bérlési folyamat, Autóink) */
+html:is([data-hupath="/auto-rendeles/"],[data-hupath="/gyakori-kerdesek/"],[data-hupath="/berlesi-folyamat/"],[data-hupath="/autoink/"]) body .ca-hero > :is(#ca-hfx,video,img,picture):is(#ca-hfx2,video,img,picture){filter:brightness(.62) saturate(1.05)!important}
+html[data-hupath="/auto-rendeles/"] body .ca-hero :is(#ca-hfx,.hero-ey){display:inline-block;padding:5px 12px;border-radius:999px;background:rgba(10,10,12,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+@media(max-width:640px){html:is([data-hupath="/berlesi-folyamat/"],[data-hupath="/autoink/"],[data-hupath="/gyakori-kerdesek/"]) body .ca-hero > :is(#ca-hfx,video,img,picture):is(#ca-hfx2,video,img,picture){filter:brightness(.5) saturate(1.05)!important}}
+
+/* 17. Kártyák egységessége: a Referenciák és az adatlap „Hasonló autók” kártyáin is fekete „Részletek” gomb, mint az Autóink oldalon */
+html:is([data-hupath="/referenciak/"],[data-hupath^="/auto/"]) body a.card .body :is(#ca-hfx,.cbtn){background:#121317!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-radius:12px!important;font-weight:700!important}
+html:is([data-hupath="/referenciak/"],[data-hupath^="/auto/"]) body a.card .body :is(#ca-hfx,.ca-inq){background:#fff!important;color:#121317!important;-webkit-text-fill-color:#121317!important;border:1px solid rgba(18,19,23,.14)!important;border-radius:12px!important}
+html.ca-dark:is([data-hupath="/referenciak/"],[data-hupath^="/auto/"]) body a.card .body :is(#ca-hfx,.cbtn){background:#fff!important;color:#0B0B0D!important;-webkit-text-fill-color:#0B0B0D!important}
+html.ca-dark:is([data-hupath="/referenciak/"],[data-hupath^="/auto/"]) body a.card .body :is(#ca-hfx,.ca-inq){background:transparent!important;color:#F5F5F7!important;-webkit-text-fill-color:#F5F5F7!important;border-color:rgba(255,255,255,.18)!important}
+
+
+/* 20. Tartós bérlet, elektromos autók: 4 kártya egy sorban (eddig 3 + 1 árva) */
+@media(min-width:900px){html body :is(#ca-hfx,.tb-evs){grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+
+/* 21. Autóink márkaszűrő: a logó nélküli márkák (Ferrari, Porsche) logószerű, ritkított felirattal */
+html body .chip:is([data-v="Ferrari"],[data-v="Porsche"]):is(#ca-hfx,button){text-transform:uppercase;letter-spacing:.16em;font-size:11px!important;font-weight:800!important;color:#3A3A3F!important}
+html.ca-dark body .chip:is([data-v="Ferrari"],[data-v="Porsche"]):is(#ca-hfx,button){color:#D1D1D6!important;-webkit-text-fill-color:#D1D1D6!important}
+
+/* 22. Eladom, „Így dolgozunk”: karakter-ikonok (★, ⌂) helyett vonalas ikonok */
+html body .howwe-card :is(#ca-hfx,.howwe-ico){font-size:0!important;color:transparent!important;-webkit-text-fill-color:transparent!important;display:flex;align-items:center;justify-content:center}
+html body .howwe-card .howwe-ico:is(#ca-hfx,div)::before{content:"";width:22px;height:22px;background:#fff;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+html body .howwe-card:nth-child(2) :is(#ca-hfx,.howwe-ico){--ic:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z%22/></svg>")}
+html body .howwe-card:nth-child(3) :is(#ca-hfx,.howwe-ico){--ic:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M3.5 11 12 4l8.5 7%22/><path d=%22M5.5 9.5V20h13V9.5%22/><path d=%22M10 20v-5h4v5%22/></svg>")}
+html.ca-dark body .howwe-card .howwe-ico:is(#ca-hfx,div)::before{background:#F5F5F7}
+
+/* 23. Lábléc: a „Süti-beállítások” ugyanolyan súlyú, mint a többi jogi link; sötét módban a TikTok ikon fekete marad (eddig szürkére fakult) */
+html body .cafoot-legal :is(#ca-hfx,button){font-weight:600!important}
+html.ca-dark body footer a[aria-label="TikTok"] svg :is(#ca-hfx,rect){fill:#000!important}
+html.ca-dark body footer a[aria-label="TikTok"] :is(#ca-hfx,svg){border-radius:12px;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+
+/* 25. Bérlési modelloldalak (pl. BMW M4), sötét mód: a fehér hátterű sajtófotó egy világos „stúdió” kártyán ül, nem fehér téglalapként a sötétben */
+html.ca-dark body .cd-photo:has(> img:not(.ca-cut):not([src*="berles-cut"])):is(#ca-hfx,div),html.ca-dark body .cd-stage:has(> img:not(.ca-cut):not([src*="berles-cut"])):is(#ca-hfx,div){background:radial-gradient(120% 90% at 50% 40%,#fff 0%,#F2F2F4 70%,#E6E6EA 100%)!important;border-radius:22px!important;overflow:hidden}
+
+/* 26. Mobilmenü: nyitott menü mögött elmosott, sötétített háttér — az alatta lévő gombok nem látszanak ki */
+@media(max-width:1024px){html body .ca-navwrap.open:is(#ca-hfx,div)::after,html body .ca-navwrap.open:is(#ca-hfx,header)::after,html body .ca-navwrap.open:is(#ca-hfx,nav)::after{content:"";position:absolute;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:-1;background:rgba(10,10,12,.38);-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);pointer-events:none}}

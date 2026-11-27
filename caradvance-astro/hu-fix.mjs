@@ -31,6 +31,12 @@ try {
         // Autóink-szerű oldalak (nem a főoldal): az „Eladó autók / Eladva” váltót a dark-mode.js ne színezze át (saját sötét stílusa van a hu-fix.css-ben)
         let h3 = h2;
         if (p !== path.join(dist, 'index.html')) h3 = h3.replace(/<div class="autok-tabs" role="tablist">/g, '<div class="autok-tabs" role="tablist" data-dm-skip="1">');
+        // 24. Bizományos: a fejléc alcíme szó szerint megismétlődött közvetlenül alatta — a bevezető az új információval indul
+        if (/\/bizomanyos\/index\.html$/.test(p.split(path.sep).join('/'))) h3 = h3.replace('<p class="biz-lead">Bizományban értékesített prémium autók — és minden eladással egy magyar jótékony szervezetet is támogatunk. A jutalékunk', '<p class="biz-lead">A jutalékunk');
+        // oldal-azonosító a <html>-en, hogy a hu-fix.css egy-egy oldalra célzottan is tudjon javítani
+        const rel = path.relative(dist, p).split(path.sep).join('/');
+        const hp = rel === 'index.html' ? '/' : (rel.endsWith('/index.html') ? '/' + rel.slice(0, -10) : '/' + rel);
+        if (!/<html[^>]*data-hupath=/.test(h3)) h3 = h3.replace(/<html\b/, '<html data-hupath="' + hp.replace(/"/g, '') + '"');
         if (h3 !== h) { fs.writeFileSync(p, h3); files++; }
       }
     })(dist);
