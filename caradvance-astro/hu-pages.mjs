@@ -195,6 +195,7 @@ const FLEET_HTML = FLEET.map(([name, cat, price, we, wk, specs, id, imgs]) => `<
     <div class="vp-media">
       <div class="vp-gal" tabindex="0" aria-label="${name} fotói">${NOPHOTO[id] ? `<div class="vp-nophoto"><span>${name.split(' ')[0]}</span>Fotó hamarosan</div>` : imgs.map((f, i) => `<img src="${IMG(id, f)}" data-big="${IMG(id, f, 1920)}" alt="${name}${i ? ' – ' + (i + 1) + '. fotó' : ''}" loading="lazy" decoding="async" width="1080" height="720">`).join('')}</div>
       ${NOPHOTO[id] ? '' : `<button type="button" class="vp-zoom" aria-label="${name} fotói teljes képernyőn">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', 17)}</button>`}
+      ${imgs.length > 1 && !NOPHOTO[id] ? `<button type="button" class="vp-arr vp-arr-p" aria-label="Előző fotó" disabled>${svg('<path d="m15 6-6 6 6 6"/>', 20)}</button><button type="button" class="vp-arr vp-arr-n" aria-label="Következő fotó">${svg('<path d="m9 6 6 6-6 6"/>', 20)}</button>` : ''}
       ${imgs.length > 1 && !NOPHOTO[id] ? `<div class="vp-dots">${imgs.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}
       <span class="vp-av${AVAIL[id] ? ' vp-av-later' : ''}">${AVAIL[id] ? 'Elérhető ' + AVAIL[id] : 'Azonnal elérhető'}</span>
     </div>
@@ -207,7 +208,11 @@ const FLEET_HTML = FLEET.map(([name, cat, price, we, wk, specs, id, imgs]) => `<
   </article>`).join('\n  ');
 // galéria-pöttyök, teljes képernyős fotónézegető, szűrők, napi forint-árfolyam, foglalási űrlap (/api/lead), lebegő sáv
 const VIP_GAL_JS = `<script id="ca-vip-gal">(function(){var R=document.getElementById('ca-vipp');if(!R)return;var $$=function(s,c){return [].slice.call((c||R).querySelectorAll(s))};
-$$('.vp-car').forEach(function(c){var g=c.querySelector('.vp-gal'),d=c.querySelectorAll('.vp-dots i');if(!g||!d.length)return;g.addEventListener('scroll',function(){var i=Math.round(g.scrollLeft/g.clientWidth);[].forEach.call(d,function(x,k){x.className=k===i?'on':''})},{passive:true});[].forEach.call(d,function(x,k){x.addEventListener('click',function(){g.scrollTo({left:k*g.clientWidth,behavior:'smooth'})})})});
+$$('.vp-car').forEach(function(c){var g=c.querySelector('.vp-gal'),d=c.querySelectorAll('.vp-dots i'),ap=c.querySelector('.vp-arr-p'),an=c.querySelector('.vp-arr-n');if(!g||!d.length)return;
+function at(){var i=Math.round(g.scrollLeft/g.clientWidth);[].forEach.call(d,function(x,k){x.className=k===i?'on':''});if(ap){ap.disabled=i<=0;an.disabled=i>=d.length-1}}
+g.addEventListener('scroll',at,{passive:true});
+if(ap){ap.addEventListener('click',function(e){e.stopPropagation();g.scrollTo({left:(Math.round(g.scrollLeft/g.clientWidth)-1)*g.clientWidth,behavior:'smooth'})});an.addEventListener('click',function(e){e.stopPropagation();g.scrollTo({left:(Math.round(g.scrollLeft/g.clientWidth)+1)*g.clientWidth,behavior:'smooth'})})}
+g.addEventListener('keydown',function(e){if(e.key==='ArrowRight'&&an)an.click();if(e.key==='ArrowLeft'&&ap)ap.click()});[].forEach.call(d,function(x,k){x.addEventListener('click',function(){g.scrollTo({left:k*g.clientWidth,behavior:'smooth'})})})});
 /* fotónézegető */
 var lb=document.getElementById('vp-lb'),lbt=lb.querySelector('.vp-lb-track'),lbn=lb.querySelector('.vp-lb-n'),lbh=lb.querySelector('.vp-lb-h'),last=null;
 function lbIdx(){return Math.round(lbt.scrollLeft/lbt.clientWidth)}
@@ -250,7 +255,7 @@ function est(c,n){if(!c||!c[0]||!n)return 0;var p=c[0],we=c[1],wk=c[2],t=n*p;if(
 var sm=R.querySelector('.vp-sum');
 function sum(){var car=rv('car'),c=CARS[car],n=days(),im=sm.querySelector('.vp-sum-img');
 sm.querySelector('.vp-sum-car').textContent=car||'Még nem választottál autót';
-im.style.backgroundImage=c&&c[3]?'url("'+c[3]+'")':'';im.classList.toggle('has',!!(c&&c[3]));
+if(c&&c[3])im.style.setProperty('background-image','url("'+c[3]+'")','important');else im.style.removeProperty('background-image');im.classList.toggle('has',!!(c&&c[3]));
 sm.querySelector('.vp-sum-dates').textContent=f.from.value?hd(f.from.value)+(f.to.value?' – '+hd(f.to.value):''):'—';
 sm.querySelector('.vp-sum-days').textContent=n?n+' nap':'—';
 sm.querySelector('.vp-sum-place').textContent=rv('place')==='Más helyszín'?(f.addr.value.trim()||'Más helyszínen'):'Nálatok, a telephelyen';
@@ -273,7 +278,7 @@ f.hidden=true;R.querySelector('.vp-prog').hidden=true;ok.hidden=false;ok.scrollI
 sum();
 /* lebegő sáv: a fejléckép után jelenik meg, a foglalási résznél és a lábléc közelében eltűnik */
 var bar=R.querySelector('.vp-bar'),hero=R.querySelector('.vp-hero'),bk=document.getElementById('foglalas');
-function bs(){var y=hero.getBoundingClientRect().bottom<60,b=bk.getBoundingClientRect(),inF=b.top<innerHeight&&b.bottom>0;bar.classList.toggle('on',y&&!inF)}
+var fl=document.getElementById('flotta');function bs(){var y=hero.getBoundingClientRect().bottom<60,b=bk.getBoundingClientRect(),inF=b.top<innerHeight&&b.bottom>0,q=fl.getBoundingClientRect(),inQ=q.top<innerHeight*.6&&q.bottom>innerHeight*.4;bar.classList.toggle('on',y&&!inF&&!inQ)}
 addEventListener('scroll',bs,{passive:true});addEventListener('resize',bs);bs();
 /* parallax és beúszás */
 var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -564,7 +569,7 @@ html.vp-lock,html.vp-lock body{overflow:hidden!important}
 @media(max-width:700px){#ca-vipp .vp-lb-p,#ca-vipp .vp-lb-nx{display:none}#ca-vipp .vp-lb-track img{padding:0}}
 /* foglalás */
 #ca-vipp .vp-booksec{position:relative;padding:90px 0;background:radial-gradient(60% 50% at 85% 0%,rgba(201,162,75,.10),transparent 70%)}
-#ca-vipp .vp-book-head{max-width:640px;margin-bottom:34px}#ca-vipp .vp-book>*,#ca-vipp .vp-pick,#ca-vipp .vp-sum>*{min-width:0}#ca-vipp .vp-row2>*,#ca-vipp .vp-row3>*,#ca-vipp .vp-step>*{min-width:0}#ca-vipp .vp-fl :is(input,select,textarea){width:100%;min-width:0;box-sizing:border-box}#ca-vipp .vp-sum{flex-direction:column}
+#ca-vipp .vp-book-head{max-width:640px;margin-bottom:34px}#ca-vipp .vp-book>*,#ca-vipp .vp-pick,#ca-vipp .vp-sum>*{min-width:0}#ca-vipp .vp-row2>*,#ca-vipp .vp-row3>*,#ca-vipp .vp-step>*{min-width:0}#ca-vipp .vp-fl :is(input,select,textarea){width:100%;min-width:0;box-sizing:border-box}#ca-vipp .vp-sum{flex-direction:column}#ca-vipp .vp-sum>*{width:100%;box-sizing:border-box}
 #ca-vipp .vp-book{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:28px;align-items:start}
 #ca-vipp .vp-book-main{padding:30px;border-radius:28px;border:1px solid var(--vp-line);background:var(--vp-card);box-shadow:0 40px 80px -50px rgba(120,95,40,.55)}
 #ca-vipp .vp-prog{list-style:none;margin:0 0 26px;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -799,7 +804,13 @@ html #ca-vipp .vp-media{position:relative;overflow:hidden}
 html #ca-vipp .vp-gal{background:var(--vp-soft)}
 html #ca-vipp .vp-av{border-radius:0!important;left:0;top:0;padding:8px 12px;background:rgba(0,0,0,.72)!important;font-family:var(--hf);text-transform:uppercase;letter-spacing:.16em;font-size:10.5px;font-weight:500;gap:0}
 html #ca-vipp .vp-zoom{border-radius:0;right:0;top:0;width:40px;height:40px;background:rgba(0,0,0,.6)}
-html #ca-vipp .vp-dots{margin-top:-26px}
+html #ca-vipp .vp-dots{margin-top:-26px}html #ca-vipp .vp-dots i{pointer-events:none}
+html #ca-vipp .vp-arr{position:absolute;top:50%;z-index:3;width:44px;height:44px;margin-top:-22px;display:flex;align-items:center;justify-content:center;border:0;border-radius:0;background:rgba(255,255,255,.92);color:#0B0B0B;cursor:pointer;opacity:0;transition:opacity .2s,background-color .15s}
+html #ca-vipp .vp-arr-p{left:0}html #ca-vipp .vp-arr-n{right:0}
+html #ca-vipp .vp-media:hover .vp-arr,html #ca-vipp .vp-arr:focus-visible{opacity:1}
+html #ca-vipp .vp-arr:hover{background:#fff}
+html #ca-vipp .vp-media:hover .vp-arr:disabled{opacity:.3;cursor:default}
+@media(hover:none),(max-width:700px){html #ca-vipp .vp-arr{opacity:1;width:38px;height:38px;margin-top:-19px}html #ca-vipp .vp-arr:disabled{opacity:.3}}
 html #ca-vipp .vp-nophoto span{background:none;-webkit-text-fill-color:#fff;color:#fff;font-family:var(--hf);font-weight:300}
 html #ca-vipp .vp-nophoto{background:#111}
 html #ca-vipp .vp-cb{display:block!important;padding:0!important}
@@ -828,7 +839,7 @@ html #ca-vipp .vp-pc:has(input:checked){border-color:var(--vp-ink)!important;box
 html #ca-vipp .vp-pc:has(input:checked):after{border-radius:0;background-color:var(--vp-btn);box-shadow:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
 html:not(.ca-dark) #ca-vipp .vp-pc:has(input:checked):after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
 html.ca-dark #ca-vipp .vp-pc:has(input:checked):after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
-html #ca-vipp .vp-pc-img{background:var(--vp-soft)!important;color:var(--vp-ink)!important}
+html #ca-vipp .vp-pc-img{background:var(--vp-soft)!important;color:var(--vp-ink)!important}html #ca-vipp .vp-pc-img{aspect-ratio:4/3!important}html #ca-vipp .vp-pc-img img{object-fit:contain!important}
 html #ca-vipp .vp-pc b{font-family:var(--hf);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11.5px}
 html #ca-vipp .vp-seg,html.ca-dark #ca-vipp .vp-seg{background:none!important;padding:0;gap:0}
 html #ca-vipp .vp-seg label+label span{border-left:1px solid var(--vp-line)}
@@ -844,7 +855,7 @@ html #ca-vipp .vp-fl :is(input,select,textarea):focus{border-color:var(--vp-ink)
 html #ca-vipp .vp-ck input{accent-color:var(--vp-ink)}html #ca-vipp .vp-ck a{color:var(--vp-ink)}
 html #ca-vipp .vp-nav2 .vp-btn{height:52px}
 html #ca-vipp .vp-sum-card{border:1px solid var(--vp-line)!important;background:var(--vp-card)!important}
-html #ca-vipp .vp-sum-img{background-color:var(--vp-soft)!important;color:var(--vp-ink)}
+html #ca-vipp .vp-sum-img{background-color:var(--vp-soft)!important;color:var(--vp-ink);aspect-ratio:4/3!important;background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important}
 html #ca-vipp .vp-sum-car{text-transform:uppercase;letter-spacing:.1em;font-size:16px!important;font-weight:500!important}
 html #ca-vipp .vp-sum dt{font-family:var(--hf);text-transform:uppercase;letter-spacing:.14em;font-size:10.5px;color:var(--vp-ink);align-self:center}
 html #ca-vipp .vp-sum dd{font-weight:400!important;color:var(--vp-mut)!important}
