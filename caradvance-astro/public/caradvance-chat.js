@@ -982,8 +982,7 @@
   var people=[
     {office:true,name:'CarAdvance Iroda',role:'\u00dcgyint\u00e9z\u00e9s',tel:'+36 30 233 6060',telh:'tel:+36302336060',wah:W+'36302336060'},
     {img:'/toth-karoly.webp',name:'T\u00f3th K\u00e1roly',role:'Kereskedelmi Igazgat\u00f3',tel:'+36 30 214 6989',telh:'tel:+36302146989',wah:W+'36302146989'},
-    {img:'/vadnai-zsombor.webp',name:'Vadnai Zsombor',role:'Sales Manager',tel:'+36 30 094 2105',telh:'tel:+36300942105',wah:W+'36300942105'},
-    {img:'/bajzath-balazs.webp',name:'Bajz\u00e1th Bal\u00e1zs',role:'Sales Manager',tel:'+36 30 094 2081',telh:'tel:+36300942081',wah:W+'36300942081'}
+    {img:'/vadnai-zsombor.webp',name:'Vadnai Zsombor',role:'Sales Manager',tel:'+36 30 094 2105',telh:'tel:+36300942105',wah:W+'36300942105'}
   ];
   var CHT=[
     {img:'/toth-karoly.webp',name:'K\u00e1roly T\u00f3th',role:R({x:'Vertriebsleiter',fr:'Directeur commercial',it:'Direttore commerciale',en:'Sales Director'}),tel:'+41 79 715 85 80',telh:'tel:+41797158580',wah:W+'41797158580'},
