@@ -50,6 +50,8 @@ const CSS = '<style id="ca-ord-css">'
   + D + '.ca-ocw::after{background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent)}'
   + P + '.ca-ocar{position:relative;z-index:1;max-width:100%!important;max-height:100%!important;width:auto!important;height:auto!important;object-fit:contain!important;transition:transform .45s cubic-bezier(.3,.7,.2,1)}'
   + P + '#eglBrands .egl-brand-tile:hover .ca-ocar{transform:translateX(4px) scale(1.03)}'
+  // márkakártyák: a MINI balra, a Mercedes és az Audi jobbra néz (tükrözés a kép keretén, a hover-mozgás is az autó orra felé megy)
+  + P + '.ca-ocw:is(:has(img[src*="mini-jcw"]),:has(img[src*="mercedes-benz-glc"]),:has(img[src*="audi-q5"])){transform:scaleX(-1)}'
   + P + '#eglBrands .egl-brand-name{font-size:22px!important;font-weight:800!important;letter-spacing:-.02em;color:inherit!important;margin:0!important}'
   + P + '.ca-omod{font-size:13px;opacity:.6;margin:3px 0 14px}'
   + P + '#eglBrands .egl-brand-cta{display:inline-flex!important;align-items:center;justify-content:center;align-self:stretch;height:44px;margin-top:auto!important;border-radius:13px;background:#121317!important;color:#fff!important;font-size:14px!important;font-weight:700!important;transition:background .2s}'
