@@ -91,7 +91,8 @@
     else if (doc && doc.id) { const k = state[col].findIndex(d => d.id === doc.id || d.id === id); if (k >= 0) state[col] = state[col].map((d, i) => i === k ? doc : d); else state[col] = [...state[col], doc]; }
     else if (findDoc(col, id)) state[col] = state[col].map(d => d.id === id ? { ...d, ...data } : d);
     emit(col);
-    ver = ''; refresh();
+    // a refresh already in flight may carry data from before this write – queue one more after it
+    ver = ''; if (loading) again = true; refresh();
     return doc;
   }
 
