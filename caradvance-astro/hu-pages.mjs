@@ -156,6 +156,36 @@ html.ca-dark #ca-corp .cp-ghost{border-color:rgba(255,255,255,.22);color:#fff!im
 </style>`;
 
 // ---------------------------------------------------------------- VIP
+// VIP flotta (forrás: caradvance.de „Verfügbare Fahrzeuge”, a luxusautók; a fotókat a caradvance.de képoptimalizálója szolgálja ki)
+const SB = 'https://dojspukytlbetcrsgwld.supabase.co/storage/v1/object/public/fahrzeuge_bilder/';
+const IMG = (id, f, w = 1080) => 'https://caradvance.de/_next/image?url=' + encodeURIComponent(SB + id + '/' + f) + '&w=' + w + '&q=75';
+const FLEET = [
+  ['Ferrari 812 GTS Superfast', 'Sportautó', 2678, ['Automata', '800 LE'], '5538', ['IMG_7994.jpg', 'IMG_7981.jpg', 'IMG_7996.jpg', 'IMG_7995.jpg']],
+  ['Ferrari 296 GTS', 'Sportautó', 1695, ['Automata', 'Benzin'], '5706', ['IMG_5052.jpg', 'IMG_5057.jpg', 'IMG_5053.jpg', 'IMG_5058.jpg']],
+  ['Ferrari F8 Spider', 'Cabrio', 1660, ['Automata', 'Benzin', '720 LE'], '5537', ['IMG_9021.jpg', 'IMG_9023.jpg', 'IMG_9022.jpg', 'IMG_9024.jpg']],
+  ['Ferrari F8 Spider', 'Cabrio', 1660, ['Automata', 'Benzin'], '5531', ['IMG_7951.jpg', 'IMG_7955.jpg', 'IMG_7959.jpg', 'IMG_7952.jpg', 'IMG_7953.jpg']],
+  ['Ferrari Amalfi', 'Sportautó', 1541, ['Automata', 'Benzin'], '5599', ['IMG_8940.jpg', 'IMG_8934.jpg', 'IMG_8941.jpg', 'IMG_8936.jpg']],
+  ['Ferrari Roma Spider', 'Cabrio', 1541, ['Automata', 'Benzin'], '5628', ['IMG_4179.jpg', 'IMG_4180.jpg', 'IMG_4184.jpg', 'IMG_4190.jpg', 'IMG_4195.jpg', 'IMG_4189.jpg']],
+  ['Porsche 911 Targa 4S', 'Sportautó', 1184, ['Automata', 'Benzin', '480 LE'], '5680', ['IMG_9925.jpg', 'IMG_9924.jpg', 'IMG_9929.jpg']],
+  ['Bentley Continental GTC', 'Cabrio', 1131, ['Automata'], '5541', ['Bentley_Continental_GTC_schwarz_front.jpg']],
+  ['BMW M3 Competition', 'Limuzin', 1070, ['Automata'], '5623', ['IMG_0364.jpg', 'IMG_0358.jpg', 'IMG_0368.jpg', 'IMG_0370.jpg']],
+  ['Mercedes S 350', 'Limuzin', 0, ['Automata'], '5589', ['S350_M-CC8476_01.jpg', 'S350_M-CC8476_02.jpg', 'S350_M-CC8476_03.jpg', 'S350_M-CC8476_04.jpg', 'S350_M-CC8476_05.jpg', 'S350_M-CC8476_06.jpg']],
+];
+const eur = n => '€' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+const FLEET_HTML = FLEET.map(([name, cat, price, specs, id, imgs]) => `<article class="vp-car">
+    <div class="vp-gal" tabindex="0" aria-label="${name} fotói">${imgs.map((f, i) => `<img src="${IMG(id, f)}" alt="${name}${i ? ' – ' + (i + 1) + '. fotó' : ''}" loading="lazy" decoding="async" width="1080" height="720">`).join('')}</div>
+    ${imgs.length > 1 ? `<div class="vp-dots">${imgs.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}
+    <span class="vp-av"><i></i>Azonnal elérhető</span>
+    <div class="vp-cb">
+      <div class="vp-cat">${cat}</div>
+      <h3>${name}</h3>
+      <div class="vp-specs">${specs.concat(['200 km/nap']).map(x => `<span>${x}</span>`).join('')}</div>
+      <div class="vp-pr">${price ? `<b class="vp-g">${eur(price)}</b><span>/ nap · áfával</span>` : `<b class="vp-g">Ár kérésre</b><span>személyre szabott ajánlat</span>`}</div>
+      <a class="vp-btn vp-gold vp-ask" href="mailto:${MAIL}?subject=${encodeURIComponent('VIP bérlés – ' + name)}">Ajánlatot kérek</a>
+    </div>
+  </article>`).join('\n  ');
+const VIP_GAL_JS = `<script id="ca-vip-gal">(function(){[].forEach.call(document.querySelectorAll('#ca-vipp .vp-car'),function(c){var g=c.querySelector('.vp-gal'),d=c.querySelectorAll('.vp-dots i');if(!g||!d.length)return;g.addEventListener('scroll',function(){var i=Math.round(g.scrollLeft/g.clientWidth);[].forEach.call(d,function(x,k){x.className=k===i?'on':''})},{passive:true});[].forEach.call(d,function(x,k){x.addEventListener('click',function(){g.scrollTo({left:k*g.clientWidth,behavior:'smooth'})})})})})();</script>`;
+
 const OCC = ['Esküvő', 'Hétvége', 'Születésnap', 'Céges rendezvény', 'Forgatás, fotózás', 'Üzleti út'];
 const VIP = `<main id="ca-vipp" data-dm-skip="1">
 <header class="vp-top"><div class="vp-wrap vp-top-in">
@@ -164,7 +194,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
   <a class="vp-back" href="/">← caradvance.hu</a>
 </div></header>
 <section class="vp-hero">
-  <div class="vp-hero-bg" style="background-image:url('/caradvance-hero-x5-poster.jpg')"></div>
+  <div class="vp-hero-bg" style="background-image:url('${IMG('5706', 'IMG_5052.jpg', 1920)}')"></div>
   <div class="vp-wrap vp-hero-in">
     <div class="vp-ey">Privát luxusautó-bérlés</div>
     <h1>Egy nap.<br><span class="vp-g">Egy élmény.</span></h1>
@@ -180,17 +210,20 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
   <div class="vp-ey">Alkalmak</div><h2>Minden különleges naphoz a megfelelő autó</h2>
   <div class="vp-occ">${OCC.map(o => `<span>${o}</span>`).join('')}</div>
 </div></section>
-<section class="vp-sec" id="flotta"><div class="vp-wrap"><div class="vp-fleet">
-  <span class="vp-ic vp-ic-lg">${svg(IC.crown, 26)}</span>
-  <div><div class="vp-ey">VIP flotta</div><h2>A teljes flotta hamarosan itt</h2><p>Az aktuálisan elérhető autókról és napidíjakról személyre szabott ajánlatot küldünk — írd meg, milyen autót és melyik napra szeretnél.</p></div>
-</div></div></section>
+<section class="vp-sec" id="flotta"><div class="vp-wrap">
+  <div class="vp-ey">VIP flotta</div><h2>Válaszd ki az autódat</h2>
+  <p>Minden autó azonnal elérhető, napi 200 km-rel. Írd meg, melyiket és melyik napra szeretnéd — személyre szabott ajánlattal jelentkezünk.</p>
+  <div class="vp-cars">
+  ${FLEET_HTML}
+  </div>
+</div></section>
 <section class="vp-sec" id="kapcsolat"><div class="vp-wrap"><div class="vp-cta">
   <div class="vp-ey">Személyes ajánlat</div><h2>Mondd el, milyen napot tervezel</h2>
   <p>Az autót, a dátumot és az átvételt személyesen egyeztetjük.</p>
   <div class="vp-btns"><a class="vp-btn vp-gold" href="tel:${TEL}">${svg(IC.phone, 18)} ${TELTXT}</a><a class="vp-btn vp-ghost" href="mailto:${MAIL}?subject=VIP%20luxusaut%C3%B3-b%C3%A9rl%C3%A9s">${svg(IC.mail, 18)} Írj nekünk</a></div>
 </div></div></section>
 <footer class="vp-foot"><div class="vp-wrap">© ${new Date().getFullYear()} Caradvance · <a href="/">caradvance.hu</a> · <a href="/adatkezeles/">Adatkezelés</a> · <a href="/impresszum/">Impresszum</a></div></footer>
-</main>`;
+</main>` + VIP_GAL_JS;
 
 const VIP_CSS = `<style id="ca-dark-hu-vip">
 /* a VIP egy külön világ: a fő menü és lábléc helyett saját fejléc és lábléc */
@@ -235,6 +268,31 @@ html.ca-dark #ca-vipp .vp-ey{color:#D4B062}
 #ca-vipp .vp-occ span{padding:12px 20px;border-radius:999px;border:1px solid var(--vp-line);background:var(--vp-card);font-weight:600;font-size:15px}
 #ca-vipp .vp-fleet{display:flex;gap:28px;align-items:flex-start;padding:40px;border-radius:28px;border:1px solid var(--vp-line);background:var(--vp-card)}
 #ca-vipp .vp-fleet p{margin:0}
+#ca-vipp .vp-cars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:30px}
+#ca-vipp .vp-car{position:relative;display:flex;flex-direction:column;border-radius:24px;overflow:hidden;border:1px solid var(--vp-line);background:var(--vp-card);transition:transform .2s,box-shadow .2s}
+#ca-vipp .vp-car:hover{transform:translateY(-3px);box-shadow:0 24px 50px -28px rgba(120,95,40,.55)}
+#ca-vipp .vp-gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;aspect-ratio:3/2;background:#111;scrollbar-width:none;outline:none}
+#ca-vipp .vp-gal::-webkit-scrollbar{display:none}
+#ca-vipp .vp-gal img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
+#ca-vipp .vp-dots{position:relative;display:flex;justify-content:center;align-items:center;gap:5px;margin-top:-24px;height:24px;z-index:2}
+#ca-vipp .vp-dots i{width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.55);cursor:pointer;transition:width .2s,background-color .2s}
+#ca-vipp .vp-dots i.on{width:18px;background:#fff}
+#ca-vipp .vp-av{position:absolute;left:14px;top:14px;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:rgba(10,10,12,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:12px;font-weight:700}
+#ca-vipp .vp-av i{width:7px;height:7px;border-radius:50%;background:#30D158}
+#ca-vipp .vp-cb{display:grid;grid-template-columns:1fr auto;column-gap:16px;padding:20px 22px 22px;flex:1;align-items:end}
+#ca-vipp .vp-cb>.vp-cat,#ca-vipp .vp-cb>h3,#ca-vipp .vp-cb>.vp-specs{grid-column:1/-1}
+#ca-vipp .vp-cb>.vp-pr{margin:0!important}
+#ca-vipp .vp-cb>.vp-ask{width:auto!important;padding:0 26px}
+@media(max-width:640px){#ca-vipp .vp-cb{grid-template-columns:1fr}#ca-vipp .vp-cb>.vp-pr{margin:0 0 14px!important}#ca-vipp .vp-cb>.vp-ask{width:100%!important}}
+#ca-vipp .vp-cat{font-size:11.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--vp-mut)}
+#ca-vipp .vp-car h3{font-size:23px;font-weight:800;letter-spacing:-.015em;margin:4px 0 12px;color:var(--vp-ink)}
+#ca-vipp .vp-specs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+#ca-vipp .vp-specs span{height:26px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;border:1px solid var(--vp-line);font-size:12px;font-weight:600;color:var(--vp-ink)}
+#ca-vipp .vp-pr{display:flex;align-items:baseline;gap:8px;margin:auto 0 16px}
+#ca-vipp .vp-pr b{font-size:26px;font-weight:800;letter-spacing:-.02em}
+#ca-vipp .vp-pr span{font-size:12.5px;color:var(--vp-mut);font-weight:600}
+#ca-vipp .vp-ask{justify-content:center;height:48px;width:100%}
+@media(max-width:640px){#ca-vipp .vp-cars{grid-template-columns:1fr}}
 #ca-vipp .vp-cta{text-align:center;padding:64px 28px;border-radius:32px;border:1px solid var(--vp-line);background:radial-gradient(60% 120% at 50% 120%,rgba(201,162,75,.22),transparent 70%),var(--vp-card)}
 #ca-vipp .vp-cta p{margin:0 auto 26px}#ca-vipp .vp-cta .vp-btns{justify-content:center}
 #ca-vipp .vp-foot{padding:34px 0 44px;border-top:1px solid var(--vp-line);font-size:13px;color:var(--vp-mut)}
