@@ -1,0 +1,7 @@
+/* Ügyfélfiók (/fiok/), sötét mód, CSAK magyar oldalak (a hu-fiok.mjs húzza be):
+   a fekete fejléc lágyan átúszik az oldal hátterébe (nincs éles határ), és a kékes tónusok helyett semleges grafit. */
+html.ca-dark body main:is(#ca-fkx,.acct){background:#0F1013!important}
+html.ca-dark body main.acct :is(#ca-fkx,.acct-hero){background:radial-gradient(1200px 400px at 85% -10%,rgba(226,0,26,.28),rgba(226,0,26,0) 60%),linear-gradient(180deg,rgba(15,16,19,0) 50%,#0F1013 100%),linear-gradient(135deg,#0B0B0D,#18191D)!important}
+html.ca-dark body main.acct :is(#ca-fkx,.ac-card),html.ca-dark body main.acct :is(#ca-fkx,.ac-invite){background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.02)),#141518!important;border-color:rgba(255,255,255,.09)!important}
+html.ca-dark body main.acct :is(#ca-fkx,.ac-ic){background:rgba(255,255,255,.06)!important}
+html.ca-dark body main.acct :is(#ca-fkx,.ac-in),html.ca-dark body main.acct :is(#ca-fkx,input,select,textarea){background:#1A1B1F!important;border-color:rgba(255,255,255,.12)!important}
