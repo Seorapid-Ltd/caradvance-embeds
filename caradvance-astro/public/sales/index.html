@@ -1663,7 +1663,7 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
       <nav id="tabs">
         <a href="#stock" data-v="stock"><i data-i18n="nav_veh">Vehicles</i></a>
         <a href="#dealers" data-v="enq"><i data-i18n="nav_enq">B2B List</i></a>
-        <a href="#leads" data-v="leads"><i data-i18n="nav_leads">Enquiries</i> <span class="nLeads"></span></a>
+        <a href="#leads" data-v="leads"><i data-i18n="nav_leads">Deals</i> <span class="nLeads"></span></a>
         <a href="#list" data-v="list"><i data-i18n="nav_list">Pricing</i></a>
         <a href="#contact" data-v="contact"><i data-i18n="nav_contact">Help</i> <span class="nMsg"></span></a>
       </nav>
@@ -2020,7 +2020,7 @@ $('.topbar .brand').addEventListener('click',e=>{e.preventDefault();['#sq'].forE
 
 
 /* ---------- FULL-PAGE TRANSLATION + FLAG PICKER ---------- */
-for(const[l,o]of Object.entries({hu:{l_f_open:'Folyamatban lévők'},en:{l_f_open:'In progress'},de:{l_f_open:'In Bearbeitung'},sk:{l_f_open:'Rozpracované'},cs:{l_f_open:'Rozpracované'},pl:{l_f_open:'W toku'},ro:{l_f_open:'În lucru'}}))if(I18N[l])Object.assign(I18N[l],o);
+for(const[l,o]of Object.entries({hu:{l_f_open:'Folyamatban lévők',nav_leads:'Ügyletek'},en:{l_f_open:'In progress',nav_leads:'Deals'},de:{l_f_open:'In Bearbeitung',nav_leads:'Geschäfte'},sk:{l_f_open:'Rozpracované',nav_leads:'Obchody'},cs:{l_f_open:'Rozpracované',nav_leads:'Obchody'},pl:{l_f_open:'W toku',nav_leads:'Transakcje'},ro:{l_f_open:'În lucru',nav_leads:'Tranzacții'}}))if(I18N[l])Object.assign(I18N[l],o);
 const TRL=["hu","sk","cs","de","pl"];const TRD={"Add dealer": ["Kereskedő hozzáadása", "Pridať predajcu", "Přidat prodejce", "Händler hinzufügen", "Dodaj dealera"],
 "Log activity": ["Aktivitás rögzítése","Zaznamenať aktivitu","Zaznamenat aktivitu","Aktivität erfassen","Zapisz aktywność"],
 "Record offer": ["Ajánlat rögzítése","Zaznamenať ponuku","Zaznamenat nabídku","Angebot erfassen","Zapisz ofertę"],
@@ -2504,13 +2504,13 @@ function parseSale(o){const n=o.notes||'';const f=k=>{const m=n.match(new RegExp
   return{price,type,net:price==null?null:type==='b2c'?Math.round(price/1.19):price,car,name:f('Name'),company:f('Company'),email:f('Email'),phone:f('Phone'),country:f('Country'),offer:f('Offer'),note:f('Note')}}
 
 /* Ajánlatok fejléc: státusz-csempék darabszámmal (a régi fülsor és státusz-legördülő helyett) */
-const OFT={hu:{title:'Ajánlatok',open:'Folyamatban',all:'Összes',new:'Új',chk:'Döntésre vár',ctr:'Ellenajánlat',acc:'Elfogadva',dec:'Elutasítva',sold:'Eladva',sO:'nyitott',sC:'döntésre vár',sS:'eladva',cty:'Ország'},
- en:{title:'Offers',open:'In progress',all:'All',new:'New',chk:'Awaiting decision',ctr:'Counter offer',acc:'Accepted',dec:'Declined',sold:'Sold',sO:'open',sC:'awaiting decision',sS:'sold',cty:'Country'},
- de:{title:'Angebote',open:'In Bearbeitung',all:'Alle',new:'Neu',chk:'Wartet auf Entscheidung',ctr:'Gegenangebot',acc:'Angenommen',dec:'Abgelehnt',sold:'Verkauft',sO:'offen',sC:'warten auf Entscheidung',sS:'verkauft',cty:'Land'},
- sk:{title:'Ponuky',open:'Rozpracované',all:'Všetky',new:'Nové',chk:'Čaká na rozhodnutie',ctr:'Protiponuka',acc:'Prijaté',dec:'Zamietnuté',sold:'Predané',sO:'otvorené',sC:'čaká na rozhodnutie',sS:'predané',cty:'Krajina'},
- cs:{title:'Nabídky',open:'Rozpracované',all:'Všechny',new:'Nové',chk:'Čeká na rozhodnutí',ctr:'Protinabídka',acc:'Přijaté',dec:'Zamítnuté',sold:'Prodané',sO:'otevřené',sC:'čeká na rozhodnutí',sS:'prodané',cty:'Země'},
- pl:{title:'Oferty',open:'W toku',all:'Wszystkie',new:'Nowe',chk:'Czeka na decyzję',ctr:'Kontroferta',acc:'Przyjęte',dec:'Odrzucone',sold:'Sprzedane',sO:'otwarte',sC:'czeka na decyzję',sS:'sprzedane',cty:'Kraj'},
- ro:{title:'Oferte',open:'În lucru',all:'Toate',new:'Noi',chk:'Așteaptă decizia',ctr:'Contraofertă',acc:'Acceptate',dec:'Respinse',sold:'Vândute',sO:'deschise',sC:'așteaptă decizia',sS:'vândute',cty:'Țara'}};
+const OFT={hu:{title:'Ügyletek',open:'Folyamatban',all:'Összes',new:'Új',chk:'Döntésre vár',ctr:'Ellenajánlat',acc:'Elfogadva',dec:'Elutasítva',sold:'Eladva',sO:'nyitott',sC:'döntésre vár',sS:'eladva',cty:'Ország'},
+ en:{title:'Deals',open:'In progress',all:'All',new:'New',chk:'Awaiting decision',ctr:'Counter offer',acc:'Accepted',dec:'Declined',sold:'Sold',sO:'open',sC:'awaiting decision',sS:'sold',cty:'Country'},
+ de:{title:'Geschäfte',open:'In Bearbeitung',all:'Alle',new:'Neu',chk:'Wartet auf Entscheidung',ctr:'Gegenangebot',acc:'Angenommen',dec:'Abgelehnt',sold:'Verkauft',sO:'offen',sC:'warten auf Entscheidung',sS:'verkauft',cty:'Land'},
+ sk:{title:'Obchody',open:'Rozpracované',all:'Všetky',new:'Nové',chk:'Čaká na rozhodnutie',ctr:'Protiponuka',acc:'Prijaté',dec:'Zamietnuté',sold:'Predané',sO:'otvorené',sC:'čaká na rozhodnutie',sS:'predané',cty:'Krajina'},
+ cs:{title:'Obchody',open:'Rozpracované',all:'Všechny',new:'Nové',chk:'Čeká na rozhodnutí',ctr:'Protinabídka',acc:'Přijaté',dec:'Zamítnuté',sold:'Prodané',sO:'otevřené',sC:'čeká na rozhodnutí',sS:'prodané',cty:'Země'},
+ pl:{title:'Transakcje',open:'W toku',all:'Wszystkie',new:'Nowe',chk:'Czeka na decyzję',ctr:'Kontroferta',acc:'Przyjęte',dec:'Odrzucone',sold:'Sprzedane',sO:'otwarte',sC:'czeka na decyzję',sS:'sprzedane',cty:'Kraj'},
+ ro:{title:'Tranzacții',open:'În lucru',all:'Toate',new:'Noi',chk:'Așteaptă decizia',ctr:'Contraofertă',acc:'Acceptate',dec:'Respinse',sold:'Vândute',sO:'deschise',sC:'așteaptă decizia',sS:'vândute',cty:'Țara'}};
 function renderOfHeader(){
   const T=OFT[typeof LANG!=='undefined'&&OFT[LANG]?LANG:'en'],c=S.ofCounts||{};const sold=(S.logs||[]).filter(o=>o.outcome==='Sold').length;
   const onSold=location.hash.replace('#','')==='sold',cur=onSold?'sold':($('#ofState')&&$('#ofState').value)||'open';
