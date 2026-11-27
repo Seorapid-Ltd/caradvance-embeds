@@ -2,7 +2,7 @@
    mobile.de does not allow server-side downloads, so the scheduled check opens mobile.de in the team's browser
    and runs this script there:
      const K = '<key>'; const run = (0, eval)(await (await fetch('https://dev.caradvance.hu/api/desk/mde-script?key=' + K)).text());
-     let r; do { r = await run(K); } while (!r.done && !r.blocked);   // each call works for ~35 s, then saves
+     let r; do { r = await run(K); } while (!r.done && !r.blocked);   // each call works for ~25 s, then saves (browser tools stop a call after 45 s)
    For every car it reads our own ad (price, net price, km) and the 3 competitors we follow; a competitor that is gone
    is replaced from the car's mobile.de search. Results go to /api/desk/mde-sync, which stores them with the date. */
 (() => {
@@ -45,7 +45,7 @@
       Object.assign(st, { plan: j.plan, i: 0, changed: [], blocked: 0, read: 0, gone: 0 });
     }
     const t0 = Date.now(), batch = [];
-    while (st.i < st.plan.length && Date.now() - t0 < 35000) {
+    while (st.i < st.plan.length && Date.now() - t0 < 22000) {
       const p = st.plan[st.i++], out = { id: p.id, ad: null, comps: [], extra: [] };
       if (p.ad) { out.ad = await ad(p.ad); await sleep(500); }
       for (const cid of p.comps) { const x = await ad(cid); out.comps.push(x); if (x.why === 'blocked') st.blocked++; else if (!x.ok) st.gone++; await sleep(500); }
