@@ -1,13 +1,14 @@
 /* CarAdvance Sales Desk — connects the desk page to /desk/api (Notion).
    Gives the page the same small database interface it used as a Claude artifact:
-   collection(name).onSnapshot(cb), doc(path).set/update/delete. Refreshes every 20 s and when
-   the tab regains focus, so everyone sees the same, current data. */
+   collection(name).onSnapshot(cb), doc(path).set/update/delete. Checks for changes every 10 s and when
+   the tab regains focus (only downloads the data when something changed), so everyone sees the same, current data.
+   A saved record shows at once (the server answers with the finished record). */
 (function () {
   const API = location.origin + '/api/desk/';
-  const POLL_MS = 20000;
+  const POLL_MS = 10000;
   let state = { vehicles: [], dealers: [], outreach: [], extras: [] }, me = null, catalogue = {};
   const subs = { vehicles: [], dealers: [], outreach: [], extras: [] };
-  let loading = null, lastErr = null;
+  let loading = null, again = false, lastErr = null, ver = '';
   // Public mode: not signed in (or no Sales Desk access) → the cars only, read-only.
   let PUBLIC = false;
   const markPublic = () => {
@@ -31,8 +32,9 @@
     return j;
   }
 
-  async function refresh(fresh) {
-    if (loading) return loading;
+  // full = download everything even if the version did not change (after a conflict)
+  async function refresh(full) {
+    if (loading) { if (full) again = true; return loading; }
     loading = (async () => {
       try {
         if (!Object.keys(catalogue).length) catalogue = await fetch('catalogue.json').then(r => r.ok ? r.json() : {}).catch(() => ({}));
@@ -41,7 +43,7 @@
           // A refresh can hit a transient 401/redirect on cold start — don't demote a signed-in user to
           // public (which disables the stock list) on the first miss; retry a few times first.
           for (let attempt = 1; ; attempt++) {
-            try { j = await api('data' + (fresh ? '?fresh=1' : '')); break; }
+            try { j = await api('data' + (ver && !full ? '?v=' + encodeURIComponent(ver) : '')); break; }
             catch (e) {
               if (e.code === 'unauthenticated' || e.code === 'invalid_argument') {
                 if (attempt >= 3) { PUBLIC = true; markPublic(); break; }
@@ -51,6 +53,8 @@
           }
         }
         if (PUBLIC) { j = await api('public'); j.dealers = []; j.outreach = []; j.me = null; }
+        if (j.same) { lastErr = null; return; } // nothing new on the server
+        ver = j.v || '';
         me = j.me;
         const changed = ['vehicles', 'dealers', 'outreach'].filter(c => JSON.stringify(state[c]) !== JSON.stringify(j[c]));
         state.vehicles = j.vehicles; state.dealers = j.dealers; state.outreach = j.outreach;
@@ -62,7 +66,7 @@
       } catch (e) {
         if (!lastErr) Object.values(subs).flat().forEach(s => s.error && s.error(e));
         lastErr = e;
-      } finally { loading = null; }
+      } finally { loading = null; if (again) { again = false; refresh(true); } }
     })();
     return loading;
   }
@@ -73,17 +77,22 @@
     const [col, id] = path.split('/');
     const cur = findDoc(col, id) || {};
     const prev = {}; if (data) for (const k of Object.keys(data)) prev[k] = cur[k] ?? null;
+    let j;
     try {
-      await api('write', { method: 'POST', body: JSON.stringify({ op, path, data, prev }) });
+      j = await api('write', { method: 'POST', body: JSON.stringify({ op, path, data, prev }) });
     } catch (e) {
       if (e.code === 'conflict') { await refresh(true); const err = fail('conflict', e.message); throw err; }
       throw e;
     }
-    // show the change at once, then confirm from Notion
+    // show the change at once with the record the server saved (new activities have the Notion id),
+    // then pick up anything else that changed – without making the user wait for it
+    const doc = j && j.doc;
     if (op === 'delete') state[col] = state[col].filter(d => d.id !== id);
+    else if (doc && doc.id) { const k = state[col].findIndex(d => d.id === doc.id || d.id === id); if (k >= 0) state[col] = state[col].map((d, i) => i === k ? doc : d); else state[col] = [...state[col], doc]; }
     else if (findDoc(col, id)) state[col] = state[col].map(d => d.id === id ? { ...d, ...data } : d);
     emit(col);
-    await refresh(true);
+    ver = ''; refresh();
+    return doc;
   }
 
   const db = {
