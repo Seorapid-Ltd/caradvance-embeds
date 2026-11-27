@@ -56,6 +56,7 @@
         if (j.same) { lastErr = null; return; } // nothing new on the server
         ver = j.v || '';
         me = j.me;
+        if (Array.isArray(j.team) && j.team.length) { try { window.dispatchEvent(new CustomEvent('desk:team', { detail: j.team })); } catch (e) {} }
         const changed = ['vehicles', 'dealers', 'outreach'].filter(c => JSON.stringify(state[c]) !== JSON.stringify(j[c]));
         state.vehicles = j.vehicles; state.dealers = j.dealers; state.outreach = j.outreach;
         const firstExtras = !state.extras.length;
