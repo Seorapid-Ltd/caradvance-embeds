@@ -87,4 +87,24 @@ for (const [L, M] of Object.entries(MKT)) {
   }
   console.log(`[skcz-trust] ${L}: csapat ${team.length} fő`);
 }
-console.log(`[skcz-trust] kész: dátum ${n.date}, szerzősor ${n.byline}, BlogPosting.author ${n.author}, AutoDealer ${n.dealer}, WA-kulcs ${n.wa}`);
+/* E5 (2026-11-27) — márka-konfigurátorok indexelése. Az i18n-mirror a fordítás korai fázisában mért 85% alatti
+   lefedettség miatt noindex-et tett a /konfigurator/{mercedes,audi,mini}/ oldalakra, pedig a kész oldalon nincs magyar szöveg.
+   Keresési igény (Ahrefs): mercedes konfigurátor SK 1 500 / CZ 1 900, audi SK 450 / CZ 500 havonta.
+   Csak akkor oldjuk fel, ha a látható szövegben nincs magyar maradvány; a sitemapba is felvesszük. */
+const HU_LEAK = /[őűŐŰ]|(?<![\p{L}])(és|vagy|Ft|bérlés|Ajánlatkérés|Részletek|Ár kérésre|Hamarosan)(?![\p{L}])/u;
+for (const L of Object.keys(MKT)) {
+  const host = MKT[L].host, sm = path.join(DIST, L, 'sitemap.xml');
+  for (const b of ['mercedes', 'audi', 'mini']) {
+    const f = path.join(DIST, L, 'konfigurator', b, 'index.html');
+    if (!fs.existsSync(f)) continue;
+    let h = fs.readFileSync(f, 'utf8');
+    if (!/<meta name="robots" content="noindex,follow">/.test(h)) continue;
+    const vis = h.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ');
+    if (HU_LEAK.test(vis)) { console.log(`[skcz-trust] ${L}/konfigurator/${b}: magyar maradvány, noindex marad`); continue; }
+    h = h.replace(/[ \t]*<meta name="robots" content="noindex,follow">\s*\n?/, '');
+    fs.writeFileSync(f, h); n.idx = (n.idx || 0) + 1;
+    const url = `${host}/konfigurator/${b}/`;
+    if (fs.existsSync(sm)) { let x = fs.readFileSync(sm, 'utf8'); if (!x.includes(`<loc>${url}</loc>`)) { x = x.replace('</urlset>', `  <url><loc>${url}</loc><lastmod>${new Date().toISOString().slice(0, 10)}</lastmod></url>\n</urlset>`); fs.writeFileSync(sm, x); } }
+  }
+}
+console.log(`[skcz-trust] kész: dátum ${n.date}, szerzősor ${n.byline}, BlogPosting.author ${n.author}, AutoDealer ${n.dealer}, WA-kulcs ${n.wa}, konfigurátor indexelve ${n.idx || 0}`);
