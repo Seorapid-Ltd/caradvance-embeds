@@ -252,8 +252,7 @@ html.ca-dark #ca-vipp .vp-g{background-image:linear-gradient(135deg,#F3DFA2,#C9A
 #ca-vipp .vp-nav a:hover,#ca-vipp .vp-back:hover{color:var(--vp-ink)}
 #ca-vipp .vp-back{color:#B08A35;font-weight:700}
 #ca-vipp .vp-hero{position:relative;overflow:hidden;min-height:max(min(100vh - 72px,900px),620px);display:flex;align-items:flex-end;padding:120px 0 44px;background:#0B0B0E}
-#ca-vipp .vp-hero-bg{position:absolute;inset:0;background:url('/vip-hero-lamborghini.webp') 50% 22%/cover no-repeat}
-@media(max-width:1200px){#ca-vipp .vp-hero-bg{background-image:url('/vip-hero-lamborghini-1200.webp')}}
+#ca-vipp .vp-hero-bg{position:absolute;inset:0;background:url('/vip-hero-lamborghini-hq.jpg') 50% 22%/cover no-repeat}
 /* a kép tisztán látszik: csak alul egy finom sötétítés a szöveg alatt, a legalján átúszik az oldal hátterébe */
 #ca-vipp .vp-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--vp-bg) 0%,rgba(8,8,10,.85) 10%,rgba(8,8,10,.55) 24%,rgba(8,8,10,0) 40%)}
 #ca-vipp .vp-hero-in{position:relative;z-index:1;width:100%}
