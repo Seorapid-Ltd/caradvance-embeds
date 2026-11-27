@@ -945,7 +945,11 @@ export async function handle(request, env, ctx) {
       const v = memoVersion();
       // nothing changed since the page last asked: answer with a few bytes instead of the whole database
       if (v && url.searchParams.get('v') === v) return json({ same: true, v });
-      return json({ vehicles, dealers, outreach, v, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
+      // the team that can be made responsible for a dealer: every Sales Desk account (test accounts left out)
+      let team = [];
+      try { team = ((await env.DB.prepare("SELECT name, email, desk_markets FROM users WHERE desk_access = 1 ORDER BY name").all()).results || [])
+        .filter(u => !/^teszt\./i.test(u.email || '')).map(u => ({ name: (u.name || nameOf(u.email)).trim(), markets: u.desk_markets || '' })); } catch (e) {}
+      return json({ vehicles, dealers, outreach, team, v, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
     if (request.method === 'GET' && route === 'damages') return json(await damagesList(env));
