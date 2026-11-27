@@ -58,7 +58,7 @@ export const MAP = {
   outreach: {
     date: ['Date', 'date'], dealer: ['Dealer', 'dealer_rel'], cars: ['Cars (as typed)', 'text'], channel: ['Channel', 'select'],
     direction: ['Direction', 'select'], member: ['Team member', 'text'], outcome: ['Outcome', 'select'],
-    next_step: ['Next step', 'text'], follow_up: ['Follow-up', 'date'], notes: ['Notes', 'text'],
+    next_step: ['Next step', 'text'], follow_up: ['Follow-up', 'date'], follow_done: ['Follow-up done', 'checkbox'], notes: ['Notes', 'text'],
     log_no: ['Log ID', 'readonly_uid'], logged: ['Logged', 'readonly_created'],
   },
 };
