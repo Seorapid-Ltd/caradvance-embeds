@@ -710,6 +710,8 @@
   }
 
   function init() {
+    /* magyar oldal: ha a főmenüben van „Cégeknek” pont (hu-fix.mjs teszi be), a panel-lista ugyanazon a helyen kap egy bejegyzést, hogy az indexek egyezzenek */
+    try { var _nl = document.querySelectorAll('.ca-nav .menu .navitem .navlink'); for (var _k = 0; _k < _nl.length; _k++) { if (/^\s*Cégeknek/.test(_nl[_k].textContent) && P.length < _nl.length) { P.splice(_k, 0, { links: [['search', 'Benchmark', '/cegeknek/#benchmark', 'Bármely autó beszerzése tesztre, összehasonlításra'], ['users', 'Rendezvények', '/cegeknek/#rendezvenyek', 'Car clinic, modellbemutató, forgatás'], ['car', 'Céges tartós bérlet', '/tartos-berlet/#cegeknek', 'Flotta havidíjjal, nettó árakon']], f: { img: '/caradvance-hero-beszerzesi-poster.jpg', t: 'Ha kereke van, előkerítjük', s: 'Beszerzés tesztre, összehasonlításra és rendezvényekre.', cta: 'Ajánlatot kérek', href: '/cegeknek/#kapcsolat' } }); break; } } } catch (e) {}
     var wrap = document.querySelector('.ca-navwrap');
     var items = wrap ? [].slice.call(wrap.querySelectorAll('.ca-nav .menu > .navitem')) : [];
     if (!wrap || items.length < (DOM === 'eu' ? 3 : 4)) return;

@@ -181,6 +181,10 @@ html.ca-dark .ca-am :is(#ca-mmx,*)::before,html.ca-dark .ca-am :is(#ca-mmx,*)::a
 
 // ikonok (vonalas, 24x24)
 const IC = {
+  brief: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7M3 12.5h18"/>',
+  search2: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M8.5 11h5M11 8.5v5"/>',
+  event: '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z"/>',
+  fleet: '<path d="M3 13l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5v4h-2"/><path d="M3 17v-4h18"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M9 4h6"/>',
   car: '<path d="M3 13l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5v4h-2"/><path d="M3 17v-4h18"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
   cmp: '<path d="M7 4v16M17 4v16M3 8h8M13 16h8"/>',
@@ -211,6 +215,9 @@ const MENUS = [
   { tiles: [['Autó rendelés', '/auto-rendeles/', 'Megkeressük, ellenőrizzük, hazahozzuk', 'truck'], ['Egyedül vagy velünk?', '/egyedul-vagy-velunk/', 'Költségek és kockázatok összevetve', 'scale'], ['Referenciák', '/referenciak/', '5000+ eladott prémium autó', 'users']],
     info: ['Tudnivalók', [['Beszerzési folyamat', '/beszerzesi-folyamat/'], ['Előnyök', '/elonyok/']]],
     quick: ['Kalkulátorok', [['Honosítás kalkulátor', '/honositas-kalkulator/'], ['Átírás kalkulátor', '/atiras-kalkulator/'], ['Lízing kalkulátor', '/finanszirozas-lizing/']]], stage: 'import' },
+  { tiles: [['Benchmark', '/cegeknek/#benchmark', 'Bármely autó beszerzése tesztre, összehasonlításra', 'search2'], ['Rendezvények', '/cegeknek/#rendezvenyek', 'Car clinic, modellbemutató, forgatás, incentive', 'event'], ['Céges tartós bérlet', '/tartos-berlet/#cegeknek', 'Flotta havidíjjal, nettó árakon', 'fleet']],
+    info: ['Tudnivalók', [['Operatív lízing', '/operativ-lizing/'], ['Finanszírozás – lízing', '/finanszirozas-lizing/'], ['Kapcsolat cégeknek', '/cegeknek/#kapcsolat']]],
+    quick: ['Kalkulátorok', [['Lízing kalkulátor', '/finanszirozas-lizing/'], ['Honosítás kalkulátor', '/honositas-kalkulator/']]], stage: 'corp' },
   { tiles: [['Miért mi?', '/miert-mi/', 'Német háttér, magyar ügyintézés', 'star'], ['Referenciák', '/referenciak/', 'Ügyfeleink történetei', 'users'], ['Kapcsolat', '/kapcsolat/', 'Solymár · Geretsried', 'pin']],
     info: ['Bizalom', [['Átláthatóság', '/atlathatosag/'], ['Minőségbiztosítás', '/minosegbiztositas/'], ['Media', '/media/'], ['Blog', '/blog/']]],
     quick: ['Kövess minket', 'SOCIAL'], stage: 'about' },
@@ -326,6 +333,12 @@ const CLIENT = function (CFG) {
       + '<input name="le" type="number" min="40" max="1200" placeholder="Teljesítmény (LE)" aria-label="Teljesítmény lóerőben"><select name="ev" aria-label="Első forgalomba helyezés éve"><option value="">Évjárat</option>' + ys + '</select><button class="am-go" type="submit" style="grid-column:auto;height:42px">Kiszámolom →</button></form>'
       + '<div class="am-calc">' + x.calc.map(function (c) { return '<a href="' + esc(c[1]) + '">' + esc(c[0]) + ' ›</a>'; }).join('') + '</div></div></div>';
   }
+  function stCorp(x) {
+    return '<div class="am-stage am-on-photo" data-st="corp" style="background:#111"><div class="am-photo" style="background-image:url(\'/caradvance-hero-beszerzesi-poster.jpg\')"></div>'
+      + '<div style="position:relative;z-index:2;max-width:58%;text-shadow:0 1px 12px rgba(0,0,0,.55)"><div class="am-st-h">Ha kereke van, előkerítjük</div><div class="am-st-p">Bármely modellt beszerzünk tesztre, összehasonlításra vagy rendezvényre — bérelve vagy megvásárolva.</div>'
+      + '<div class="am-st-p" style="margin-top:14px">Több mint 20 év tapasztalat,<br>gyártói és kereskedői partnerhálózat.</div></div>'
+      + '<div class="am-st-bot" style="position:relative;z-index:2;display:flex;align-items:center;gap:8px"><a class="am-go" href="/cegeknek/#kapcsolat">Ajánlatot kérek →</a><a class="am-go wh" href="/cegeknek/" style="background:#fff;color:#111!important">Részletek</a></div></div>';
+  }
   function stAbout(x) {
     return '<div class="am-stage am-on-photo" data-st="about" style="background:#111"><div class="am-photo" style="background-image:url(\'/caradvance-solymar.webp\')"></div>'
       + '<div style="position:relative;z-index:2;max-width:52%;text-shadow:0 1px 12px rgba(0,0,0,.5)"><div class="am-st-h">Gyere be hozzánk</div><div class="am-st-p">Solymár, Ibolya utca 18.<br>Hétfőtől péntekig 9–17</div>'
@@ -345,7 +358,7 @@ const CLIENT = function (CFG) {
     var tiles = C.tiles.map(function (t, k) { var n = t[4] && cn[t[4]]; return '<a class="am-t' + (k === 0 ? ' am-main' : '') + '" href="' + esc(t[1]) + '"><span class="am-ic">' + ic(t[3]) + '</span><div><b>' + esc(t[0]) + (n ? ' <i>' + esc(n) + '</i>' : '') + '</b><span>' + esc(t[2]) + '</span></div><em>→</em></a>'; }).join('');
     var info = '<div class="am-info"><p class="am-h">' + esc(C.info[0]) + '</p><div class="am-links">' + C.info[1].map(function (z) { return '<a href="' + esc(z[1]) + '">' + esc(z[0]) + '</a>'; }).join('') + '</div></div>';
     var x = { bs: bs.filter(function (b) { return b.img; }), ng: ng, so: so, calc: Array.isArray(C.quick[1]) ? C.quick[1] : [] };
-    var stage = { rent: stRent, sale: stSale, sell: stSell, import: stImport, about: stAbout }[C.stage](x);
+    var stage = { rent: stRent, sale: stSale, sell: stSell, import: stImport, corp: stCorp, about: stAbout }[C.stage](x);
     var d = document.createElement('div'); d.className = 'ca-am'; d.setAttribute('data-i', i);
     d.innerHTML = '<div class="am-grid"><div class="am-left"><div class="am-tiles">' + tiles + '</div>' + info + '</div><div class="am-right">' + stage + '</div></div>' + bar();
     wire(d, C.stage, cn);

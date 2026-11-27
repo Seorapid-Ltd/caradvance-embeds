@@ -41,6 +41,12 @@ const CARDS = '<script id="ca-cards">(function(){if(!/^\\/(referenciak|auto)\\//
   + 'if(cb&&!cb.parentNode.classList.contains("ca-act")){var a=document.createElement("div");a.className="ca-act";cb.parentNode.insertBefore(a,cb);a.appendChild(cb);if(iq){iq.title="Érdeklődöm";iq.setAttribute("aria-label","Érdeklődöm");a.appendChild(iq)}}})}'
   + 'var tm;function later(){clearTimeout(tm);tm=setTimeout(go,150)}if(document.readyState!=="loading")go();else document.addEventListener("DOMContentLoaded",go);addEventListener("load",go);try{new MutationObserver(later).observe(document.body||document.documentElement,{childList:true,subtree:true})}catch(_){}})();</script>';
 
+const CORP_LI = '<li class="navitem"><button class="navlink" type="button">Cégeknek<span class="chev">⌄</span></button><div class="dropdown"><div class="dd-inner"><a class="ddi" href="/cegeknek/#benchmark">Benchmark</a><a class="ddi" href="/cegeknek/#rendezvenyek">Rendezvények</a><a class="ddi" href="/tartos-berlet/#cegeknek">Céges tartós bérlet</a><a class="ddi" href="/operativ-lizing/">Operatív lízing</a></div></div></li>';
+const CORP_M = '<div class="m-acc"><button class="m-accbtn" type="button">Cégeknek<span class="m-plus">+</span></button><div class="m-sub"><a href="/cegeknek/#benchmark">Benchmark</a><a href="/cegeknek/#rendezvenyek">Rendezvények</a><a href="/tartos-berlet/#cegeknek">Céges tartós bérlet</a><a href="/operativ-lizing/">Operatív lízing</a></div></div>';
+const VIP_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
+const VIP_BTN = '<a class="ca-vip" href="/vip/" aria-label="VIP luxusautó-bérlés">' + VIP_SVG + '<span>VIP</span></a>';
+const VIP_M = '<a class="ca-vip ca-vip-m" href="/vip/">' + VIP_SVG + '<span>VIP luxusautó-bérlés</span></a>';
+
 const dist = path.resolve(process.cwd(), 'dist');
 const SRC = path.resolve(process.cwd(), 'hu-fix.css');
 
@@ -83,6 +89,11 @@ try {
           h3 = h3.split('<button class="navlink" type="button">' + a + '<span class="chev">').join('<button class="navlink" type="button">' + b + '<span class="chev">')
                  .split('<button class="m-accbtn" type="button">' + a + '<span class="m-plus">').join('<button class="m-accbtn" type="button">' + b + '<span class="m-plus">');
         }
+        // Főmenü: új „Cégeknek” menüpont a Rólunk elé (asztali + mobil), arany VIP gomb a Kapcsolat mellé
+        if (h3.indexOf('>Cégeknek<span class="chev">') < 0) h3 = h3.replace('<li class="navitem"><button class="navlink" type="button">Rólunk', CORP_LI + '<li class="navitem"><button class="navlink" type="button">Rólunk');
+        if (h3.indexOf('>Cégeknek<span class="m-plus">') < 0) h3 = h3.replace('<div class="m-acc"><button class="m-accbtn" type="button">Rólunk', CORP_M + '<div class="m-acc"><button class="m-accbtn" type="button">Rólunk');
+        if (h3.indexOf('class="ca-vip"') < 0) h3 = h3.replace('<a class="kapcsolat" href="/kapcsolat/">', VIP_BTN + '<a class="kapcsolat" href="/kapcsolat/">');
+        if (h3.indexOf('ca-vip-m') < 0) h3 = h3.replace('<a class="m-kapcsolat" href="/kapcsolat/">', VIP_M + '<a class="m-kapcsolat" href="/kapcsolat/">');
         // oldal-azonosító a <html>-en, hogy a hu-fix.css egy-egy oldalra célzottan is tudjon javítani
         const hp = rel === 'index.html' ? '/' : (rel.endsWith('/index.html') ? '/' + rel.slice(0, -10) : '/' + rel);
         if (!/<html[^>]*data-hupath=/.test(h3)) h3 = h3.replace(/<html\b/, '<html data-hupath="' + hp.replace(/"/g, '') + '"');
