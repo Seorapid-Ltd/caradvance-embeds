@@ -2432,6 +2432,7 @@ function renderLeads(){
     const loc=(f('Location')||'').toUpperCase(),phd=f('Phone').replace(/[\s()-]/g,'');const pcc=/^(\+|00)44|^07\d{9}$/.test(phd)?'GB':/^(\+|00)36|^06(20|30|31|50|70)\d{7}$/.test(phd)?'HU':/^(\+|00)421/.test(phd)?'SK':/^(\+|00)420/.test(phd)?'CZ':/^(\+|00)48/.test(phd)?'PL':/^(\+|00)40/.test(phd)?'RO':/^(\+|00)49/.test(phd)?'DE':/^(\+|00)43/.test(phd)?'AT':'';
     return{from:String(sm[1]||'').replace(/^dev\./,''),site:cc,loc,price,type,net:price==null?null:type==='b2c'?Math.round(price/VATF):price,name:f('Name'),company:f('Company'),email:f('Email'),phone:f('Phone'),msg:f('Message'),cc:loc||pcc||cc,car}};
   const stKey=o=>/accepted/i.test(o.outcome||'')?'acc':/declined/i.test(o.outcome||'')?'dec':/check/i.test(o.outcome||'')?'chk':/counter/i.test(o.outcome||'')?'ctr':'new';
+  S.soldOffers=new Set((S.logs||[]).filter(o=>o.outcome==='Sold').map(o=>((o.notes||'').match(/^Offer:\s*(\S+)/m)||[])[1]).filter(Boolean));
   const all=(S.logs||[]).filter(isOffer).map(o=>({o,p:parse(o),st:stKey(o)}));S.ofParsed={};all.forEach(x=>S.ofParsed[x.o.id]=x.p);
   const openN=all.filter(x=>x.st==='new'||x.st==='ctr').length;
   S.ofCounts={all:all.length,open:all.filter(x=>x.st==='new'||x.st==='chk'||x.st==='ctr').length};['new','chk','ctr','acc','dec'].forEach(k=>S.ofCounts[k]=all.filter(x=>x.st===k).length);
