@@ -1723,6 +1723,44 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
  .bpnum.b2c>*:not(.u){display:block;font-size:11px;font-weight:600;line-height:1.3;white-space:normal}
  .bpadd{grid-area:add;align-self:center}
 }
+
+/* teendők */
+#tabs .nDue:empty{display:none}#tabs .nDue{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--red);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:18px;text-align:center}
+#tabs a.on .nDue{background:#fff;color:var(--red)}
+.todo{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:16px 18px;margin:0 0 18px}
+.tdh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.tdh h3{margin:0;font-size:19px;font-weight:800;display:flex;align-items:center;gap:8px}
+.tdbadge{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--red);color:#fff;font-size:13px}
+.tdtog{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.tdtog button{height:34px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.tdtog button.on{background:var(--navy);color:#fff}.tdtog b{font-weight:800;margin-left:2px}
+.tdg{margin-top:10px}
+.tdgh{margin:0 0 6px;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.tdgh span{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--soft);color:var(--ink);margin-left:4px;font-size:11.5px}
+.tdgh.over{color:var(--red)}.tdgh.over span{background:var(--red);color:#fff}.tdgh.today span{background:var(--navy);color:#fff}
+.tdl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.tdi{display:flex;align-items:center;gap:12px;padding:9px 10px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.tdi.over{border-color:light-dark(#F6B8C0,#5a2029);background:light-dark(#FFF7F8,#1f1214)}
+.tdd{flex:none;min-width:54px;text-align:center;font-weight:800;font-size:13.5px;padding:6px 8px;border-radius:10px;background:var(--soft)}
+.tdi.over .tdd{background:var(--red);color:#fff}.tdi.today .tdd{background:var(--navy);color:#fff}
+.tdm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.tdn{all:unset;cursor:pointer;font-weight:800;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tdn:hover{color:var(--red)}
+.tds{margin:0;font-size:13.5px;overflow-wrap:anywhere}
+.tda{flex:none;display:flex;align-items:center;gap:6px}
+.tdic{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);color:var(--ink)}
+.tdic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tddone{height:36px;padding:0 14px;border-radius:999px;border:0;background:var(--red);color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer}.tddone:hover{background:var(--red-dark)}
+.tdx{width:32px;height:32px;border-radius:50%;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:13px}.tdx:hover{background:var(--soft);color:var(--ink)}
+.tdnone,.tdlater{margin:6px 0 0}
+.fuwrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+.fuq{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.fuq button{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.fuq button:hover{border-color:var(--navy)}
+.dvfu{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin-bottom:10px;border-radius:14px;background:light-dark(#EEF1F5,#1d2026);border:1px solid var(--line)}
+.dvfu.over{background:light-dark(#FFF7F8,#1f1214);border-color:light-dark(#F6B8C0,#5a2029)}.dvfu.over .dvfud b{color:var(--red)}
+.dvfus{flex:1;min-width:140px;font-weight:700}.dvfub{display:flex;gap:6px}
+.dvlognx{margin:2px 0 0;font-size:13px;font-weight:700;color:var(--ink)}
+@media(max-width:640px){.todo{padding:14px;border-radius:18px}.tdi{flex-wrap:wrap}.tdm{flex:1 1 calc(100% - 70px)}.tda{width:100%;justify-content:flex-end}.fuwrap{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1732,7 +1770,7 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
     <div class="topright">
       <nav id="tabs">
         <a href="#stock" data-v="stock"><i data-i18n="nav_veh">Vehicles</i></a>
-        <a href="#dealers" data-v="enq"><i data-i18n="nav_enq">B2B List</i></a>
+        <a href="#dealers" data-v="enq"><i data-i18n="nav_enq">B2B List</i> <span class="nDue"></span></a>
         <a href="#leads" data-v="leads"><i data-i18n="nav_leads">Deals</i> <span class="nLeads"></span></a>
         <a href="#list" data-v="list"><i data-i18n="nav_list">Pricing</i></a>
         <a href="#contact" data-v="contact"><i data-i18n="nav_contact">Help</i> <span class="nMsg"></span></a>
@@ -1789,6 +1827,7 @@ Ready when you are.</h1>
 
   <section class="view" id="v-dealers">
     <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"></span><a href="#outreach" data-s="outreach"><svg class="subic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
+    <div class="todo" id="todo"></div>
     <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
     <div id="dkpis" hidden style="display:none"></div>
     <div class="dlrpanel">
@@ -2123,6 +2162,7 @@ Object.assign(TRD,{"Open offers": ["Nyitott ajánlatok", "Otvorené ponuky", "Ot
 Object.assign(TRD,{"Activities": ["Aktivitások", "Aktivity", "Aktivity", "Aktivitäten", "Aktywności"], "No activity yet.": ["Még nincs aktivitás.", "Zatiaľ žiadna aktivita.", "Zatím žádná aktivita.", "Noch keine Aktivität.", "Brak aktywności."]});
 Object.assign(TRD,{"Any owner": ["Bármely felelős", "Ktokoľvek zodpovedný", "Kdokoli odpovědný", "Alle Verantwortlichen", "Dowolny opiekun"], "Not assigned": ["Nincs kiosztva", "Nepridelené", "Nepřiděleno", "Nicht zugewiesen", "Nieprzypisane"], "— not assigned —": ["— nincs kiosztva —", "— nepridelené —", "— nepřiděleno —", "— nicht zugewiesen —", "— nieprzypisane —"], "selected": ["kijelölve", "vybrané", "vybráno", "ausgewählt", "zaznaczone"], "Assign to": ["Felelős", "Prideliť", "Přidělit", "Zuweisen an", "Przypisz do"], "Assign": ["Kiosztás", "Prideliť", "Přidělit", "Zuweisen", "Przypisz"], "Clear selection": ["Kijelölés törlése", "Zrušiť výber", "Zrušit výběr", "Auswahl aufheben", "Wyczyść zaznaczenie"]});
 Object.assign(TRD,{"Sort: price low–high": ["Rendezés: ár növekvő", "Zoradiť: cena vzostupne", "Řadit: cena vzestupně", "Sortieren: Preis aufsteigend", "Sortuj: cena rosnąco"]});
+Object.assign(TRD,{"Next step": ["Következő lépés", "Ďalší krok", "Další krok", "Nächster Schritt", "Następny krok"], "Follow-up": ["Visszahívás", "Pripomienka", "Připomínka", "Wiedervorlage", "Przypomnienie"], "e.g. send the price list": ["pl. árlistát küldeni", "napr. poslať cenník", "např. poslat ceník", "z. B. Preisliste senden", "np. wysłać cennik"], "Tomorrow": ["Holnap", "Zajtra", "Zítra", "Morgen", "Jutro"], "In 3 days": ["3 nap múlva", "O 3 dni", "Za 3 dny", "In 3 Tagen", "Za 3 dni"], "In 1 week": ["1 hét múlva", "O týždeň", "Za týden", "In 1 Woche", "Za tydzień"], "None": ["Nincs", "Žiadna", "Žádná", "Keine", "Brak"], "My to-dos": ["Teendőim", "Moje úlohy", "Moje úkoly", "Meine Aufgaben", "Moje zadania"], "Mine": ["Saját", "Moje", "Moje", "Meine", "Moje"], "Everyone": ["Mindenki", "Všetci", "Všichni", "Alle", "Wszyscy"], "Overdue": ["Lejárt", "Po termíne", "Po termínu", "Überfällig", "Zaległe"], "Today": ["Ma", "Dnes", "Dnes", "Heute", "Dziś"], "Next 7 days": ["Következő 7 nap", "Najbližších 7 dní", "Příštích 7 dní", "Nächste 7 Tage", "Najbliższe 7 dni"], "Done": ["Kész", "Hotovo", "Hotovo", "Erledigt", "Zrobione"], "Dismiss": ["Elvetés", "Zrušiť", "Zrušit", "Verwerfen", "Odrzuć"], "Call": ["Hívás", "Volať", "Volat", "Anrufen", "Zadzwoń"], "later": ["később", "neskôr", "později", "später", "później"], "Nothing due. Set a follow-up date when you log an activity.": ["Nincs esedékes teendő. Aktivitás rögzítésekor adj meg visszahívási dátumot.", "Nič nie je na rade. Pri zázname aktivity nastavte dátum pripomienky.", "Nic není na řadě. Při záznamu aktivity nastavte datum připomínky.", "Nichts fällig. Beim Erfassen einer Aktivität ein Wiedervorlage-Datum setzen.", "Nic do zrobienia. Ustaw datę przypomnienia przy zapisie aktywności."]});
 const LANGS_ALL=[['en','EN','English'],['hu','HU','Magyar'],['sk','SK','Slovenčina'],['cs','CZ','Čeština'],['de','DE','Deutsch'],['pl','PL','Polski']];
 const LANGS=MLANGS.map(l=>LANGS_ALL.find(x=>x[0]===l)).filter(Boolean);
 const FLAG={
@@ -2348,7 +2388,7 @@ function teamNames(){const t=(S.team&&S.team.length?S.team:[...document.querySel
 function ownerOpts(cur,blank){return (blank?`<option value="">${esc(trStr(blank))}</option>`:'')+teamNames().map(n=>`<option${n===(cur||'')?' selected':''}>${esc(n)}</option>`).join('')}
 window.addEventListener('desk:team',e=>{const names=(e.detail||[]).map(x=>x.name).filter(Boolean);if(JSON.stringify(names)===JSON.stringify(S.team||[]))return;S.team=names;
   const dl=$('#team');if(dl)dl.innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');S.dDirty=true;try{renderDealers()}catch(err){}});
-function renderDealers(bg){
+function renderDealers(bg){try{renderTodo()}catch(e){}
   /* The 1369-row list: while another page is open it is built in the background when the browser is idle;
      when the page opens the first rows appear at once and the rest are added in small batches. */
   const dv=$('#v-dealers');if(bg!==true&&dv&&!dv.classList.contains('on')){S.dDirty=true;document.querySelectorAll('.nDeal2').forEach(e=>e.textContent=S.dealers.length);$('#nDeal').textContent=S.dealers.length;
@@ -2450,6 +2490,8 @@ $('#dlgBody').addEventListener('change',async e=>{const ow=e.target.closest('[da
   const sel=e.target.closest('[data-dvstatus]');if(!sel)return;const d=(S.dealers||[]).find(x=>x.id===sel.dataset.dvstatus);if(!d||sel.value===(d.status||'New'))return;
   sel.disabled=true;await save('dealers/'+d.id,{status:sel.value},true);sel.disabled=false;const n=(S.dealers||[]).find(x=>x.id===d.id);if(n&&viewDealer&&viewDealer.id===d.id&&dlg.open)openDealerView(n)});
 $('#dlgBody').addEventListener('click',async e=>{
+  const tdc=e.target.closest('[data-tddonecard]');if(tdc){const o=(S.logs||[]).find(x=>x.id===tdc.dataset.tddonecard);if(o){dlg.close();setTimeout(()=>openLog(null,{dealer:o.dealer}),60)}return}
+  const tdx=e.target.closest('[data-tdxcard]');if(tdx){tdx.disabled=true;const did=viewDealer&&viewDealer.id;await save('outreach/'+tdx.dataset.tdxcard,{follow_done:true},true);setTimeout(()=>{const n=(S.dealers||[]).find(x=>x.id===did);if(n&&dlg.open)openDealerView(n)},200);return}
   const le=e.target.closest('[data-dvlogedit]');if(le){const o=(S.logs||[]).find(x=>x.id===le.dataset.dvlogedit);if(o){dlg.close();setTimeout(()=>openLog(o),60)}return}
   const ld=e.target.closest('[data-dvlogdel]');if(ld){if(!ld.dataset.armed){ld.dataset.armed='1';ld.textContent=trStr('Click again to delete');setTimeout(()=>{if(ld.isConnected){ld.dataset.armed='';ld.textContent=trStr('Delete')}},4000);return}
     ld.disabled=true;const did=viewDealer&&viewDealer.id;await remove('outreach/'+ld.dataset.dvlogdel);setTimeout(()=>{const n=(S.dealers||[]).find(x=>x.id===did);if(n&&dlg.open)openDealerView(n)},250);return}
@@ -2516,10 +2558,12 @@ function dealerViewHtml(d){
   // this dealer's activities: change the status, edit or delete an entry right here
   const ST=['New','Contacted','Interested','Not interested','Do not contact'];
   const myLogs=(S.logs||[]).filter(o=>o.dealer===d.id).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.id).localeCompare(String(a.id)));
-  const logRow=o=>`<li class="dvlog" data-logid="${E(o.id)}"><div class="dvlogm"><div class="dvlogt"><b>${E(o.date||'')}</b>${o.channel?`<span>${E(trStr(o.channel))}</span>`:''}${o.outcome?`<span class="pill dvlogo">${E(trStr(o.outcome))}</span>`:''}${o.cars?`<span class="sub">${E(o.cars)}</span>`:''}</div>${o.notes?`<p class="sub dvlogn">${E(String(o.notes).split('\n')[0])}</p>`:''}${o.member?`<small class="sub">${E(o.member)}</small>`:''}</div>
+  const openFu=myLogs.filter(o=>o.follow_up&&!o.follow_done).sort((a,b)=>String(a.follow_up).localeCompare(String(b.follow_up)))[0];
+  const fuBox=openFu?`<div class="dvfu${openFu.follow_up<new Date().toISOString().slice(0,10)?' over':''}"><span class="dvfud">${E(trStr('Follow-up'))}: <b>${E(openFu.follow_up)}</b></span><span class="dvfus">${E(openFu.next_step||'')}</span><span class="dvfub"><button type="button" class="dvlbtn" data-tddonecard="${E(openFu.id)}">${E(trStr('Done'))}</button><button type="button" class="dvlbtn" data-tdxcard="${E(openFu.id)}">${E(trStr('Dismiss'))}</button></span></div>`:'';
+  const logRow=o=>`<li class="dvlog" data-logid="${E(o.id)}"><div class="dvlogm"><div class="dvlogt"><b>${E(o.date||'')}</b>${o.channel?`<span>${E(trStr(o.channel))}</span>`:''}${o.outcome?`<span class="pill dvlogo">${E(trStr(o.outcome))}</span>`:''}${o.cars?`<span class="sub">${E(o.cars)}</span>`:''}</div>${o.notes?`<p class="sub dvlogn">${E(String(o.notes).split('\n')[0])}</p>`:''}${o.next_step||o.follow_up?`<p class="dvlognx">→ ${E(o.next_step||'')}${o.follow_up?` · ${E(o.follow_up)}${o.follow_done?' ✓':''}`:''}</p>`:''}${o.member?`<small class="sub">${E(o.member)}</small>`:''}</div>
     <div class="dvlogb"><button type="button" class="dvlbtn" data-dvlogedit="${E(o.id)}">${E(trStr('Edit'))}</button><button type="button" class="dvlbtn del" data-dvlogdel="${E(o.id)}">${E(trStr('Delete'))}</button></div></li>`;
   const actInner=`<div class="dvstrow"><label class="dvst"><span>${E(trStr('Status'))}</span><select data-dvstatus="${E(d.id)}">${ST.concat(ST.includes(d.status||'New')?[]:[d.status]).map(x=>`<option value="${E(x)}"${(d.status||'New')===x?' selected':''}>${E(trStr(x))}</option>`).join('')}</select></label><label class="dvst"><span>${E(trStr('Account owner'))}</span><select data-dvowner="${E(d.id)}">${ownerOpts(d.owner,'— not assigned —')}</select></label><span class="dvlc"><span class="sub">${E(trStr('Last contact'))}</span> <b>${E(d.last_contact||'—')}</b></span></div>`+
-    (myLogs.length?`<ul class="dvlogs">${myLogs.map(logRow).join('')}</ul>`:`<p class="sub dvnolog">${E(trStr('No activity yet.'))}</p>`);
+    fuBox+(myLogs.length?`<ul class="dvlogs">${myLogs.map(logRow).join('')}</ul>`:`<p class="sub dvnolog">${E(trStr('No activity yet.'))}</p>`);
   const activity=sec(IV.note,'Activities',actInner);
   const body=activity+company+contact+bprofile+sales+notes;
   return head+acts+(body||`<p class="dvempty">—</p>`);
@@ -2671,6 +2715,36 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-oft]');if(
   if(k==='sold'){if(location.hash!=='#sold')location.hash='#sold';else renderOfHeader();return}
   const fs=$('#ofState');if(fs){if(![...fs.options].some(o=>o.value===k))fs.insertAdjacentHTML('beforeend',`<option value="${k}">${k}</option>`);fs.value=k}
   if(location.hash!=='#leads')location.hash='#leads';renderLeads();});
+
+/* ---------- TO-DOS: follow-ups set on activities (Next step + Follow-up date) ----------
+   open = has a follow-up date and is not done; a newer activity with the dealer or "Dismiss" closes it */
+const dayStr=n=>{const t0=new Date();t0.setDate(t0.getDate()+n);return t0.toISOString().slice(0,10)};
+function myName(){return (((window.claude&&claude.me&&claude.me())||{}).name||'').trim()}
+function openTodos(){const me=myName().toLowerCase();const all=(S.logs||[]).filter(o=>o.follow_up&&!o.follow_done&&o.dealer);
+  const mine=all.filter(o=>{const d=(S.dealers||[]).find(x=>x.id===o.dealer)||{};const own=String(d.owner||'').trim().toLowerCase();return me&&(own?own===me:String(o.member||'').trim().toLowerCase()===me)});
+  return {all,mine}}
+function renderTodo(){const box=$('#todo');if(!box)return;
+  const {all,mine}=openTodos(),showAll=ls.get('sd_todo_all')==='1'||!myName(),L=(showAll?all:mine).slice().sort((a,b)=>String(a.follow_up).localeCompare(String(b.follow_up)));
+  const t0=dayStr(0),t7=dayStr(7);const over=L.filter(o=>o.follow_up<t0),today=L.filter(o=>o.follow_up===t0),soon=L.filter(o=>o.follow_up>t0&&o.follow_up<=t7),later=L.filter(o=>o.follow_up>t7);
+  const due=mine.filter(o=>o.follow_up<=t0).length;document.querySelectorAll('.nDue').forEach(e=>e.textContent=due||'');
+  const FLAG_E=c=>/^[A-Za-z]{2}$/.test(c||'')?c.toUpperCase().replace(/./g,ch=>String.fromCodePoint(127397+ch.charCodeAt(0))):'';
+  const fd=x=>{const [y,m,d]=String(x).split('-');return `${d}.${m}.`};
+  const row=(o,cls)=>{const d=(S.dealers||[]).find(x=>x.id===o.dealer)||{name:o.dealer};const ph=d.contact_phone||d.phone,em=d.contact_email||d.email;
+    return `<li class="tdi ${cls}" data-todo="${esc(o.id)}"><span class="tdd">${esc(fd(o.follow_up))}</span>
+      <div class="tdm"><button type="button" class="tdn" data-tddealer="${esc(d.id||'')}">${FLAG_E(d.country)} ${esc(d.name||'')}</button><p class="tds">${esc(o.next_step||trStr(o.outcome||'')||'—')}</p><small class="sub">${esc([o.member,o.date&&fd(o.date),o.channel&&trStr(o.channel)].filter(Boolean).join(' · '))}${showAll&&d.owner?' · '+esc(d.owner):''}</small></div>
+      <div class="tda">${ph?`<a class="tdic" href="tel:${esc(String(ph).replace(/[^\d+]/g,''))}" aria-label="${esc(trStr('Call'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></a>`:''}${em?`<a class="tdic" href="mailto:${esc(em)}" aria-label="Email"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></a>`:''}
+        <button type="button" class="tddone" data-tddone="${esc(o.id)}">${esc(trStr('Done'))}</button><button type="button" class="tdx" data-tdx="${esc(o.id)}" aria-label="${esc(trStr('Dismiss'))}" title="${esc(trStr('Dismiss'))}">✕</button></div></li>`};
+  const grp=(title,list,cls)=>list.length?`<div class="tdg"><h5 class="tdgh ${cls}">${esc(trStr(title))} <span>${list.length}</span></h5><ul class="tdl">${list.map(o=>row(o,cls)).join('')}</ul></div>`:'';
+  const tog=myName()?`<div class="tdtog" role="group"><button type="button" data-tdall="0" class="${showAll?'':'on'}">${esc(trStr('Mine'))} <b>${mine.length}</b></button><button type="button" data-tdall="1" class="${showAll?'on':''}">${esc(trStr('Everyone'))} <b>${all.length}</b></button></div>`:'';
+  const body=over.length||today.length||soon.length?grp('Overdue',over,'over')+grp('Today',today,'today')+grp('Next 7 days',soon,'soon'):`<p class="sub tdnone">${esc(trStr('Nothing due. Set a follow-up date when you log an activity.'))}</p>`;
+  box.innerHTML=`<div class="tdh"><h3>${esc(trStr('My to-dos'))}${due?` <span class="tdbadge">${due}</span>`:''}</h3>${tog}</div>${body}${later.length?`<p class="sub tdlater">+ ${later.length} ${esc(trStr('later'))}</p>`:''}`;
+}
+$('#todo')&&$('#todo').addEventListener('click',async e=>{
+  const tg=e.target.closest('[data-tdall]');if(tg){ls.set('sd_todo_all',tg.dataset.tdall);renderTodo();return}
+  const dn=e.target.closest('[data-tddealer]');if(dn){const d=(S.dealers||[]).find(x=>x.id===dn.dataset.tddealer);if(d)openDealerView(d);return}
+  const dd=e.target.closest('[data-tddone]');if(dd){const o=(S.logs||[]).find(x=>x.id===dd.dataset.tddone);if(o)openLog(null,{dealer:o.dealer});return}
+  const dx=e.target.closest('[data-tdx]');if(dx){dx.disabled=true;await save('outreach/'+dx.dataset.tdx,{follow_done:true},true);renderTodo();return}
+});
 function renderSales(){
   const box=$('#soList');if(!box)return;
   const L=(S.logs||[]).filter(o=>o.outcome==='Sold').map(o=>({o,p:parseSale(o)})).sort((a,b)=>String(b.o.date||'').localeCompare(String(a.o.date||'')));
@@ -2990,7 +3064,7 @@ $('#ofList').addEventListener('click',async e=>{
   $('#slRows').addEventListener('click',e=>{const b=e.target.closest('[data-sls]');if(!b)return;e.preventDefault();const f=document.querySelector(`input[data-slc="${CSS.escape(b.dataset.sls)}"]`);if(f&&f.value.trim())savePrice(b.dataset.sls,f.value,'typed');else slAskDelete(b.dataset.sls)});
 })();
 
-function renderLogs(){try{renderLeads()}catch(e){}try{renderSales()}catch(e){console.warn(e)}
+function renderLogs(){try{renderTodo()}catch(e){console.warn(e)}try{renderLeads()}catch(e){}try{renderSales()}catch(e){console.warn(e)}
   /* Filters: the same as on the dealer list (search, country, type, score, dealer status) + channel, outcome, team member */
   const dOf=id=>S.dealers.find(x=>x.id===id)||{};
   const q=($('#oq')?.value||'').trim().toLowerCase(),co=$('#oCountry')?.value||'',ti=$('#oTier')?.value||'',sc=$('#oScore')?.value||'',st=$('#oStat')?.value||'',
@@ -3095,12 +3169,21 @@ function openLog(o,preset){
   const dsel=`<label class="f">Dealer<select name="dealer" required><option value="">—</option>${S.dealers.map(d=>`<option value="${esc(d.id)}"${(o?o.dealer:preset.dealer)===d.id?' selected':''}>${esc(d.name)} (${esc(d.country)})</option>`).join('')}</select></label>`;
   openDialog(o?'Edit entry':'Log a call or email','<div class="dlgcols"><div class="formcol">'+field(['date','Date','date',1],o?o.date:new Date().toISOString().slice(0,10))+dsel+
     field(['channel','Channel','sel:Email,Phone,Meeting,Other',1],o&&o.channel)+field(['member','Team member','team'],o?o.member:((window.claude&&claude.me&&claude.me()||{}).name||''))+
-    carPickHtml(o?o.cars:'')+field(['outcome','Outcome','sel:No answer,Sent offer,Interested,Asked for price,Not interested,Reserved a car,Do not contact,Sold'],o&&o.outcome)+field(['notes','Notes','area'],o&&o.notes)+'</div>'+browsePanelHtml()+'</div>',
-    async fd=>{const id=o?o.id:'o'+Date.now().toString(36);const ok=await save('outreach/'+id,o?fd:{...fd,id},!!o);
+    carPickHtml(o?o.cars:'')+field(['outcome','Outcome','sel:No answer,Sent offer,Interested,Asked for price,Not interested,Reserved a car,Do not contact,Sold'],o&&o.outcome)+field(['notes','Notes','area'],o&&o.notes)+
+    `<div class="f wide fuwrap"><label class="f">${esc(trStr('Next step'))}<input name="next_step" maxlength="300" value="${esc(o?o.next_step||'':'')}" placeholder="${esc(trStr('e.g. send the price list'))}"></label><label class="f">${esc(trStr('Follow-up'))}<input type="date" name="follow_up" value="${esc(o&&!o.follow_done?o.follow_up||'':'')}"></label>
+    <div class="fuq"><button type="button" data-fu="1">${esc(trStr('Tomorrow'))}</button><button type="button" data-fu="3">${esc(trStr('In 3 days'))}</button><button type="button" data-fu="7">${esc(trStr('In 1 week'))}</button><button type="button" data-fu="0">${esc(trStr('None'))}</button></div></div>`+
+    '</div>'+browsePanelHtml()+'</div>',
+    async fd=>{const id=o?o.id:'o'+Date.now().toString(36);
+      if(fd.follow_up&&(!o||fd.follow_up!==o.follow_up||o.follow_done))fd.follow_done=false;
+      const ok=await save('outreach/'+id,o?fd:{...fd,id},!!o);
       const d=S.dealers.find(x=>x.id===fd.dealer);
-      if(ok!==false&&d){const up={last_contact:fd.date};if(d.status!=='Do not contact'){if(fd.outcome==='Do not contact')up.status='Do not contact';else if(['Interested','Asked for price','Reserved a car'].includes(fd.outcome))up.status='Interested';else if(fd.outcome==='Not interested')up.status='Not interested';else if((d.status||'New')==='New')up.status='Contacted'}
-        await save('dealers/'+d.id,up,true)}return ok},o?()=>remove('outreach/'+o.id):null);
+      // a new activity with this dealer closes its open follow-ups (they were done by this contact)
+      if(ok!==false&&!o&&d){for(const x of (S.logs||[]).filter(x=>x.dealer===d.id&&x.id!==id&&x.follow_up&&!x.follow_done))await save('outreach/'+x.id,{follow_done:true},true)}
+      if(ok!==false&&d){const up={};if(fd.date&&(!d.last_contact||String(fd.date)>=String(d.last_contact).slice(0,10)))up.last_contact=fd.date;if(d.status!=='Do not contact'){if(fd.outcome==='Do not contact')up.status='Do not contact';else if(['Interested','Asked for price','Reserved a car'].includes(fd.outcome))up.status='Interested';else if(fd.outcome==='Not interested')up.status='Not interested';else if((d.status||'New')==='New')up.status='Contacted'}
+        if(Object.keys(up).length)await save('dealers/'+d.id,up,true)}return ok},o?()=>remove('outreach/'+o.id):null);
   wireCarPicker();
+  $('#dlgBody').querySelectorAll('[data-fu]').forEach(b=>b.addEventListener('click',()=>{const n=Number(b.dataset.fu),i=$('#dlgBody [name=follow_up]');if(!i)return;
+    if(!n){i.value='';return}const t0=new Date();t0.setDate(t0.getDate()+n);i.value=t0.toISOString().slice(0,10)}));
 }
 $('#addLog').addEventListener('click',()=>S.dealers.length?openLog(null):status('Add a dealer first, then log contact with them.'));
 ['#oq','#oTier','#oScore','#oStat','#oChannel','#oOutcome','#oMember'].forEach(x=>$(x)&&$(x).addEventListener('input',renderLogs));
