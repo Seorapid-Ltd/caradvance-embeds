@@ -11,7 +11,7 @@ const DIST = 'dist';
 const SKIP = /^(index\.html$|admin\/|belso\/|fiok\/|szerzodes\/|alairas\/|adatok\/|ajanlat\/|icons\/|teszt-mega-menu\/|_ttest)/;
 
 const BG_L = '#F5F5F7', BG_D = '#0D0F13';
-const HERO = 'section.hero,.cd-hero,.egl-land-hero,.egl-mhero,.kaphero,.bp-hero,.lg-hero';
+const HERO = 'section.hero,section.bizhero,.cd-hero,.egl-land-hero,.egl-mhero,.kaphero,.bp-hero,.lg-hero';
 const cutList = () => { for (const d of [path.join(DIST, 'berles-cut'), path.join('public', 'berles-cut')]) if (fs.existsSync(d)) return fs.readdirSync(d).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)); return []; };
 const BC = cutList();
 

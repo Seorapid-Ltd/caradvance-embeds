@@ -28,7 +28,10 @@ try {
         const h2 = h.indexOf('id="ca-dark-hu-fix"') > -1
           ? h.replace(/<link rel="stylesheet" id="ca-dark-hu-fix" href="[^"]*">/, tag)
           : h.replace('</head>', tag + '</head>');
-        if (h2 !== h) { fs.writeFileSync(p, h2); files++; }
+        // Autóink-szerű oldalak (nem a főoldal): az „Eladó autók / Eladva” váltót a dark-mode.js ne színezze át (saját sötét stílusa van a hu-fix.css-ben)
+        let h3 = h2;
+        if (p !== path.join(dist, 'index.html')) h3 = h3.replace(/<div class="autok-tabs" role="tablist">/g, '<div class="autok-tabs" role="tablist" data-dm-skip="1">');
+        if (h3 !== h) { fs.writeFileSync(p, h3); files++; }
       }
     })(dist);
     console.log('[hu-fix] apró javítások (csak magyar oldalak): ' + files + ' oldal');

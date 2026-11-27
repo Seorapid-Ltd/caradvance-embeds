@@ -17,3 +17,15 @@ html:not(.ca-dark) body .charity :is(#ca-hfx,.eyebrow){background-color:transpar
 
 /* Világos mód: a blogcikkek „Röviden” címkéje rózsaszín pill volt — semleges szürke */
 html:not(.ca-dark) body article.bp .bp-tldr :is(#ca-hfx,h3){background-color:rgba(18,19,23,.05)!important;background-image:none!important}
+
+/* Autókártyák adatsora (évjárat · km · váltó · üzemanyag): kompaktabb chipek, hogy mind a négy kiférjen, és ne fakuljon el a sor vége */
+html body .card .ca-sp:is(#ca-hfx,div){gap:4px!important;-webkit-mask:none!important;mask:none!important}
+html body .card .ca-sp :is(#ca-hfx,span){gap:3px!important;padding:0 6px!important;height:24px!important;font-size:11px!important;letter-spacing:-.01em!important}
+html body .card .ca-sp :is(#ca-hfx,svg){width:11px!important;height:11px!important;flex:none}
+@media(max-width:380px){html body .card .ca-sp:is(#ca-hfx,div){flex-wrap:wrap!important;row-gap:4px!important}}
+
+/* Sötét mód, Autóink oldal: az „Eladó autók / Eladva” váltón a kiválasztott fül fehér, sötét betűvel — ugyanúgy, mint a főoldalon */
+html.ca-dark body .autok-tabs:not(#autoink.ca-grid .autok-tabs) :is(#ca-hfx,.autok-tab){color:#A1A1A6!important;-webkit-text-fill-color:#A1A1A6!important;background:transparent!important}
+html.ca-dark body .autok-tabs:not(#autoink.ca-grid .autok-tabs) :is(#ca-hfx,.autok-tab):hover{color:#F5F5F7!important;-webkit-text-fill-color:#F5F5F7!important;background:rgba(255,255,255,.06)!important}
+html.ca-dark body .autok-tabs:not(#autoink.ca-grid .autok-tabs) :is(#ca-hfx,.autok-tab.on){color:#0B0B0D!important;-webkit-text-fill-color:#0B0B0D!important;background:#fff!important;box-shadow:0 6px 16px rgba(0,0,0,.35)!important}
+html.ca-dark body :is(#ca-hfx,.autok-tabs):not(#autoink.ca-grid .autok-tabs){background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.1)!important}
