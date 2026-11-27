@@ -162,7 +162,9 @@ const CSS = '<style id="ca-bfo-css">'
   + P + '.ca-tl-a{position:absolute;top:0;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.55;white-space:nowrap}'
   + P + '.ca-tl-a.s{left:0}' + P + '.ca-tl-a.e{left:calc(6/7.7*100%);transform:translateX(-50%);transition:opacity .3s,color .3s}'
   + P + '.ca-tl-a.e.on{opacity:1;color:' + RED + '}' + D + '.ca-tl-a.e.on{color:#FF5468}'
-  + P + '.ca-six-f{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px;align-items:start}'
+  + P + '.ca-six-f{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px;align-items:stretch}'
+  // „Jó tudni” a három doboz alatt, teljes szélességben (nem az első dobozban)
+  + P + '.ca-six-f>details.ca-six-jt{grid-column:1/-1;margin:0!important}'
   + P + '.ca-six-f>div{display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:18px;background:rgba(18,19,23,.035);font-size:13.5px;line-height:1.5}'
   + D + '.ca-six-f>div{background:rgba(255,255,255,.05)}'
   + P + '.ca-six-f svg{flex:0 0 22px;width:22px;height:22px;color:' + RED + '}'
@@ -280,7 +282,7 @@ mode();setTimeout(mode,600);addEventListener("load",mode);
 // --- 6 hónap
 var bt=$(".bl-term",root);if(bt){var card=$(".bl-term-card",bt);var six=el("div","ca-six");six.appendChild(el("div","ca-six-n",'6<small>hónap minimum</small>'));six.appendChild(card);
 var tl=el("div","ca-tl",'<span class="ca-tl-a s">Átadás</span><span class="ca-tl-a e">Lejár a minimum</span><div class="ca-tl-r"><div class="ca-tl-tr"><i class="ca-tl-f"></i>'+[1,2,3,4,5].map(function(m){return '<i class="ca-tl-t" style="left:'+(m/6*100).toFixed(3)+'%"></i>'}).join("")+'<i class="ca-tl-dot"></i></div><div class="ca-tl-x"></div></div><div class="ca-tl-l">'+[1,2,3,4,5,6].map(function(m){return '<span>'+m+'. hó</span>'}).join("")+'<span class="x">utána havonta hosszabbodik</span></div>');card.appendChild(tl);
-six.appendChild(el("div","ca-six-f",'<div>'+IC.gauge+'<span><b>2 000–4 000 km / hó</b>futáskeret, autótól függően'+(NOTE[4]?'<details class="ca-jt"><summary>'+IC.info+'Jó tudni</summary><p>'+NOTE[4]+'</p></details>':'')+'</span></div><div>'+IC.bill+'<span><b>Számla minden hónap 1-jén</b>a havi díjat előre kell megfizetni</span></div><div>'+IC.door+'<span><b>Utána 30 napos felmondás</b>a bérleti hónap végére mondható fel</span></div>'));
+six.appendChild(el("div","ca-six-f",'<div>'+IC.gauge+'<span><b>2 000–4 000 km / hó</b>futáskeret, autótól függően</span></div><div>'+IC.bill+'<span><b>Számla minden hónap 1-jén</b>a havi díjat előre kell megfizetni</span></div><div>'+IC.door+'<span><b>Utána 30 napos felmondás</b>a bérleti hónap végére mondható fel</span></div>'+(NOTE[4]?'<details class="ca-jt ca-six-jt"><summary>'+IC.info+'Jó tudni</summary><p>'+NOTE[4]+'</p></details>':'')));
 bt.innerHTML="";bt.appendChild(six);
 var tf=tl.querySelector(".ca-tl-f"),td=tl.querySelector(".ca-tl-dot"),tt=[].slice.call(tl.querySelectorAll(".ca-tl-t")),tls=[].slice.call(tl.querySelectorAll(".ca-tl-l span")),tx=tl.querySelector(".ca-tl-x"),te=tl.querySelector(".ca-tl-a.e"),trq=0;
 function tlu(){trq=0;var r=bt.getBoundingClientRect(),vh=innerHeight,nb=(document.querySelector(".ca-navwrap")||{getBoundingClientRect:function(){return{bottom:80}}}).getBoundingClientRect().bottom,tg=(Math.max(60,Math.min(120,nb))+vh)/2,cc=r.top+r.height/2,c0=vh*.92+r.height/2,p=RM?1:Math.max(0,Math.min(1,(c0-cc)/Math.max(1,c0-tg)));tf.style.transform="scaleX("+p.toFixed(4)+")";td.style.left=(p*100).toFixed(2)+"%";var m=p*6;tt.forEach(function(t,k){t.classList.toggle("on",m>=k+1)});tls.forEach(function(s,k){s.classList.toggle("on",k<6?m>k+.15:p>=.999)});tx.classList.toggle("on",p>=.999);te.classList.toggle("on",p>=.999)}
