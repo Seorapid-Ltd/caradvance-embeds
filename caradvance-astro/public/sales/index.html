@@ -1699,6 +1699,30 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 .dbx{height:38px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;font:inherit;font-weight:700;cursor:pointer}
 .dbmsg{font-weight:800;font-size:14px}
 @media(max-width:820px){#dRows .downer{flex:1 1 100%}#dRows .downsel{max-width:none;width:100%}.dbulk{top:4px}.dbl{flex:1 1 100%}.dbl select{flex:1}}
+
+/* bezáró gombok: nincs piros fókuszkeret megnyitáskor (az ablak automatikusan ide teszi a fókuszt) */
+#msgX:focus,#ofDlgX:focus,#dlgX:focus,#dlbX:focus,#lbX:focus,#lb #lbX:focus,#lb #lbX:focus-visible,#lb .lbtools button:focus,#msgX:focus-visible,#ofDlgX:focus-visible,#dlgX:focus-visible{outline:none!important;box-shadow:none!important}
+/* üzenet ablak: csak keresős autóválasztó (a nagy tallózó a fő ablaké) */
+#msgDlg .cpbrowsebtn{display:none}
+#msgDlg .mcars:empty{display:none}
+@media(max-width:640px){
+ .oft:not(.oft-all):not(.oft-sold){height:76px;justify-content:space-between}
+ .oft:not(.oft-all):not(.oft-sold) small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
+/* autóválasztó telefonon: kompakt kártya, nem csúszik szét */
+@media(max-width:760px){
+ #dlg,#dlgBody{overflow-x:hidden}
+ #dlg.dlg-browse .browsecol{padding-left:0;min-width:0}
+ .bphcols{display:none}
+ .bpcard{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr) 38px;grid-template-areas:"img info info add" "img reg reg add" ". b2b b2c add";gap:4px 10px;padding:10px;align-items:start}
+ .bpthumb{grid-area:img;width:64px;height:48px}
+ .bpci{grid-area:info;min-width:0}.bpcm{font-size:15px}.bpcs{font-size:12.5px}
+ .bpreg{grid-area:reg;display:flex;gap:6px;align-items:baseline;white-space:nowrap;font-size:13px}.bpreg b{display:inline;font-size:13px}
+ .bpnum{grid-area:b2b;font-size:14px;white-space:nowrap;min-width:0}.bpnum.b2c{grid-area:b2c}
+ .bpnum .u{display:block;margin:1px 0 0}
+ .bpnum.b2c>*:not(.u){display:block;font-size:11px;font-weight:600;line-height:1.3;white-space:normal}
+ .bpadd{grid-area:add;align-self:center}
+}
 </style>
 </head>
 <body>
@@ -1733,6 +1757,7 @@ Ready when you are.</h1>
     <label class="f wide"><span data-i18n="m_to">Dealer</span><select id="mDealer"></select></label>
     <label class="f"><span data-i18n="m_offer">Offer</span><select id="mOffer"></select></label>
     <label class="f"><span data-i18n="m_lang">Email language</span><select id="mLang"><option value="en">English</option><option value="hu">Magyar</option><option value="de">Deutsch</option><option value="sk">Slovenčina</option><option value="cs">Čeština</option><option value="pl">Polski</option></select></label>
+    <div class="f wide mcars" id="mCarsBox"></div>
     <label class="f wide"><span data-i18n="m_from">Your name</span><input id="mFrom" autocomplete="name"></label>
     <label class="f wide"><span data-i18n="m_subj">Subject</span><input id="mSubj"></label>
     <label class="f wide"><span data-i18n="m_body">Message</span><textarea id="mBody" rows="11"></textarea></label>
@@ -2029,13 +2054,25 @@ function fillMsg(){const d=S.dealers.find(x=>x.id===$('#mDealer').value),L=$('#m
   const from=$('#mFrom').value.trim()||'—',cn=d?.contact_name||'';
   const hi={en:cn||'Sir or Madam',hu:cn||'Hölgyem/Uram',de:'',sk:'',cs:'',pl:''}[L];const hi2=cn?(L==='de'?', sehr geehrte/r '+cn:' '+cn):'';
   const r=s=>s.replaceAll('{offer}',o.n[L]).replaceAll('{sum}',offerSum(o.v,L)).replaceAll('{count}',offerSum(o.v,L).split(' · ')[0]).replaceAll('{from}',from).replaceAll('{hi}',hi).replaceAll('{hi2}',L==='de'&&cn?'':hi2);
-  $('#mSubj').value=r(T.s);$('#mBody').value=r(T.b).replace('Sehr geehrte Damen und Herren,',cn?'Sehr geehrte/r '+cn+',':'Sehr geehrte Damen und Herren,');
+  let body=r(T.b).replace('Sehr geehrte Damen und Herren,',cn?'Sehr geehrte/r '+cn+',':'Sehr geehrte Damen und Herren,');
+  // cars picked in the dialog: listed after the opening paragraph, in the email's language, with a link to each car
+  const ids=msgCars();if(ids.length){const W={en:['Selected cars:','net'],hu:['Kiválasztott autók:','nettó'],de:['Ausgewählte Fahrzeuge:','netto'],sk:['Vybrané vozidlá:','bez DPH'],cs:['Vybraná vozidla:','bez DPH'],pl:['Wybrane samochody:','netto']}[L]||['Selected cars:','net'];
+    const loc={hu:'hu-HU',de:'de-DE',sk:'sk-SK',cs:'cs-CZ',pl:'pl-PL'}[L]||'en-GB';
+    const lines=ids.map(id=>{const c=(S.cars||[]).find(x=>x.id===id);if(!c)return '• '+id;const km=c.mileage!=null&&c.mileage!==''?Number(c.mileage).toLocaleString(loc)+' km':(c.km_text||'');
+      const pr=c.dealer_net!=null&&c.dealer_net!==''?'€'+Math.round(Number(c.dealer_net)).toLocaleString(loc)+' '+W[1]:'';
+      return '• '+[`${c.model||''} (${c.id})`,c.first_reg,km,pr].filter(Boolean).join(' · ')+'\n  '+location.origin+'/sales/#car='+encodeURIComponent(c.id)});
+    const parts=body.split('\n\n');parts.splice(Math.min(2,parts.length),0,W[0]+'\n'+lines.join('\n'));body=parts.join('\n\n');}
+  $('#mSubj').value=r(T.s);$('#mBody').value=body;
   $('#mNote').textContent=d&&!mailOf(d)?t('m_noemail'):(d?mailOf(d)+(d.phone?' · '+d.phone:''):'');}
-function openMsg(dealerId){const D=[...S.dealers].sort((a,b)=>(b.score||0)-(a.score||0)||String(a.name).localeCompare(b.name));
+function msgCars(){const h=$('#mCarsBox input[type=hidden]');return h?String(h.value||'').split(',').map(x=>x.trim()).filter(Boolean):[]}
+function openMsg(dealerId){if(!dlg.open)$('#dlgBody').innerHTML='';
+  $('#mCarsBox').innerHTML=carPickHtml('','mcars',false,trStr('Cars'));wireCarPicker();const D=[...S.dealers].sort((a,b)=>(b.score||0)-(a.score||0)||String(a.name).localeCompare(b.name));
   $('#mDealer').innerHTML=`<option value="">${t('m_pick')}</option>`+D.map(d=>`<option value="${esc(d.id)}">${esc(d.country)} · ${esc(d.name)}${mailOf(d)?'':' (no email)'}</option>`).join('');
   $('#mOffer').innerHTML=OFFERS.map((o,i)=>`<option value="${i}">${esc(o.n[LANG]||o.n.en)}</option>`).join('');
   if(dealerId)$('#mDealer').value=dealerId;const d=S.dealers.find(x=>x.id===$('#mDealer').value);$('#mLang').value=d?langOf(d):LANG;
-  $('#mFrom').value=ls.get('sd_from')||'';fillMsg();$('#msgDlg').showModal();}
+  $('#mFrom').value=ls.get('sd_from')||((window.claude&&claude.me&&claude.me())||{}).name||'';fillMsg();$('#msgDlg').showModal();}
+$('#msgDlg').addEventListener('close',()=>{$('#mCarsBox').innerHTML=''});
+$('#mCarsBox').addEventListener('change',e=>{if(e.target.matches('input[type=hidden]'))fillMsg()});
 
 $('#msgX').addEventListener('click',()=>$('#msgDlg').close());
 $('#mDealer').addEventListener('change',()=>{const d=S.dealers.find(x=>x.id===$('#mDealer').value);if(d)$('#mLang').value=langOf(d);fillMsg();});
@@ -2052,7 +2089,7 @@ async function logMsgSent(d){
   const key=d.id+'|'+subj+'|'+day;if(key===lastMsgLog)return;lastMsgLog=key;
   const o=OFFERS[Number($('#mOffer').value)||0]||{},me=(window.claude&&claude.me&&claude.me())||{};
   const id='o'+Date.now().toString(36);
-  const fd={id,date:day,dealer:d.id,channel:'Email',member:me.name||$('#mFrom').value.trim()||'',outcome:'Sent offer',cars:'',
+  const fd={id,date:day,dealer:d.id,channel:'Email',member:me.name||$('#mFrom').value.trim()||'',outcome:'Sent offer',cars:msgCars().join(', '),
     notes:'Email from the Help page'+(o.v?' · '+o.v:'')+(subj?' · "'+subj+'"':'')+($('#mLang').value?' · '+$('#mLang').value.toUpperCase():'')};
   const ok=await save('outreach/'+id,fd,false);if(ok===false){lastMsgLog='';return}
   const up={last_contact:day};if((d.status||'New')==='New')up.status='Contacted';
@@ -3000,7 +3037,7 @@ function wireCarPicker(){
   const browseBtn=$('#cpBrowseBtn'),panel=$('#cpBrowse'),bphead=panel?panel.querySelector('.bphead'):null,bpSearch=$('#bpSearch'),bpList=$('#bpList'),bpDetail=$('#bpDetail'),bpClose=$('#bpClose'),dlg2=$('#dlg'),bpTop=$('#bpTop'),bpCount=$('#bpCount');
   const _cntW=({hu:'kiválasztva',de:'ausgewählt',sk:'vybrané',cs:'vybráno',pl:'wybrano',ro:'selectate'})[LANG]||'selected';
   const toggle=id=>{if(single)sel=inSel(id)?[]:[id];else{if(inSel(id))sel=sel.filter(x=>x!==id);else sel.push(id);}sync();};
-  const sync=()=>{hidden.value=sel.join(', ');
+  const sync=()=>{hidden.value=sel.join(', ');try{hidden.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
     if(bpCount)bpCount.textContent=sel.length+' '+_cntW;
     chips.innerHTML=sel.map(id=>`<span class="cpchip" title="${esc(labelOf(id))}"><span class="cptx">${esc(labelOf(id))}</span><button type="button" class="cpx" data-rm="${esc(id)}" aria-label="Remove">×</button></span>`).join('');
     if(single)search.style.display=sel.length?'none':'';
