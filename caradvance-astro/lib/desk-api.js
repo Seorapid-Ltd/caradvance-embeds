@@ -159,7 +159,7 @@ async function queryAll(env, ds) {
 }
 
 /* ---------------- data snapshot ----------------
- * 1. memory (per isolate, 15 s)  2. a copy in D1 (desk_snapshot), served at once and
+ * 1. memory (per isolate, 15 s)  2. a copy in D1 (desk_snap, gzipped), served at once and
  * refreshed from Notion in the background when older than 30 s  3. Notion itself.
  * Every write through the desk marks the D1 copy stale (negative t), so the next read
  * goes to Notion and the change shows straight away. */
@@ -167,21 +167,27 @@ let memo = null; // per-isolate
 let refreshing = null; // per-isolate background refresh in flight
 const SNAP_REFRESH_MS = 30 * 1000;
 const SNAP_CHUNK = 900000; // D1 strings are capped at 2 MB; split the copy into parts
-async function ensureSnap(env) { await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_snapshot (part INTEGER PRIMARY KEY, t INTEGER NOT NULL, data TEXT NOT NULL)').run(); }
+// The copy is stored gzipped + base64 (the JSON is ~1.2 MB, gzipped ~8x smaller): less to pull from D1 per load.
+async function gz(str) { return new Uint8Array(await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()); }
+async function gunz(bytes) { return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text(); }
+function toB64(b) { let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function fromB64(str) { const s = atob(str), b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+async function ensureSnap(env) { await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_snap (part INTEGER PRIMARY KEY, t INTEGER NOT NULL, data TEXT NOT NULL)').run(); }
 async function readSnap(env) {
-  await ensureSnap(env);
-  const rows = (await env.DB.prepare('SELECT part, t, data FROM desk_snapshot ORDER BY part').all()).results || [];
+  let rows;
+  try { rows = (await env.DB.prepare('SELECT part, t, data FROM desk_snap ORDER BY part').all()).results || []; }
+  catch (e) { if (/no such table/i.test(String(e && e.message))) { await ensureSnap(env); return null; } throw e; }
   if (!rows.length) return null;
   const t = rows[0].t; if (rows.some(r => r.t !== t)) return null; // half-written copy: ignore it
   if (t <= 0) return { t, data: null };
-  try { return { t, data: JSON.parse(rows.map(r => r.data).join('')) }; } catch (e) { return null; }
+  try { return { t, data: JSON.parse(await gunz(fromB64(rows.map(r => r.data).join('')))) }; } catch (e) { return null; }
 }
-async function snapT(env) { try { const r = await env.DB.prepare('SELECT t FROM desk_snapshot ORDER BY part LIMIT 1').first(); return r ? r.t : null; } catch (e) { return null; } }
+async function snapT(env) { try { const r = await env.DB.prepare('SELECT t FROM desk_snap ORDER BY part LIMIT 1').first(); return r ? r.t : null; } catch (e) { return null; } }
 async function writeSnap(env, t, data) {
-  const s = JSON.stringify(data), parts = [];
+  const s = toB64(await gz(JSON.stringify(data))), parts = [];
   for (let i = 0; i < s.length; i += SNAP_CHUNK) parts.push(s.slice(i, i + SNAP_CHUNK));
   await ensureSnap(env);
-  await env.DB.batch([env.DB.prepare('DELETE FROM desk_snapshot'), ...parts.map((p, i) => env.DB.prepare('INSERT INTO desk_snapshot (part, t, data) VALUES (?, ?, ?)').bind(i, t, p))]);
+  await env.DB.batch([env.DB.prepare('DELETE FROM desk_snap'), ...parts.map((p, i) => env.DB.prepare('INSERT INTO desk_snap (part, t, data) VALUES (?, ?, ?)').bind(i, t, p))]);
 }
 async function fetchAll(env) {
   const [vp, dp, op] = await Promise.all([queryAll(env, DS.vehicles), queryAll(env, DS.dealers), queryAll(env, DS.outreach)]);
@@ -206,7 +212,7 @@ async function refreshAll(env) {
 }
 async function bust(env) { // after any write through the desk
   memo = null;
-  try { if (env.DB) { await ensureSnap(env); await env.DB.prepare('UPDATE desk_snapshot SET t = ?').bind(-Date.now()).run(); } } catch (e) {}
+  try { if (env.DB) { await ensureSnap(env); await env.DB.prepare('UPDATE desk_snap SET t = ?').bind(-Date.now()).run(); } } catch (e) {}
 }
 async function loadAll(env, ctx, fresh) {
   if (fresh) return refreshAll(env);
