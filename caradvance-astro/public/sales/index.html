@@ -766,6 +766,7 @@ button,select,input,.langbtn,.iconbtn,#tabs a{touch-action:manipulation}
 
 /* Ajánlatok: autónként csoportosítva, rangsorolva */
 #v-leads .ofbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ofbar .ofacts{margin:0 6px 0 0}
 #ofList{display:flex;flex-direction:column;gap:18px;width:100%}
 .ofcar{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;width:100%}
 .ofhead{display:grid;grid-template-columns:150px 1fr auto;gap:16px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer}
@@ -1691,7 +1692,7 @@ Ready when you are.</h1>
 
   <section class="view" id="v-leads">
     <div class="bar ofbar">
-      <button class="pri" id="recOffer" type="button">Record an offer</button>
+      <div class="dv2acts ofacts"><button type="button" class="dv2logbtn" id="leadLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>Log activity</span></button><button type="button" class="dv2offbtn" id="recOffer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></svg><span>Record offer</span></button></div>
       <select id="ofCountry" aria-label="Country"></select>
       <select id="ofState" aria-label="Status"></select>
       <span class="count" id="lCount"></span>
@@ -2375,6 +2376,7 @@ function ofDialog(title,body,foot){$('#ofDlgT').textContent=title;$('#ofDlgB').i
 $('#ofDlgX').addEventListener('click',()=>$('#ofDlg').close());
 $('#ofCountry').addEventListener('change',renderLeads);$('#ofState').addEventListener('change',renderLeads);
 $('#recOffer')&&$('#recOffer').addEventListener('click',()=>openRecordOffer());
+$('#leadLog')&&$('#leadLog').addEventListener('click',()=>S.dealers.length?openLog(null):status('Add a dealer first, then log contact with them.'));
 $('#ofList').addEventListener('click',async e=>{
   const h=e.target.closest('.ofhead');if(h&&!e.target.closest('button')){const c=(S.cars||[]).find(x=>x.id===h.dataset.car);if(c&&window.__openCarSheet)window.__openCarSheet(c);return}
   const tg=e.target.closest('.oftog');if(tg){const r=tg.closest('.ofrow'),id=r.dataset.id,O=S.ofOpen||(S.ofOpen=new Set());const on=!r.classList.contains('open');r.classList.toggle('open',on);on?O.add(id):O.delete(id);tg.setAttribute('aria-expanded',on);tg.firstChild.textContent=t(on?'of_less':'of_more');return}
