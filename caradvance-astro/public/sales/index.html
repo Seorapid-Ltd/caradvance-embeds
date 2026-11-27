@@ -2343,7 +2343,9 @@ function field([k,l,t,req],val){
 function openDialog(title,html,save,del){$('#dlgTitle').textContent=title;$('#dlgBody').innerHTML=html;$('#dlgBody').classList.remove('dvwrap');dlg.classList.remove('dlg-view');onSave=save;onDel=del;$('#dlgDel').hidden=!del;$('#dlgSave').hidden=false;$('#dlgSave').textContent='Save';$('#dlgEdit').hidden=true;dlg.showModal()}
 $('#dlgX').onclick=$('#dlgCancel').onclick=()=>dlg.close();
 $('#dlgDel').onclick=async()=>{if(onDel&&$('#dlgDel').dataset.armed){await onDel();dlg.close();$('#dlgDel').dataset.armed='';$('#dlgDel').textContent='Delete'}else{$('#dlgDel').dataset.armed='1';$('#dlgDel').textContent='Click again to delete'}};
-$('#dlgForm').addEventListener('submit',async e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));for(const k in fd)if(typeof fd[k]==='string')fd[k]=fd[k].trim();if(onSave&&await onSave(fd)!==false)dlg.close()});
+let dlgBusy=false;
+$('#dlgForm').addEventListener('submit',async e=>{e.preventDefault();if(dlgBusy)return;const fd=Object.fromEntries(new FormData(e.target));for(const k in fd)if(typeof fd[k]==='string')fd[k]=fd[k].trim();
+  const b=$('#dlgSave');dlgBusy=true;b.disabled=true;try{if(onSave&&await onSave(fd)!==false)dlg.close()}finally{dlgBusy=false;b.disabled=false}});
 /* read-only dealer detail (visible to everyone; Edit opens the form) */
 let viewDealer=null;
 $('#dlgEdit').onclick=()=>{const d=viewDealer;dlg.close();if(d)setTimeout(()=>openDealer(d),60)};
@@ -3279,7 +3281,16 @@ async function save(path,data,merge){
     else if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*600));try{const r=S.db.doc(path);merge?await r.update(data):await r.set(data);return true}catch(_){status('Could not save — try again in a moment.')}}
     else status('Could not save: '+(e&&e.message||'unknown error'));return false}
 }
-async function remove(path){try{await S.db.doc(path).delete()}catch(e){status('Could not delete: '+(e&&e.message||''))}}
+async function remove(path){
+  const [col,id]=path.split('/');const gone=col==='outreach'?(S.logs||[]).find(x=>x.id===id):null;
+  try{await S.db.doc(path).delete()}catch(e){status('Could not delete: '+(e&&e.message||''));return}
+  // deleting an activity also undoes what it did to the dealer: last contact = the latest remaining activity
+  // (or empty), and an automatic "Contacted" goes back to "New" when no activity is left
+  if(gone&&gone.dealer){const d=(S.dealers||[]).find(x=>x.id===gone.dealer);if(!d)return;
+    const rest=(S.logs||[]).filter(x=>x.id!==id&&x.dealer===d.id);const last=rest.map(x=>x.date||'').filter(Boolean).sort().pop()||null;
+    const up={};if((d.last_contact||null)!==last)up.last_contact=last;if(!rest.length&&d.status==='Contacted')up.status='New';
+    if(Object.keys(up).length)await save('dealers/'+d.id,up,true)}
+}
 (async()=>{
   const db=await claude.use('db');
   if(!db){status('The desk could not reach Notion. Reload the page; if it keeps happening, tell Tamas.');['#sRows','#dRows','#oRows'].forEach(s=>$(s).innerHTML='<tr><td colspan="8" class="empty">Not connected.</td></tr>');return}
