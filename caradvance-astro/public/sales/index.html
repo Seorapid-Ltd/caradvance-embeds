@@ -2858,7 +2858,7 @@ function renderSales(){
   // cars marked Sold without a recorded sale
   const done=new Set(L.map(x=>x.p.car));const miss=cars.filter(c=>c.status==='Sold'&&!done.has(c.id));
   $('#soMissing').innerHTML=miss.length?`<div class="somiss"><b>${esc(trStr('Sold cars without sale details'))} (${miss.length})</b><span class="sub">${esc(trStr('Add the sale date, the price and the buyer.'))}</span><div class="somissl">${miss.map(c=>`<button type="button" class="somissb" data-sale-car="${esc(c.id)}">${esc(c.id)} · ${esc(c.model||'')}<span>＋</span></button>`).join('')}</div></div>`:'';
-  box.innerHTML=L.length?L.map(({o,p})=>{const c=carOf(p.car),ph=typeof pics==='function'?pics(c)[0]:null;const listP=p.type==='b2c'?b2c(c):c.dealer_net;const d=listP&&p.price?Math.round((p.price/listP-1)*1000)/10:null;
+  box.innerHTML=L.length?L.map(({o,p})=>{const c=carOf(p.car),ph=typeof pics==='function'?pics(c)[0]:null;const listP=p.type==='b2c'?(typeof b2c==='function'?b2c(c):c.dealer_gross):c.dealer_net;const d=listP&&p.price?Math.round((p.price/listP-1)*1000)/10:null;
     const km=c.mileage!=null?Number(c.mileage).toLocaleString(window.__loc||'en-GB')+' km':(c.km_text||'');
     const li=(ic,v)=>v?`<p class="ofli">${ic}<span>${v}</span></p>`:'';
     return `<article class="socard" data-id="${esc(o.id)}">
