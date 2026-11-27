@@ -1,5 +1,5 @@
-// Build lépés (a ver-assets.mjs előtt): a bérelhető autók kártyái (.sub-card) BMW-stílusban — fehér/sötét kártya vékony kerettel,
-// felül szögletes címkék, vékony betűs cím, kisebb autókép sok levegővel, keretes gomb. Világos és sötét módban is.
+// Build lépés (a ver-assets.mjs előtt): a bérelhető autók kártyáin (.sub-card) a kép BMW-stílusban — fehér háttéren, kisebb autó sok levegővel;
+// a kártya többi része (cím, ár, gombok) ugyanolyan, mint az eladó autóknál. Világos és sötét módban is.
 // A rent-bmw.css a dist-be kerül tartalom-hash verzióval, és CSAK a magyar oldalakra kerül (amelyeken van bérlési kártya).
 // Idempotens; hiba esetén nem állítja meg a buildet.
 import fs from 'node:fs';
