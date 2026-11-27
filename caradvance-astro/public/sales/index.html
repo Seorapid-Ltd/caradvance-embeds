@@ -2070,6 +2070,8 @@ function renderStock(){
   const k={id:(a,b)=>a.id.localeCompare(b.id),until:(a,b)=>(a.available_until||'9').localeCompare(b.available_until||'9'),
     price:(a,b)=>(price(b)??-1)-(price(a)??-1),km:(a,b)=>(a.mileage??1e9)-(b.mileage??1e9)}[so];
   L.sort(k);
+  /* cars without a price go to the end of the list (the chosen order stays within both groups) */
+  {const hp=c=>price(c)!=null||(c.dealer_gross!=null&&c.dealer_gross!=='');L=[...L.filter(hp),...L.filter(c=>!hp(c))];}
   $('#sCount').textContent=L.length+' of '+S.cars.length+' vehicles';
   $('#sRows').dataset.price=cat==='b2b'?'b2b':cat==='priv'?'b2c':'both';
   document.documentElement.classList.toggle('pm-b2b',cat==='b2b');document.documentElement.classList.toggle('pm-b2c',cat==='priv');
