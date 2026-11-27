@@ -202,7 +202,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
   <a class="vp-back" href="/">← caradvance.hu</a>
 </div></header>
 <section class="vp-hero">
-  <div class="vp-hero-bg" style="background-image:url('${IMG('5706', 'IMG_5052.jpg', 1920)}')"></div>
+  <div class="vp-hero-bg" role="img" aria-label="Lamborghini Huracán és Aventador"></div>
   <div class="vp-wrap vp-hero-in">
     <div class="vp-ey">Privát luxusautó-bérlés</div>
     <h1>Egy nap.<br><span class="vp-g">Egy élmény.</span></h1>
@@ -251,10 +251,31 @@ html.ca-dark #ca-vipp .vp-g{background-image:linear-gradient(135deg,#F3DFA2,#C9A
 #ca-vipp .vp-nav a,#ca-vipp .vp-back{color:var(--vp-mut);text-decoration:none;font-size:14px;letter-spacing:.04em;transition:color .15s}
 #ca-vipp .vp-nav a:hover,#ca-vipp .vp-back:hover{color:var(--vp-ink)}
 #ca-vipp .vp-back{color:#B08A35;font-weight:700}
-#ca-vipp .vp-hero{position:relative;overflow:hidden;min-height:min(78vh,640px);display:flex;align-items:flex-end;padding:120px 0 70px}
-#ca-vipp .vp-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center}
-#ca-vipp .vp-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--vp-bg) 22%,color-mix(in srgb,var(--vp-bg) 40%,transparent) 62%,transparent),linear-gradient(0deg,var(--vp-bg),transparent 40%)}
+#ca-vipp .vp-hero{position:relative;overflow:hidden;min-height:max(min(100vh - 72px,900px),620px);display:flex;align-items:flex-end;padding:120px 0 44px;background:#0B0B0E}
+#ca-vipp .vp-hero-bg{position:absolute;inset:0;background:url('/vip-hero-lamborghini.webp') 50% 22%/cover no-repeat}
+@media(max-width:1200px){#ca-vipp .vp-hero-bg{background-image:url('/vip-hero-lamborghini-1200.webp')}}
+/* a kép tisztán látszik: csak alul egy finom sötétítés a szöveg alatt, a legalján átúszik az oldal hátterébe */
+#ca-vipp .vp-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--vp-bg) 0%,rgba(8,8,10,.85) 10%,rgba(8,8,10,.55) 24%,rgba(8,8,10,0) 40%)}
 #ca-vipp .vp-hero-in{position:relative;z-index:1;width:100%}
+#ca-vipp .vp-hero h1{color:#fff!important;text-shadow:0 2px 24px rgba(0,0,0,.45);font-size:clamp(38px,4.6vw,64px)!important;margin-bottom:12px!important}
+#ca-vipp .vp-hero h1 br{display:none}#ca-vipp .vp-hero h1 .vp-g{margin-left:.25em}
+@media(min-width:701px){#ca-vipp .vp-hero-in{display:grid;grid-template-columns:1fr auto;align-items:end;column-gap:40px}#ca-vipp .vp-hero-in>.vp-ey,#ca-vipp .vp-hero-in>h1{grid-column:1/-1}#ca-vipp .vp-hero-in>p{margin:0!important}#ca-vipp .vp-hero-in>.vp-btns{grid-column:2;grid-row:3}}
+#ca-vipp .vp-hero p{color:rgba(255,255,255,.86)!important;text-shadow:0 1px 12px rgba(0,0,0,.5)}
+#ca-vipp .vp-hero .vp-ey{color:#E9CE86!important}
+#ca-vipp .vp-hero .vp-ghost{color:#fff!important;border-color:rgba(255,255,255,.45)!important;background:rgba(255,255,255,.08)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#ca-vipp .vp-hero .vp-g{background-image:linear-gradient(135deg,#F3DFA2,#C9A24B 45%,#A27A2B)!important}
+@media(max-width:700px){
+  #ca-vipp .vp-hero{display:block;min-height:0;padding:0 0 34px;background:var(--vp-bg)}
+  #ca-vipp .vp-hero-bg{position:relative;inset:auto;aspect-ratio:3/2;background-position:50% 50%}
+  #ca-vipp .vp-hero:after{display:none}
+  #ca-vipp .vp-hero-in{padding-top:26px}
+  #ca-vipp .vp-hero h1{color:var(--vp-ink)!important;text-shadow:none}
+  #ca-vipp .vp-hero p{color:var(--vp-mut)!important;text-shadow:none}
+  #ca-vipp .vp-hero .vp-ey{color:#A88230!important}
+  #ca-vipp .vp-hero .vp-ghost{color:var(--vp-ink)!important;border-color:var(--vp-line)!important;background:transparent!important}
+  #ca-vipp .vp-hero h1 br{display:inline}#ca-vipp .vp-hero h1 .vp-g{margin-left:0}
+  html:not(.ca-dark) #ca-vipp .vp-hero .vp-g{background-image:linear-gradient(135deg,#C9A24B,#A27A2B 50%,#7E5D1C)!important}
+}
 #ca-vipp .vp-ey{font-size:12px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;margin-bottom:18px;display:inline-block;color:#A88230}
 html.ca-dark #ca-vipp .vp-ey{color:#D4B062}
 #ca-vipp h1{font-size:clamp(46px,7vw,86px);line-height:1;letter-spacing:-.035em;font-weight:800;margin:0 0 20px;color:var(--vp-ink)}
@@ -313,7 +334,7 @@ html.ca-dark #ca-vipp .vp-ey{color:#D4B062}
 #ca-vipp .vp-foot a{color:var(--vp-mut);text-decoration:none}#ca-vipp .vp-foot a:hover{color:var(--vp-ink)}
 #ca-vipp [id]{scroll-margin-top:90px}
 @media(max-width:900px){#ca-vipp .vp-nav{display:none}#ca-vipp .vp-back{margin-left:auto}#ca-vipp .vp-perks-in{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){#ca-vipp .vp-wrap{padding:0 18px}#ca-vipp .vp-hero{padding:90px 0 50px}#ca-vipp .vp-perks-in{grid-template-columns:1fr}#ca-vipp .vp-fleet{flex-direction:column;padding:26px}#ca-vipp .vp-btn{width:100%;justify-content:center}#ca-vipp .vp-logo{letter-spacing:.2em;font-size:12.5px}}
+@media(max-width:600px){#ca-vipp .vp-wrap{padding:0 18px}#ca-vipp .vp-perks-in{grid-template-columns:1fr}#ca-vipp .vp-fleet{flex-direction:column;padding:26px}#ca-vipp .vp-btn{width:100%;justify-content:center}#ca-vipp .vp-logo{letter-spacing:.2em;font-size:12.5px}}
 </style>`;
 
 function make(tpl, slug, title, desc, main, css, extraHtmlAttr) {
