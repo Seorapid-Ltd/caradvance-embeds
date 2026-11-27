@@ -46,6 +46,9 @@ const CORP_M = '<div class="m-acc"><button class="m-accbtn" type="button">Cégek
 const VIP_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
 const VIP_BTN = '<a class="ca-vip" href="/vip/" aria-label="VIP luxusautó-bérlés">' + VIP_SVG + '<span>VIP</span></a>';
 const VIP_M = '<a class="ca-vip ca-vip-m" href="/vip/">' + VIP_SVG + '<span>VIP luxusautó-bérlés</span></a>';
+const VIP_LINKS = [["VIP flotta","/vip/#flotta"],["Alkalmak","/vip/#alkalmak"],["Foglalás","/vip/#foglalas"],["Szolgáltatás","/vip/#szolgaltatas"]];
+const VIP_LI = '<li class="navitem ca-navvip"><button class="navlink" type="button">VIP<span class="chev">⌄</span></button><div class="dropdown"><div class="dd-inner">' + VIP_LINKS.map(([t, h]) => '<a class="ddi" href="' + h + '">' + t + '</a>').join('') + '</div></div></li>';
+const VIP_MI = '<div class="m-acc ca-mvip"><button class="m-accbtn" type="button">VIP<span class="m-plus">+</span></button><div class="m-sub">' + VIP_LINKS.map(([t, h]) => '<a href="' + h + '">' + t + '</a>').join('') + '</div></div>';
 
 const dist = path.resolve(process.cwd(), 'dist');
 const SRC = path.resolve(process.cwd(), 'hu-fix.css');
@@ -92,8 +95,11 @@ try {
         // Főmenü: új „Cégeknek” menüpont a Rólunk elé (asztali + mobil), arany VIP gomb a Kapcsolat mellé
         if (h3.indexOf('>Cégeknek<span class="chev">') < 0) h3 = h3.replace('<li class="navitem"><button class="navlink" type="button">Rólunk', CORP_LI + '<li class="navitem"><button class="navlink" type="button">Rólunk');
         if (h3.indexOf('>Cégeknek<span class="m-plus">') < 0) h3 = h3.replace('<div class="m-acc"><button class="m-accbtn" type="button">Rólunk', CORP_M + '<div class="m-acc"><button class="m-accbtn" type="button">Rólunk');
-        if (h3.indexOf('class="ca-vip"') < 0) h3 = h3.replace('<a class="kapcsolat" href="/kapcsolat/">', VIP_BTN + '<a class="kapcsolat" href="/kapcsolat/">');
-        if (h3.indexOf('ca-vip-m') < 0) h3 = h3.replace('<a class="m-kapcsolat" href="/kapcsolat/">', VIP_M + '<a class="m-kapcsolat" href="/kapcsolat/">');
+        // VIP: sima menüpont a felső sorban a Rólunk után (a korábbi arany gomb helyett). A li szándékosan nem .navitem,
+        // így a mega-menü panelindexei nem csúsznak el.
+        h3 = h3.split(VIP_BTN).join('').split(VIP_M).join('');
+        if (h3.indexOf('ca-navvip"') < 0) { const ri = h3.indexOf('type="button">Rólunk<span class="chev">'); const ue = ri > -1 ? h3.indexOf('</ul>', ri) : -1; if (ue > -1) h3 = h3.slice(0, ue) + VIP_LI + h3.slice(ue); }
+        if (h3.indexOf('class="m-acc ca-mvip"') < 0) h3 = h3.replace('<a class="m-kapcsolat" href="/kapcsolat/">', VIP_MI + '<a class="m-kapcsolat" href="/kapcsolat/">');
         // oldal-azonosító a <html>-en, hogy a hu-fix.css egy-egy oldalra célzottan is tudjon javítani
         const hp = rel === 'index.html' ? '/' : (rel.endsWith('/index.html') ? '/' + rel.slice(0, -10) : '/' + rel);
         if (!/<html[^>]*data-hupath=/.test(h3)) h3 = h3.replace(/<html\b/, '<html data-hupath="' + hp.replace(/"/g, '') + '"');

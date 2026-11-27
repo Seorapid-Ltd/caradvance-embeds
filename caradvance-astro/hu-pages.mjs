@@ -451,7 +451,7 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
 
 const VIP_CSS = `<style id="ca-dark-hu-vip">
 /* a VIP egy külön világ: a fő menü és lábléc helyett saját fejléc és lábléc */
-html[data-vip] body>.ca-navwrap,html[data-vip] .ca-navwrap,html[data-vip] footer.cafoot,html[data-vip] .cafoot{display:none!important}
+html[data-vip] #ca-vipp .vp-top,html[data-vip] #ca-vipp .vp-foot{display:none!important}
 html[data-vip] body{background:var(--vp-bg)!important}
 html[data-vip]{--vp-bg:#F7F3EC;--vp-ink:#1B1712;--vp-mut:#6F6656;--vp-line:rgba(120,95,40,.2);--vp-card:#FFFDF8}
 html[data-vip].ca-dark{--vp-bg:#07070A;--vp-ink:#F3EEE3;--vp-mut:#A9A08E;--vp-line:rgba(201,162,75,.22);--vp-card:linear-gradient(180deg,#121116,#0B0B0E)}
@@ -728,8 +728,7 @@ html.vp-anim #ca-vipp .vp-perk[data-rv].vp-in:hover{transform:translateY(-3px)}
 </style>`;
 
 
-const VIP_MONO = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap">
-<style id="ca-dark-hu-vip-mono">
+const VIP_MONO = `<style id="ca-dark-hu-vip-mono">
 /* VIP: fekete-fehér, letisztult stílus (arany helyett). Csak a /vip/ oldal. */
 html[data-vip]{--vp-bg:#FFFFFF;--vp-ink:#0B0B0B;--vp-mut:#6E6E6E;--vp-line:rgba(0,0,0,.13);--vp-card:#FFFFFF;--vp-soft:#F6F6F6;--vp-btn:#0B0B0B;--vp-btn-t:#FFFFFF}
 html[data-vip].ca-dark{--vp-bg:#000000;--vp-ink:#FFFFFF;--vp-mut:#9C9C9C;--vp-line:rgba(255,255,255,.16);--vp-card:#000000;--vp-soft:#0E0E0E;--vp-btn:#FFFFFF;--vp-btn-t:#000000}
@@ -883,6 +882,93 @@ html #ca-vipp .vp-foot{text-align:center;font-family:var(--hf);text-transform:up
 @media(max-width:640px){html #ca-vipp .vp-back{white-space:nowrap;font-size:12px}html #ca-vipp .vp-logo{letter-spacing:.3em;font-size:12px}html #ca-vipp .vp-tile em{display:none}html #ca-vipp .vp-tile{padding:22px 16px 20px}html #ca-vipp .vp-tile b{font-size:13px!important;letter-spacing:.1em}html #ca-vipp .vp-cars{row-gap:52px}html #ca-vipp .vp-car .vp-ask{width:100%!important}html #ca-vipp .vp-filters{text-align:center}html #ca-vipp .vp-f{justify-content:flex-start}}
 </style>`;
 
+
+// VIP a főoldal színeivel és betűivel (elrendezés változatlan): Plus Jakarta Sans, piros kiemelés, főoldali háttérszínek
+const VIP_MAIN = `<style id="ca-dark-hu-vip-main">
+html[data-vip]{--vp-bg:#F4F7FB;--vp-ink:#141519;--vp-mut:#5A6B82;--vp-line:rgba(20,21,25,.1);--vp-card:#FFFFFF;--vp-soft:#EEF2F7;--vp-btn:#E2001A;--vp-btn-t:#FFFFFF;--vp-red:#E2001A}
+html[data-vip].ca-dark{--vp-bg:#0D0F13;--vp-ink:#E8EBF0;--vp-mut:#A3ADBC;--vp-line:#2A2B30;--vp-card:#17181B;--vp-soft:#1F2024;--vp-btn:#E2001A;--vp-btn-t:#FFFFFF}
+html[data-vip] #ca-vipp{--hf:var(--font,'Plus Jakarta Sans',system-ui,sans-serif);font-family:var(--hf)}
+html[data-vip] #ca-vipp *{font-family:var(--hf)!important}
+/* címek: főoldali stílus */
+html[data-vip] #ca-vipp :is(h1,h2,h3,.vp-lg,.vp-sum-car,.vp-ok h3,.vp-tile b,.vp-steps b,.vp-perk b,.vp-car>h3,.vp-pc b,.vp-trust b,.vp-direct b){text-transform:none!important;letter-spacing:-.02em!important;font-weight:800!important}
+html[data-vip] #ca-vipp h2{font-size:clamp(30px,3.6vw,48px)!important;line-height:1.08!important}
+html[data-vip] #ca-vipp h2:after{display:none!important}
+html[data-vip] #ca-vipp .vp-hero h1{font-weight:800!important;letter-spacing:-.03em!important;font-size:clamp(40px,5vw,72px)!important}
+html[data-vip] #ca-vipp .vp-ey{color:var(--vp-red)!important;font-weight:700!important;letter-spacing:.12em!important;font-size:13px!important}
+html[data-vip] #ca-vipp .vp-hero .vp-ey{color:#fff!important}
+html[data-vip] #ca-vipp .vp-car>h3{font-size:24px!important;min-height:0}
+html[data-vip] #ca-vipp :is(.vp-tile b,.vp-steps b,.vp-perk b){font-size:18px!important}
+html[data-vip] #ca-vipp .vp-lg{font-size:21px!important}
+html[data-vip] #ca-vipp .vp-sum-car{font-size:20px!important}
+html[data-vip] #ca-vipp .vp-num{font-weight:800!important;color:var(--vp-red)!important;-webkit-text-fill-color:var(--vp-red)!important}
+/* címkék: normál írás */
+html[data-vip] #ca-vipp :is(.vp-rows dt,.vp-prrow span,.vp-sum dt,.vp-fl,.vp-prog li,.vp-direct-t,.vp-fmeta,.vp-av,.vp-tile em,.vp-seg span,.vp-occp span,.vp-f button,.vp-sum-price span,.vp-nav a,.vp-foot){text-transform:none!important;letter-spacing:0!important}
+html[data-vip] #ca-vipp :is(.vp-rows dt,.vp-sum dt){color:var(--vp-mut)!important;font-size:14px!important;font-weight:500!important}
+html[data-vip] #ca-vipp :is(.vp-rows dd,.vp-sum dd){color:var(--vp-ink)!important;font-weight:700!important}
+html[data-vip] #ca-vipp .vp-prrow span{font-size:14px!important;color:var(--vp-mut)!important;font-weight:500!important}
+html[data-vip] #ca-vipp .vp-prrow b{font-size:28px!important;font-weight:800!important;letter-spacing:-.02em!important}
+html[data-vip] #ca-vipp .vp-fl{font-size:13px!important;font-weight:700!important;color:var(--vp-ink)!important}
+html[data-vip] #ca-vipp .vp-sum-price span{font-size:13px!important;font-weight:700!important;color:var(--vp-mut)!important}
+html[data-vip] #ca-vipp .vp-sum-price b{font-weight:800!important;font-size:32px!important}
+html[data-vip] #ca-vipp .vp-av{font-size:12px!important;font-weight:700!important;border-radius:999px!important;left:14px;top:14px}
+html[data-vip] #ca-vipp .vp-tile em{font-size:13.5px!important;font-weight:700!important;color:var(--vp-red)!important}
+/* gombok: főoldali pirula */
+html[data-vip] #ca-vipp .vp-btn{border-radius:999px!important;height:54px;padding:0 28px;font-size:15.5px!important;font-weight:800!important;letter-spacing:0!important;text-transform:none!important}
+html[data-vip] #ca-vipp .vp-gold{background:var(--vp-red)!important;border-color:var(--vp-red)!important;color:#fff!important;box-shadow:0 10px 24px -10px rgba(226,0,26,.55)!important}
+html[data-vip] #ca-vipp .vp-ghost{background:#fff!important;border-color:#fff!important;color:#141519!important}
+html[data-vip] #ca-vipp .vp-hero .vp-gold{background:var(--vp-red)!important;border-color:var(--vp-red)!important;color:#fff!important}
+html[data-vip] #ca-vipp .vp-hero .vp-ghost{background:#fff!important;color:#141519!important;border-color:#fff!important}
+@media(max-width:700px){html[data-vip] #ca-vipp .vp-hero .vp-ghost{border:1px solid var(--vp-line)!important}}
+/* kártyák, mezők: lekerekítés a főoldal szerint */
+html[data-vip] #ca-vipp :is(.vp-book-main,.vp-sum-card,.vp-trust,.vp-tile){border-radius:24px!important;background:var(--vp-card)!important;border:1px solid var(--vp-line)!important;overflow:hidden}
+html[data-vip] #ca-vipp :is(.vp-direct a,.vp-pc,.vp-occp span,.vp-fl :is(input,select,textarea)){border-radius:14px!important}
+html[data-vip] #ca-vipp .vp-pc-img{border-radius:10px!important}
+html[data-vip] #ca-vipp .vp-seg{border-radius:14px!important;padding:4px!important;gap:4px!important;background:var(--vp-soft)!important;border:0!important}
+html[data-vip] #ca-vipp .vp-seg label+label span{border-left:0!important}
+html[data-vip] #ca-vipp .vp-seg span{border-radius:10px!important;font-size:14px!important;font-weight:700!important}
+html[data-vip] #ca-vipp .vp-seg input:checked+span{background:var(--vp-card)!important;color:var(--vp-ink)!important;box-shadow:0 0 0 1.5px var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-occp span{font-size:14px!important;font-weight:700!important}
+html[data-vip] #ca-vipp .vp-occp svg{color:var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-occp input:checked+span,html[data-vip] #ca-vipp .vp-pc:has(input:checked){border-color:var(--vp-red)!important;box-shadow:inset 0 0 0 1.5px var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-pc:has(input:checked):after{background-color:var(--vp-red)!important;border-radius:50%!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")!important}
+html[data-vip] #ca-vipp .vp-fl :is(input,select,textarea):focus{border-color:var(--vp-red)!important;box-shadow:0 0 0 3px rgba(226,0,26,.15)!important}
+html[data-vip] #ca-vipp .vp-ck input{accent-color:var(--vp-red)}html[data-vip] #ca-vipp .vp-ck a{color:var(--vp-red)}
+html[data-vip] #ca-vipp .vp-prog li.on,html[data-vip] #ca-vipp .vp-prog li.done{border-top-color:var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-prog i{border-radius:50%!important}
+html[data-vip] #ca-vipp .vp-prog li.on i{background:var(--vp-red)!important;color:#fff!important;border-color:var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-prog li{font-size:13px!important;font-weight:700!important}
+html[data-vip] #ca-vipp .vp-sum-price{border:0!important;background:var(--vp-soft)!important;border-radius:16px!important;padding:16px!important}
+html[data-vip] #ca-vipp .vp-sum-inc svg,html[data-vip] #ca-vipp .vp-trust>div{color:var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-direct a{color:var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-ok-ic{border-radius:50%!important;background:var(--vp-red)!important;color:#fff!important}
+html[data-vip] #ca-vipp .vp-tl li:before{border-radius:50%;border-color:var(--vp-red)}html[data-vip] #ca-vipp .vp-tl li.done:before{background:var(--vp-red)}
+/* előnyök, alkalmak, lépések */
+html[data-vip] #ca-vipp .vp-perk .vp-ic,html[data-vip] #ca-vipp .vp-oi{color:var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-tile:hover{border-color:var(--vp-red)!important}
+html[data-vip] #ca-vipp .vp-steps li{border-top:2px solid var(--vp-red)!important}
+/* szűrők */
+html[data-vip] #ca-vipp .vp-f button{font-size:14px!important;font-weight:700!important;border-radius:999px!important;height:40px;padding:0 16px}
+html[data-vip] #ca-vipp .vp-f[data-k=cat] button[aria-pressed=true]{background:var(--vp-ink)!important;color:var(--vp-bg)!important;box-shadow:none!important}
+html[data-vip] #ca-vipp .vp-fb button[aria-pressed=true]{box-shadow:inset 0 0 0 1.5px var(--vp-red)!important;background:var(--vp-card)!important}
+html[data-vip] #ca-vipp .vp-fmeta{font-size:13.5px!important;font-weight:700!important}
+html[data-vip] #ca-vipp :is(.vp-reset,.vp-reset2,.vp-reset3){color:var(--vp-red)!important}
+/* autókártyák: fehér kártya a főoldal szerint, elrendezés marad */
+html[data-vip] #ca-vipp .vp-car{background:var(--vp-card)!important;border:1px solid var(--vp-line)!important;border-radius:24px!important;overflow:hidden!important;padding:0 0 22px}
+html[data-vip] #ca-vipp .vp-car>h3{padding:20px 22px 0;margin:0 0 14px!important}
+html[data-vip] #ca-vipp .vp-car>.vp-cb{padding:0 22px!important}
+html[data-vip] #ca-vipp .vp-rows{border-bottom:1px solid var(--vp-line)!important}
+html[data-vip] #ca-vipp .vp-zoom,html[data-vip] #ca-vipp .vp-arr{border-radius:50%!important}
+html[data-vip] #ca-vipp .vp-zoom{right:12px;top:12px}
+html[data-vip] #ca-vipp .vp-arr-p{left:12px}html[data-vip] #ca-vipp .vp-arr-n{right:12px}
+/* lebegő sáv */
+html[data-vip] #ca-vipp .vp-bar{border-radius:999px!important;padding:6px!important;gap:6px!important;background:var(--vp-card)!important;border:1px solid var(--vp-line)}
+html[data-vip] #ca-vipp .vp-bar-ic{border-radius:50%!important;border:1px solid var(--vp-line)!important;width:48px;height:48px}
+html[data-vip] #ca-vipp .vp-bar .vp-btn{height:48px}
+/* fő menü a VIP oldalon: a fejléckép a menü alá fut, mint a főoldalon */
+html[data-vip] #ca-vipp .vp-hero{padding-top:140px}
+@media(max-width:700px){html[data-vip] #ca-vipp .vp-hero .vp-ey{color:var(--vp-red)!important}html[data-vip] #ca-vipp .vp-hero{padding-top:0}html[data-vip] #ca-vipp .vp-hero-bg{margin-top:84px}}
+</style>`;
+
 function make(tpl, slug, title, desc, main, css, extraHtmlAttr) {
   let t = tpl
     .replace(/<link rel="canonical"[^>]*>\s*/g, '')
@@ -911,7 +997,7 @@ function run() {
   make(tpl, 'cegeknek', 'Cégeknek — Benchmark, rendezvények, céges bérlet | CarAdvance',
     'Benchmark: bármely autó beszerzése tesztre, összehasonlításra és rendezvényekre, bérelve vagy megvásárolva. Autós céges rendezvények, céges tartós bérlet.', CORP, CORP_CSS);
   make(tpl, 'vip', 'VIP luxusautó-bérlés — CarAdvance',
-    'Privát luxusautó-bérlés: sport- és luxusautók napi bérlésre, személyes kapcsolattartóval és egyedi ajánlattal.', VIP, VIP_CSS + VIP_MONO, 'data-vip="1"');
+    'Privát luxusautó-bérlés: sport- és luxusautók napi bérlésre, személyes kapcsolattartóval és egyedi ajánlattal.', VIP, VIP_CSS + VIP_MONO + VIP_MAIN, 'data-vip="1"');
   return 'kész: /cegeknek/, /vip/ (sablon: ' + path.relative(DIST, tplF) + ')';
 }
 try { console.log('[hu-pages] ' + run()); } catch (e) { console.log('[hu-pages] hiba: ' + (e && e.message || e)); }

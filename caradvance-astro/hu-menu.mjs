@@ -181,6 +181,7 @@ html.ca-dark .ca-am :is(#ca-mmx,*)::before,html.ca-dark .ca-am :is(#ca-mmx,*)::a
 
 // ikonok (vonalas, 24x24)
 const IC = {
+  crown: '<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
   brief: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7M3 12.5h18"/>',
   search2: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2M8.5 11h5M11 8.5v5"/>',
   event: '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z"/>',
@@ -221,6 +222,9 @@ const MENUS = [
   { tiles: [['Miért mi?', '/miert-mi/', 'Német háttér, magyar ügyintézés', 'star'], ['Referenciák', '/referenciak/', 'Ügyfeleink történetei', 'users'], ['Kapcsolat', '/kapcsolat/', 'Solymár · Geretsried', 'pin']],
     info: ['Bizalom', [['Átláthatóság', '/atlathatosag/'], ['Minőségbiztosítás', '/minosegbiztositas/'], ['Media', '/media/'], ['Blog', '/blog/']]],
     quick: ['Kövess minket', 'SOCIAL'], stage: 'about' },
+  { tiles: [['VIP flotta', '/vip/#flotta', 'Ferrari, Porsche, Bentley, AMG – napi bérlésre', 'crown'], ['Alkalmak', '/vip/#alkalmak', 'Esküvő, hétvége, forgatás, üzleti út', 'event'], ['Foglalás', '/vip/#foglalas', 'Három lépés, személyre szabott ajánlat', 'key']],
+    info: ['Tudnivalók', [['Szolgáltatás', '/vip/#szolgaltatas'], ['Hogyan működik', '/vip/#flotta'], ['Napi 200 km, áfás árak', '/vip/#flotta']]],
+    quick: ['Kapcsolat', [['+36 30 233 6060', 'tel:+36302336060'], ['WhatsApp', 'https://wa.me/36302336060']]], stage: 'vip' },
 ];
 
 const CLIENT = function (CFG) {
@@ -347,6 +351,12 @@ const CLIENT = function (CFG) {
       + '<span class="am-soc">' + x.so.map(function (o) { return '<a target="_blank" rel="noopener" href="' + esc(o.h) + '" title="' + esc(o.t) + '" aria-label="' + esc(o.t) + '">' + o.svg + '</a>'; }).join('') + '</span></div></div>';
   }
 
+  function stVip(x) {
+    return '<div class="am-stage am-on-photo" data-st="vip" style="background:#111"><div class="am-photo" style="background-image:url(\'/vip-hero-porsche.jpg\')"></div>'
+      + '<div style="position:relative;z-index:2;max-width:58%;text-shadow:0 1px 12px rgba(0,0,0,.55)"><div class="am-st-h">Egy nap. Egy élmény.</div><div class="am-st-p">Sport- és luxusautók napi bérlésre, személyes kapcsolattartóval.</div>'
+      + '<div class="am-st-p" style="margin-top:14px">15 autó a flottában,<br>Ferraritól a Bentley-ig.</div></div>'
+      + '<div class="am-st-bot" style="position:relative;z-index:2;display:flex;align-items:center;gap:8px"><a class="am-go" href="/vip/#foglalas">Ajánlatot kérek →</a><a class="am-go wh" href="/vip/#flotta" style="background:#fff;color:#111!important">VIP flotta</a></div></div>';
+  }
   // ---- panel felépítése: balra a fő pontok és alattuk a tudnivalók, jobbra a nagy színpad ----
   function build(p, i) {
     var C = M[i]; if (!C) return null;
@@ -358,7 +368,7 @@ const CLIENT = function (CFG) {
     var tiles = C.tiles.map(function (t, k) { var n = t[4] && cn[t[4]]; return '<a class="am-t' + (k === 0 ? ' am-main' : '') + '" href="' + esc(t[1]) + '"><span class="am-ic">' + ic(t[3]) + '</span><div><b>' + esc(t[0]) + (n ? ' <i>' + esc(n) + '</i>' : '') + '</b><span>' + esc(t[2]) + '</span></div><em>→</em></a>'; }).join('');
     var info = '<div class="am-info"><p class="am-h">' + esc(C.info[0]) + '</p><div class="am-links">' + C.info[1].map(function (z) { return '<a href="' + esc(z[1]) + '">' + esc(z[0]) + '</a>'; }).join('') + '</div></div>';
     var x = { bs: bs.filter(function (b) { return b.img; }), ng: ng, so: so, calc: Array.isArray(C.quick[1]) ? C.quick[1] : [] };
-    var stage = { rent: stRent, sale: stSale, sell: stSell, import: stImport, corp: stCorp, about: stAbout }[C.stage](x);
+    var stage = { rent: stRent, sale: stSale, sell: stSell, import: stImport, corp: stCorp, about: stAbout, vip: stVip }[C.stage](x);
     var d = document.createElement('div'); d.className = 'ca-am'; d.setAttribute('data-i', i);
     d.innerHTML = '<div class="am-grid"><div class="am-left"><div class="am-tiles">' + tiles + '</div>' + info + '</div><div class="am-right">' + stage + '</div></div>' + bar();
     wire(d, C.stage, cn);
