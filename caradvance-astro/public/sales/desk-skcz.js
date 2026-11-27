@@ -113,6 +113,22 @@
   if(document.readyState==='loading')addEventListener('DOMContentLoaded',swapFooter);else swapFooter();
   }
 
+
+  /* ---- 2026-11-27: /sales lábléc a .pl / .eu / .ch oldalon – a saját piac, nem "Hungary" ---- */
+  (()=>{
+    const tld=(H.match(/\.(pl|eu|ch)$/)||[])[1];if(!tld)return;
+    const M={pl:{where:'Poland',tel:'+49 151 70571578'},eu:{where:'Europe',tel:'+49 151 70571578'},ch:{where:'Switzerland',tel:'+41 79 715 85 80',mail:'info@caradvance.ch'}}[tld];
+    const fix=()=>{const f=document.querySelector('footer.cafoot');if(!f)return;
+      /* a bemutatkozó mondat: angol forrásszöveget teszünk be, a lap fordítója ebből fordít a választott nyelvre
+         (ha a fordító már előbb lefordította a "Hungary" változatot, azt is lecseréljük) */
+      const pe=[...f.querySelectorAll('p')].find(x=>/Germany|Németország|Nemecka|Německa|Deutschland|Niemiec/.test(x.textContent));
+      const en='Premium cars from Germany for people living in '+M.where+' — long-term rental, import and registration, in English.';
+      if(pe){const n=[...pe.childNodes].find(x=>x.nodeType===3&&x.data.trim());if(n&&n.data.trim()!==en)n.data=en;}
+      f.querySelectorAll('a[href^="tel:+36"]').forEach(a=>{a.href='tel:'+M.tel.replace(/\s/g,'');a.textContent=M.tel;});
+      if(M.mail)f.querySelectorAll('a[href^="mailto:"][href*="caradvance.hu"]').forEach(a=>{a.href='mailto:'+M.mail;a.textContent=M.mail;});};
+    if(document.readyState==='loading')addEventListener('DOMContentLoaded',fix);else fix();
+  })();
+
   /* ---- 1) adatok fordítása (csak megjelenítés) – minden hoston ---- */
   let D=null,L2=null;
   const COL={grau:'Grey',blau:'Blue',rot:'Red',grün:'Green',weiss:'White',weiß:'White',gelb:'Yellow',schwarz:'Black',silber:'Silver'};
@@ -165,7 +181,7 @@
     const ls=document.getElementById('lang');if(ls)ls.addEventListener('change',re);
     /* a nyelvválasztó menü a <html lang> attribútumot állítja – erre is újrafordítunk */
     new MutationObserver(re).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}
-  fetch('desk-skcz-dict.json?v=1127b',{credentials:'same-origin'}).then(r=>r.ok?r.json():{}).then(j=>{D=j;L2={};for(const k in D)L2[k.toLowerCase()]=D[k];
+  fetch('desk-skcz-dict.json?v=1127c',{credentials:'same-origin'}).then(r=>r.ok?r.json():{}).then(j=>{D=j;L2={};for(const k in D)L2[k.toLowerCase()]=D[k];
     if(document.body)start();else addEventListener('DOMContentLoaded',start);}).catch(()=>{});
 
 })();
