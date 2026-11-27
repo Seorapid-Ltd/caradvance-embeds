@@ -1617,36 +1617,41 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 @media(max-width:1100px){.socard{grid-template-columns:140px minmax(0,1fr) minmax(0,1fr)}.soimg img,.soimg .noimg{width:140px;height:84px}.sobuyer{grid-column:2/-1;padding-left:0;border-left:0}.soact{grid-column:1/-1;flex-direction:row;justify-content:space-between}}
 @media(max-width:640px){.sokpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sokpis .kpi{padding:12px 14px}.sokpis .kpi b{font-size:18px}.socard{grid-template-columns:1fr;gap:12px}.soimg img,.soimg .noimg{width:100%;height:auto;aspect-ratio:16/10}.soprice,.sobuyer{padding-left:0;border-left:0;grid-column:auto}.subnav.ofsub{display:flex;width:100%}.subnav.ofsub a{flex:1;justify-content:center;padding:0 10px}}
 
-/* Ajánlatok fejléc — CarAdvance színek, arany = eladva */
-:root{--gold:#C9A227;--gold-deep:#A8841A;--gold-bg:light-dark(#FBF4DF,#2a2414);--gold-line:light-dark(#E9D38F,#5c4c1f);--gold-ink:light-dark(#7A5C0B,#E9CD72)}
+/* Ajánlatok fejléc — CarAdvance színek: balról jobbra fekete → sötétszürke → középszürke → világosszürke, az Eladva piros */
+:root{--gold:#E2001A;--gold-deep:#B80015;--gold-bg:light-dark(#FDECEE,#2b1418);--gold-line:light-dark(#F6B8C0,#5a2029);--gold-ink:light-dark(#B80015,#ff6b7c)}
 .ofhdr{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px;display:flex;flex-direction:column;gap:14px}
 .ofhtop{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .ofttl{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em}
-.ofsum{margin:2px 0 0;color:var(--muted);font-size:14px}.ofsum b{color:var(--ink);font-weight:800}.ofsum .ofsc{color:var(--red)}.ofsum .ofss{color:var(--gold-deep)}
+.ofsum{margin:2px 0 0;color:var(--muted);font-size:14px}.ofsum b{color:var(--ink);font-weight:800}.ofsum .ofsc,.ofsum .ofss{color:var(--red)}
 .ofbtns{display:flex;gap:10px;flex-wrap:wrap}
 .ofbtn1,.ofbtn2{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:999px;font:inherit;font-weight:800;font-size:14.5px;cursor:pointer}
 .ofbtn1 svg,.ofbtn2 svg{width:18px;height:18px}
 .ofbtn1{background:var(--red);color:#fff;border:0;box-shadow:0 6px 16px rgba(226,0,26,.25)}.ofbtn1:hover{background:var(--red-dark);color:#fff}
-.ofbtn1.gold{background:var(--gold);color:#1a1405;box-shadow:0 6px 16px rgba(201,162,39,.3)}.ofbtn1.gold:hover{background:var(--gold-deep);color:#fff}
 .ofbtn2{background:transparent;color:var(--ink);border:1.5px solid var(--line)}.ofbtn2:hover{background:var(--navy);border-color:var(--navy);color:#fff}
-.oftiles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
-.oft{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer;font:inherit;text-align:left;min-width:0}
-.oft small{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.oft b{font-size:22px;font-weight:800;line-height:1.1}
-.oft:hover{border-color:var(--muted);background:var(--soft)}
-.oft.zero b{color:var(--muted);font-weight:700}
-.oft-chk:not(.zero){background:light-dark(#FDECEE,#2b1418);border-color:light-dark(#F6B8C0,#5a2029)}.oft-chk:not(.zero) small,.oft-chk:not(.zero) b{color:var(--red)}
-.oft-sold{background:var(--gold-bg);border-color:var(--gold-line)}.oft-sold small,.oft-sold b{color:var(--gold-ink)}.oft-sold:hover{border-color:var(--gold);background:var(--gold-bg)}
-.oft.on{background:light-dark(var(--navy),#fff);border-color:light-dark(var(--navy),#fff);box-shadow:0 6px 16px rgba(11,11,13,.25)}.oft.on small{color:light-dark(#c7ccd6,#5A6B82)}.oft.on b{color:light-dark(#fff,var(--navy))}
-.oft-chk.on b{color:light-dark(#ff4d61,var(--red))}
-.oft-sold.on{background:var(--gold);border-color:var(--gold)}.oft-sold.on small{color:#3d2f06}.oft-sold.on b{color:#1a1405}
+.oftiles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;padding:4px}
+.oft{--t:#0B0B0D;--tx:#fff;--ts:rgba(255,255,255,.72);display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border-radius:14px;border:0;background:var(--t);color:var(--tx);cursor:pointer;font:inherit;text-align:left;min-width:0;transition:transform .12s,box-shadow .12s}
+.oft small{font-size:12px;font-weight:700;color:var(--ts);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.oft b{font-size:22px;font-weight:800;line-height:1.1;color:var(--tx)}
+.oft:hover{background:var(--t);transform:translateY(-1px);box-shadow:0 6px 14px rgba(11,11,13,.18)}
+.oft.zero b{opacity:.55}
+.oft:not(.on){box-shadow:inset 0 0 0 1px light-dark(transparent,rgba(255,255,255,.1))}
+.oft-all{--t:#0B0B0D}
+.oft-open{--t:#25282E}
+.oft-new{--t:#3D414A}
+.oft-chk{--t:#5A606B}
+.oft-ctr{--t:#8A919D;--tx:#0B0B0D;--ts:rgba(11,11,13,.7)}
+.oft-acc{--t:#B4BAC4;--tx:#0B0B0D;--ts:rgba(11,11,13,.68)}
+.oft-dec{--t:#DDE1E7;--tx:#0B0B0D;--ts:rgba(11,11,13,.62)}
+.oft-sold{--t:var(--red);--tx:#fff;--ts:rgba(255,255,255,.8)}
+.oft.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--red),0 8px 18px rgba(11,11,13,.22);transform:translateY(-1px)}
+.oft-sold.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px light-dark(var(--navy),#fff),0 8px 18px rgba(226,0,26,.3)}
 .ofcrow{display:flex;justify-content:flex-end;background:none;border:0;box-shadow:none;padding:0;margin:0}
 .ofcl{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);font-weight:700}
 .ofcl select{width:220px;height:40px}
-#v-sold .sokpis .kpi:first-child b{color:var(--gold-deep)}
+#v-sold .sokpis .kpi:first-child b{color:var(--red)}
 @media(max-width:1100px){.oftiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:640px){.ofhdr{padding:14px;border-radius:18px}.ofttl{font-size:21px}.ofbtns{width:100%}.ofbtn1,.ofbtn2{flex:1;justify-content:center;padding:0 10px;gap:6px;font-size:13px;white-space:nowrap;min-width:0}.ofbtn1 svg,.ofbtn2 svg{width:16px;height:16px;flex:none}
- .oftiles{display:flex;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -14px;padding:0 14px 4px;scrollbar-width:none}.oftiles::-webkit-scrollbar{display:none}
+ .oftiles{display:flex;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -14px;padding:6px 14px 10px;scrollbar-width:none}.oftiles::-webkit-scrollbar{display:none}
  .oft{flex:0 0 auto;min-width:112px;scroll-snap-align:start}.ofcrow{justify-content:stretch}.ofcl{width:100%}.ofcl select{flex:1;width:auto}}
 </style>
 </head>
@@ -1782,7 +1787,7 @@ Ready when you are.</h1>
   <section class="view" id="v-sold">
     <div class="ofhdr">
       <div class="ofhtop"><div class="ofhtl"><h2 class="ofttl"></h2><p class="ofsum"></p></div>
-        <div class="ofbtns"><button type="button" class="ofbtn1 gold" id="recSale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Record a sale</span></button></div></div>
+        <div class="ofbtns"><button type="button" class="ofbtn1" id="recSale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Record a sale</span></button></div></div>
       <div class="oftiles" role="tablist"></div>
       <span class="count" id="soCount" hidden></span>
     </div>
