@@ -1808,6 +1808,13 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 .ofrfields[hidden]{display:none}.ofrhint{grid-column:1/-1;margin:0;font-size:13px;font-weight:700}
 @media(max-width:640px){.ofbtns{flex-wrap:wrap}.ofbtn3{flex:1 1 100%;justify-content:center;height:44px;font-size:13.5px}
   .olact .pri,.olact .olbtn{flex:1 1 calc(50% - 4px);justify-content:center;min-height:44px}.olact .ollink{flex:1 1 100%}.ofrfields{grid-template-columns:1fr}}
+
+/* page titles sit inside their card, like Deals (Ügyletek) */
+.dlrpanel .dlrhead{margin:0 0 14px;align-items:baseline;gap:10px}
+.dlrpanel .dlrh1{font-size:24px}.dlrpanel .dlrcount{font-size:14px}
+.tdh h3{font-size:24px;letter-spacing:-.01em}
+@media(max-width:640px){.dlrpanel .dlrh1,.tdh h3{font-size:21px}}
+@media(min-width:641px){.dlrpanel .dlrhead{padding-left:4px}} /* title lines up with the To-dos title above */
 </style>
 </head>
 <body>
@@ -1881,9 +1888,9 @@ Ready when you are.</h1>
   <section class="view" id="v-dealers">
     <nav class="subnav"><a href="#dealers" data-s="dealers"><i data-i18n="tab_dealers">Dealer leads</i> <span id="nDeal"></span></a><span class="subarrow" aria-hidden="true"></span><a href="#outreach" data-s="outreach"><svg class="subic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><i data-i18n="tab_out">Outreach log</i> <span id="nOut"></span></a></nav>
     <div class="todo" id="todo"></div>
-    <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
     <div id="dkpis" hidden style="display:none"></div>
     <div class="dlrpanel">
+      <div class="dlrhead"><h2 class="dlrh1">Dealers</h2><p class="dlrcount"><b id="dCount">0</b> <span>dealers</span></p></div>
       <label class="dlrsearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" id="dq" placeholder="Search company, city or contact…" aria-label="Search dealers"></label>
       <div class="dlrcountries" id="dCountries" role="group" aria-label="Filter by country"></div>
       <input type="hidden" id="dCountry" value="">
@@ -2001,7 +2008,7 @@ Ready when you are.</h1>
 <dialog id="lb" aria-label="Photo viewer"><div class="lbtop"><span id="lbCap"></span><div class="lbtools"><button type="button" id="lbFs" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fs-on" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-off" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button><button type="button" id="lbX" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div><div class="lbstage"><button type="button" id="lbPrev" class="lbnav prev" aria-label="Previous photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><img id="lbImg" alt=""><button type="button" id="lbNext" class="lbnav next" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></dialog>
 <dialog id="dlb" aria-label="Damage photo"><button type="button" id="dlbX" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img id="dlbImg" alt=""></dialog>
 <script src="desk-skcz.js?v=1127c"></script>
-<script src="desk-shim.js?v=1128a"></script>
+<script src="desk-shim.js?v=1128b"></script>
 <script>
 /* Telefonos kártyanézethez: minden cella megkapja az oszlop nevét (a fejlécből). */
 (function(){
