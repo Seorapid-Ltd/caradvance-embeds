@@ -375,6 +375,10 @@ async function write(env, ctx, me, body) {
   const { op, path, data = {}, prev = {} } = body || {};
   const [col, docId] = String(path || '').split('/');
   if (!MAP[col] || !docId) throw bad('Unknown record.');
+  if (col === 'vehicles' && !canPrice(me)) {
+    const locked = Object.keys(data).filter(k => PRICE_FIELDS.includes(k));
+    if (locked.length) throw bad('Only Alexander, Tamás, Marc or an admin can change prices.', 403, 'price_locked');
+  }
   const all = await loadAll(env, ctx);
   const list = all[col];
   let cur = list.find(d => d.id === docId);
@@ -395,6 +399,8 @@ async function write(env, ctx, me, body) {
       data.dealer_gross = data.dealer_net == null || data.dealer_net === '' ? null : b2c(data.dealer_net);
     if (col === 'vehicles' && cur.b2c_generated && !('dealer_gross' in data)) data.dealer_gross = cur.dealer_gross; // write the generated B2C into Notion
     const props = toProps(col, data, all.idx);
+    if (col === 'vehicles' && ('dealer_net' in data || 'dealer_gross' in data) && (!same(cur.dealer_net, data.dealer_net ?? cur.dealer_net) || !same(cur.dealer_gross, data.dealer_gross ?? cur.dealer_gross)))
+      await logManualPrice(env, cur.id, data.dealer_net ?? cur.dealer_net, data.dealer_gross ?? cur.dealer_gross, me.name || nameOf(me.email));
     if (col === 'outreach' && !data.member && !cur.member) props['Team member'] = writeProp('text', me.name || nameOf(me.email));
     if (!Object.keys(props).length) return { ok: true, doc: cur };
     return { ok: true, doc: await writePage(env, col, 'PATCH', `/pages/${cur._pid}`, { properties: props }, all.idx) };
@@ -822,10 +828,17 @@ async function stockList(env, me) {
 const PRICE_DECIDERS = ['a.roether@caradvance.de', 'tszeredi@gmail.com', 'marc.nemethy@bhgeu.com'];
 // Testers: can try choosing / deleting prices to demo the flow, but nothing is stored (shows a "test mode" banner).
 const PRICE_TESTERS = [];
-const priceMode = me => { const e = String((me && me.email) || '').trim().toLowerCase(); return PRICE_DECIDERS.includes(e) ? 'live' : PRICE_TESTERS.includes(e) ? 'test' : null; };
+// prices on a car (B2B, B2C, list, asking, minimum): only the price deciders and admins may change them
+const PRICE_FIELDS = ['dealer_net', 'dealer_gross', 'msrp_gross', 'asking_price', 'min_price', 'mde_price'];
+const canPrice = me => !!me && (me.role === 'admin' || PRICE_DECIDERS.includes(String(me.email || '').trim().toLowerCase()));
+const priceMode = me => { const e = String((me && me.email) || '').trim().toLowerCase(); return (PRICE_DECIDERS.includes(e) || (me && me.role === 'admin')) ? 'live' : PRICE_TESTERS.includes(e) ? 'test' : null; };
+// a price set by hand (admin override) — always a new dated entry in the price log, next to the mobile.de checks
+async function logManualPrice(env, car, net, gross, who) {
+  try { await ensurePriceLog(env); await env.DB.prepare("INSERT INTO desk_price_log (car, day, at, source, net, gross, km, ref) VALUES (?, ?, ?, 'manual', ?, ?, NULL, ?)").bind(String(car), budDay(Date.now()), Date.now(), net ?? null, gross ?? null, String(who || '')).run(); } catch (e) {}
+}
 async function stockChoosePrice(request, env, ctx, me) {
   const mode = priceMode(me);
-  if (!mode) throw bad('Only Alexander (a.roether@caradvance.de) can choose the price.', 403);
+  if (!mode) throw bad('Only Alexander, Tamás, Marc or an admin can change prices.', 403, 'price_locked');
   const b = await request.json().catch(() => ({}));
   await ensureStock(env);
   const row = await env.DB.prepare('SELECT data FROM desk_stocklist WHERE id = ?').bind(String(b.id || '')).first();
@@ -847,13 +860,14 @@ async function stockChoosePrice(request, env, ctx, me) {
     const o = d.chosen.orig || { net: d.chosen.prev, from: '' };
     if (d.chosen.deskPrev) deskTo = d.chosen.deskPrev;
     d.net = o.net; d.gross = o.net != null ? Math.round(o.net * (1 + VAT) * 100) / 100 : null; d.net_from = o.from || d.net_from; delete d.chosen; delete d.price_ok;
+    if (mode === 'live') await logManualPrice(env, d.id, d.net, d.gross, `${who} (reset)`);
   } else {
     const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
     if (!(net > 1000 && net < 5000000)) throw bad('Enter a valid net price.');
     const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
     d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document', orig, deskPrev: d.chosen && d.chosen.deskPrev };
     d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
-    if (mode === 'live' && b.how === 'typed') { try { await ensurePriceLog(env); await env.DB.prepare("INSERT INTO desk_price_log (car, day, at, source, net, gross, km, ref) VALUES (?, ?, ?, 'manual', ?, ?, NULL, ?)").bind(d.id, budDay(Date.now()), Date.now(), net, d.gross, who).run(); } catch (e) {} }
+    if (mode === 'live') await logManualPrice(env, d.id, net, d.gross, b.how === 'typed' ? who : `${who} (document)`);
     if (d.desk) deskTo = { net, gross: d.gross };
   }
   let desk = false;
@@ -937,9 +951,11 @@ async function mdeSync(env, ctx, body) {
     if (ad && ad.ok && ad.gross) {
       const gross = r2(ad.gross), net = r2(ad.net) || Math.round(gross / (1 + VAT)), km = ad.km != null ? Number(ad.km) : null;
       const prevNet = d.net, prevKm = d.km;
+      const prevAd = d.mde && d.mde.price != null ? Number(d.mde.price) : null;
+      const adChanged = prevAd == null || Math.round(prevAd) !== Math.round(gross); // the ad's own price moved
       d.mde = { ...(d.mde || {}), id: String(ad.id || (d.mde && d.mde.id) || ''), url: (d.mde && d.mde.url) || `https://suchen.mobile.de/fahrzeuge/details.html?id=${ad.id}`, price: gross, km, at: day, checked: now };
       if (km != null) d.km = km;
-      const priceChanged = Math.round(Number(d.gross || 0)) !== Math.round(gross) || Math.round(Number(d.net || 0)) !== Math.round(net);
+      const priceChanged = (adChanged || d.net == null) && (Math.round(Number(d.gross || 0)) !== Math.round(gross) || Math.round(Number(d.net || 0)) !== Math.round(net));
       if (priceChanged) {
         const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
         d.chosen = { by: 'mobile.de', at: day, prev: d.net, how: 'mobile', orig, deskPrev: (d.chosen && d.chosen.deskPrev) || null };
@@ -959,7 +975,8 @@ async function mdeSync(env, ctx, body) {
       const car = all && d.desk ? all.vehicles.find(v => v.id === d.desk) : null;
       if (car) {
         const props = {};
-        if (Math.round(Number(car.dealer_net || 0)) !== Math.round(net) || Math.round(Number(car.dealer_gross || 0)) !== Math.round(gross)) { props.B2B = writeProp('number', net); props.B2C = writeProp('number', gross); }
+        const deskAdChanged = car.mde_price == null || Math.round(Number(car.mde_price)) !== Math.round(gross);
+        if ((deskAdChanged || car.dealer_net == null) && (Math.round(Number(car.dealer_net || 0)) !== Math.round(net) || Math.round(Number(car.dealer_gross || 0)) !== Math.round(gross))) { props.B2B = writeProp('number', net); props.B2C = writeProp('number', gross); }
         if (km != null && Number(car.mileage) !== km) props['Mileage km'] = writeProp('number', km);
         if (Number(car.mde_price) !== gross) props['mobile.de price'] = writeProp('number', gross);
         if (km != null && Number(car.mde_km) !== km) props['mobile.de km'] = writeProp('number', km);
@@ -1072,7 +1089,7 @@ export async function handle(request, env, ctx) {
       let team = [];
       try { team = ((await env.DB.prepare("SELECT name, email, desk_markets FROM users WHERE desk_access = 1 ORDER BY name").all()).results || [])
         .filter(u => !/^teszt\./i.test(u.email || '')).map(u => ({ name: (u.name || nameOf(u.email)).trim(), markets: u.desk_markets || '' })); } catch (e) {}
-      return json({ vehicles, dealers, outreach, team, v, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
+      return json({ vehicles, dealers, outreach, team, v, me: { email: me.email, name: me.name || nameOf(me.email), canPrice: canPrice(me) }, at: new Date().toISOString() });
     }
     if (request.method === 'GET' && route === 'backups') { if (me.role !== 'admin') throw bad('Admins only.', 403); return json({ backups: await backupList(env), keep_days: BACKUP_DAYS }); }
     if (request.method === 'GET' && route === 'backup') {
