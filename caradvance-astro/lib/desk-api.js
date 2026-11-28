@@ -241,6 +241,8 @@ async function recordPatch(env, col, id, doc) {
 }
 /** Notion page write + patch in one step; returns the finished record. */
 async function writePage(env, col, method, path, body, idx) {
+  // The test desks (dev.caradvance.*, *.pages.dev) share Notion with the live desk, so they only read it (28 Nov 2026)
+  if (env.DESK_READONLY) throw bad(READONLY_MSG, 403);
   const page = await notion(env, method, path, body);
   const doc = pageToDoc(col, page, idx);
   if (body && body.in_trash) await recordPatch(env, col, doc.id, null); else await recordPatch(env, col, doc.id, doc);
@@ -917,8 +919,16 @@ export function publicCar(v) {
   return o;
 }
 
+/** Notion writes only from the live sites (www.caradvance.* or the bare domain); dev and preview desks are read-only. */
+export const READONLY_MSG = 'This is the test (dev) desk: it only reads the shared data. Save on the live site (www.caradvance.…).';
+export function deskReadOnly(host) {
+  const h = String(host || '').toLowerCase();
+  if (h === 'localhost' || h.startsWith('127.') || h.endsWith('.localhost')) return false; // local development
+  return !/^(www\.)?caradvance\.(hu|sk|cz|pl|ch|eu)$/.test(h);
+}
 export async function handle(request, env, ctx) {
   const url = new URL(request.url);
+  if (deskReadOnly(url.hostname) && !env.DESK_READONLY) env = { ...env, DESK_READONLY: '1' };
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
