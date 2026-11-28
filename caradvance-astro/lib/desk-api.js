@@ -197,6 +197,7 @@ async function readSnap(env) {
 }
 async function writeSnap(env, t, data) {
   const s = toB64(await gz(JSON.stringify(data))), parts = [];
+  try { await dailyBackup(env, t, s); } catch (e) { /* a backup problem never blocks the desk */ }
   for (let i = 0; i < s.length; i += SNAP_CHUNK) parts.push(s.slice(i, i + SNAP_CHUNK));
   await env.DB.batch([env.DB.prepare('DELETE FROM desk_snap'), ...parts.map((p, i) => env.DB.prepare('INSERT INTO desk_snap (part, t, data) VALUES (?, ?, ?)').bind(i, t, p))]);
 }
@@ -487,6 +488,77 @@ export async function deskMail(env, mail) {
     err = String(await r.text().catch(() => r.status));
   }
   return { ok: false, status: r.status, error: err.slice(0, 300) };
+}
+
+
+/* ---------------- daily backup of the Notion data (cars, dealers, activity) — 30 days ----------------
+ * The first sync of each Budapest day keeps a copy (the same gzip as the desk copy). Notion's own trash only
+ * helps with single deletions; with these, any day's state can be restored. Admins: GET /api/desk/backups,
+ * GET /api/desk/backup?day=YYYY-MM-DD (JSON download). */
+const BACKUP_DAYS = 30, BK_CHUNK = 1500000;
+async function ensureBackup(env) {
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_backup (day TEXT NOT NULL, part INTEGER NOT NULL, t INTEGER NOT NULL, data TEXT NOT NULL, PRIMARY KEY (day, part))').run();
+}
+async function dailyBackup(env, t, b64) {
+  if (!env.DB || !b64) return;
+  await ensureBackup(env);
+  const day = budDay(t);
+  if (await env.DB.prepare('SELECT 1 FROM desk_backup WHERE day = ? LIMIT 1').bind(day).first()) return;
+  const parts = []; for (let i = 0; i < b64.length; i += BK_CHUNK) parts.push(b64.slice(i, i + BK_CHUNK));
+  await env.DB.batch(parts.map((p, i) => env.DB.prepare('INSERT OR IGNORE INTO desk_backup (day, part, t, data) VALUES (?, ?, ?, ?)').bind(day, i, t, p)));
+  await env.DB.prepare('DELETE FROM desk_backup WHERE day < ?').bind(budDay(t - BACKUP_DAYS * 86400000)).run();
+}
+async function backupList(env) {
+  await ensureBackup(env);
+  return ((await env.DB.prepare('SELECT day, MIN(t) AS t, SUM(LENGTH(data)) AS bytes FROM desk_backup GROUP BY day ORDER BY day DESC').all()).results || []);
+}
+async function backupRead(env, day) {
+  await ensureBackup(env);
+  const rows = (await env.DB.prepare('SELECT data FROM desk_backup WHERE day = ? ORDER BY part').bind(day).all()).results || [];
+  if (!rows.length) return null;
+  return JSON.parse(await gunz(fromB64(rows.map(r => r.data).join(''))));
+}
+
+/* ---------------- health check + e-mail alert ----------------
+ * GET /api/desk/health?key=… (the mobile.de sync key). Reads Notion once, makes sure today's backup exists, and
+ * reports: Notion reachable?, when the mobile.de check last ran, the backups. With &alert=1 it e-mails ALERT_EMAIL
+ * (default tszeredi@gmail.com) about problems — the same problem at most once every 10 hours. */
+const ALERT_DEFAULT = 'tszeredi@gmail.com';
+async function deskHealth(env, ctx, url) {
+  const out = { at: new Date().toISOString(), host: url.hostname, problems: [] };
+  const t0 = Date.now();
+  try { await notion(env, 'POST', `/data_sources/${DS.vehicles}/query`, { page_size: 1 }); out.notion_ms = Date.now() - t0; }
+  catch (e) { out.problems.push('Notion is not reachable: ' + String(e && e.message || e).slice(0, 160)); }
+  try { await loadAll(env, ctx); if (memo) out.snapshot_age_min = Math.round((Date.now() - memo.st) / 60000); } catch (e) { out.problems.push('The desk could not load its data: ' + String(e && e.message || e).slice(0, 160)); }
+  try {
+    await ensureStock(env);
+    const r = await env.DB.prepare("SELECT MAX(CAST(json_extract(data, '$.checked_at') AS INTEGER)) AS t FROM desk_stocklist").first();
+    out.mde_last = r && r.t ? new Date(Number(r.t)).toISOString() : null;
+    const hours = r && r.t ? (Date.now() - Number(r.t)) / 3600000 : Infinity;
+    out.mde_hours_ago = Number.isFinite(hours) ? Math.round(hours * 10) / 10 : null;
+    if (hours > 14) out.problems.push(`The mobile.de check has not run for ${Number.isFinite(hours) ? Math.round(hours) + ' hours' : 'a long time'} (it should run at 6:37 and 18:37 on the Mac with the Claude app open).`);
+  } catch (e) { out.problems.push('Could not read the mobile.de status.'); }
+  try {
+    // a sync now makes sure today's backup exists even when nobody opened the desk
+    if (await tryLock(env).catch(() => false)) await refreshAll(env).catch(() => {});
+    const list = await backupList(env); out.backups = list.length; out.backup_last = list[0] ? list[0].day : null;
+    if (!list.length || list[0].day < budDay(Date.now() - 36 * 3600000)) out.problems.push('No backup of the Notion data in the last day and a half.');
+  } catch (e) { out.problems.push('Could not check the backups.'); }
+  out.ok = !out.problems.length;
+  if (!out.ok && url.searchParams.get('alert') === '1' && env.DB) {
+    await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_state (k TEXT PRIMARY KEY, v TEXT, t INTEGER)').run();
+    const sig = out.problems.map(p => p.replace(/\d+/g, '#')).join('|');
+    const last = await env.DB.prepare("SELECT v, t FROM desk_state WHERE k = 'alert'").first();
+    if (!(last && last.v === sig && Date.now() - last.t < 10 * 3600000)) {
+      const to = env.ALERT_EMAIL || ALERT_DEFAULT;
+      const lines = out.problems.map(p => '• ' + p).join('\n');
+      const r = await deskMail(env, { to: [to], subject: 'CarAdvance Sales Desk – figyelmeztetés / alert', text: `A Sales Desk ellenőrzése problémát talált (${url.hostname}):\n\n${lines}\n\n${new Date().toISOString()}`,
+        html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px"><p><b>A Sales Desk ellenőrzése problémát talált</b> (${escH(url.hostname)}):</p><ul>${out.problems.map(p => '<li>' + escH(p) + '</li>').join('')}</ul><p style="color:#666">${new Date().toISOString()}</p></div>` });
+      out.alerted = r.ok ? to : 'failed: ' + (r.error || r.status);
+      if (r.ok) await env.DB.prepare("INSERT INTO desk_state (k, v, t) VALUES ('alert', ?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v, t = excluded.t").bind(sig, Date.now()).run();
+    } else out.alerted = 'already sent';
+  }
+  return out;
 }
 
 /* ---------------- offers: accept / decline / send to Caradvance GmbH for a check (German email) ----------------
@@ -932,6 +1004,10 @@ export async function handle(request, env, ctx) {
   const route = url.pathname.replace(/^\/api\/desk\/?/, '');
   if (request.method === 'POST' && route === 'offer') return makeOffer(request, env, ctx);
   if (request.method === 'GET' && route === 'geo') return json({ country: (request.cf && request.cf.country) || '' });
+  if (route === 'health' && request.method === 'GET') {
+    if (!(await syncKeyOk(env, url.searchParams.get('key')).catch(() => false))) return cjson({ error: 'key' }, 403);
+    try { return cjson(await deskHealth(env, ctx, url)); } catch (e) { return cjson({ ok: false, problems: ['Health check failed: ' + (e.message || e)] }, 500); }
+  }
   if (route === 'mde-plan' || route === 'mde-sync' || route === 'mde-script') {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: MDE_CORS });
     if (!(await syncKeyOk(env, url.searchParams.get('key')).catch(() => false))) return cjson({ error: 'key' }, 403);
@@ -995,6 +1071,13 @@ export async function handle(request, env, ctx) {
       try { team = ((await env.DB.prepare("SELECT name, email, desk_markets FROM users WHERE desk_access = 1 ORDER BY name").all()).results || [])
         .filter(u => !/^teszt\./i.test(u.email || '')).map(u => ({ name: (u.name || nameOf(u.email)).trim(), markets: u.desk_markets || '' })); } catch (e) {}
       return json({ vehicles, dealers, outreach, team, v, me: { email: me.email, name: me.name || nameOf(me.email) }, at: new Date().toISOString() });
+    }
+    if (request.method === 'GET' && route === 'backups') { if (me.role !== 'admin') throw bad('Admins only.', 403); return json({ backups: await backupList(env), keep_days: BACKUP_DAYS }); }
+    if (request.method === 'GET' && route === 'backup') {
+      if (me.role !== 'admin') throw bad('Admins only.', 403);
+      const day = String(url.searchParams.get('day') || '').slice(0, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw bad('day=YYYY-MM-DD');
+      const data = await backupRead(env, day); if (!data) throw bad('No backup for that day.', 404);
+      return new Response(JSON.stringify({ day, vehicles: data.vehicles, dealers: data.dealers, outreach: data.outreach }), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': `attachment; filename="sales-desk-backup-${day}.json"`, 'Cache-Control': 'no-store' } });
     }
     if (request.method === 'GET' && route === 'stocklist') return json(await stockList(env, me));
     if (request.method === 'GET' && route === 'damages') return json(await damagesList(env));
