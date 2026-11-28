@@ -448,7 +448,7 @@ async function makeOffer(request, env, ctx) {
   try { all = await loadAll(env, ctx); car = all.vehicles.find(v => v.id === str(b.car, 20)); } catch (e) { return json({ error: 'unavailable' }, 503); }
   if (!car || car.status === 'Sold') return json({ error: 'car' }, 400);
   const eurs = n => n == null || n === '' ? '—' : '€' + Math.round(Number(n)).toLocaleString('en-GB');
-  const listed = type === 'b2b' ? `Business to Business ${eurs(car.dealer_net)} (excl. VAT)` : `Business to Customer ${eurs(car.dealer_gross)} (incl. 19% German VAT)`;
+  const listed = type === 'b2b' ? `Dealer ${eurs(car.dealer_net)} (excl. VAT)` : `End customer ${eurs(car.dealer_gross)} (incl. 19% German VAT)`;
   const notes = [
     `OFFER: ${eurs(price)} — ${type === 'b2b' ? 'dealer / B2B' : 'private buyer / B2C'}`,
     `Car: ${car.id} · ${car.model || ''}`, `Listed: ${listed}`,
