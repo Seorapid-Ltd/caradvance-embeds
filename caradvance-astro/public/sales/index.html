@@ -1817,6 +1817,8 @@ html:not(.dark) .slek .up,html[data-theme=light] .slek .up{color:#15803d}
 @media(min-width:641px){.dlrpanel .dlrhead{padding-left:4px}} /* title lines up with the To-dos title above */
 
 .rs-off #ctaRS{display:none!important}
+
+#roBar{position:sticky;top:0;z-index:80;background:#141519;color:#fff;font-weight:700;font-size:13.5px;text-align:center;padding:9px 14px;border-bottom:3px solid var(--red)}
 </style>
 </head>
 <body>
@@ -2238,6 +2240,7 @@ Object.assign(TRD,{"Change password": ["Jelszó módosítása", "Zmeniť heslo",
 Object.assign(TRD,{"Activity": ["Aktivitás", "Aktivita", "Aktivita", "Aktivitäten", "Aktywność"], "Send an offer": ["Ajánlat küldése", "Poslať ponuku", "Poslat nabídku", "Angebot senden", "Wyślij ofertę"], "Deals": ["Ügyletek", "Obchody", "Obchody", "Geschäfte", "Transakcje"], "Offer amount €": ["Ajánlott összeg €", "Ponúknutá suma €", "Nabídnutá částka €", "Angebotsbetrag €", "Kwota oferty €"], "The dealer made an offer: it will also be listed under Deals.": ["A kereskedő ajánlatot tett: az Ügyleteknél is megjelenik.", "Predajca dal ponuku: zobrazí sa aj v Obchodoch.", "Prodejce dal nabídku: zobrazí se i v Obchodech.", "Der Händler hat ein Angebot gemacht: es erscheint auch unter Geschäfte.", "Dealer złożył ofertę: pojawi się też w Transakcjach."], "Offer recorded — it is listed under Deals.": ["Ajánlat rögzítve — az Ügyleteknél megtalálod.", "Ponuka zaznamenaná — nájdete ju v Obchodoch.", "Nabídka zaznamenána — najdete ji v Obchodech.", "Angebot erfasst — es steht unter Geschäfte.", "Oferta zapisana — znajdziesz ją w Transakcjach."], "Pick the car the offer is for.": ["Válaszd ki, melyik autóra szól az ajánlat.", "Vyberte auto, na ktoré je ponuka.", "Vyberte auto, na které je nabídka.", "Wählen Sie das Auto, für das das Angebot gilt.", "Wybierz auto, którego dotyczy oferta."], "Pick the dealer who made the offer.": ["Válaszd ki az ajánlatot tevő kereskedőt.", "Vyberte predajcu, ktorý dal ponuku.", "Vyberte prodejce, který dal nabídku.", "Wählen Sie den Händler, der das Angebot gemacht hat.", "Wybierz dealera, który złożył ofertę."], "Enter the offer amount.": ["Add meg az ajánlat összegét.", "Zadajte sumu ponuky.", "Zadejte částku nabídky.", "Bitte den Angebotsbetrag eingeben.", "Podaj kwotę oferty."], "Could not save the offer.": ["Az ajánlatot nem sikerült menteni.", "Ponuku sa nepodarilo uložiť.", "Nabídku se nepodařilo uložit.", "Angebot konnte nicht gespeichert werden.", "Nie udało się zapisać oferty."]});
 Object.assign(TRD,{"View ad": ["Hirdetés megnyitása", "Zobraziť inzerát", "Zobrazit inzerát", "Anzeige ansehen", "Zobacz ogłoszenie"]});
 Object.assign(TRD,{"Message saved in the desk, but the e-mail notification could not be sent to:": ["Az üzenet a deskben megvan, de az e-mail értesítést nem sikerült elküldeni neki:", "Správa je uložená v desku, ale e-mailové upozornenie sa nepodarilo odoslať:", "Zpráva je uložená v desku, ale e-mailové upozornění se nepodařilo odeslat:", "Nachricht im Desk gespeichert, aber die E-Mail-Benachrichtigung konnte nicht gesendet werden an:", "Wiadomość zapisana w desku, ale nie udało się wysłać powiadomienia e-mail do:"]});
+Object.assign(TRD,{"Test desk: saving is switched off here. Save on the live site (www.caradvance.…).": ["Teszt desk: itt a mentés ki van kapcsolva. Az élő oldalon ments (www.caradvance.…).", "Testovací desk: ukladanie je tu vypnuté. Ukladajte na živej stránke (www.caradvance.…).", "Testovací desk: ukládání je zde vypnuté. Ukládejte na živém webu (www.caradvance.…).", "Test-Desk: Speichern ist hier ausgeschaltet. Bitte auf der Live-Seite speichern (www.caradvance.…).", "Desk testowy: zapisywanie jest tu wyłączone. Zapisuj na stronie na żywo (www.caradvance.…)."], "Test desk: you can look around, but saving is switched off here. Save on the live site (www.caradvance.…).": ["Teszt desk: körülnézhetsz, de itt a mentés ki van kapcsolva. Az élő oldalon ments (www.caradvance.…).", "Testovací desk: môžete sa poobzerať, ale ukladanie je tu vypnuté. Ukladajte na živej stránke (www.caradvance.…).", "Testovací desk: můžete se rozhlédnout, ale ukládání je zde vypnuté. Ukládejte na živém webu (www.caradvance.…).", "Test-Desk: Sie können sich umsehen, aber Speichern ist hier ausgeschaltet. Bitte auf der Live-Seite speichern (www.caradvance.…).", "Desk testowy: możesz się rozejrzeć, ale zapisywanie jest tu wyłączone. Zapisuj na stronie na żywo (www.caradvance.…)."]});
 const LANGS_ALL=[['en','EN','English'],['hu','HU','Magyar'],['sk','SK','Slovenčina'],['cs','CZ','Čeština'],['de','DE','Deutsch'],['pl','PL','Polski']];
 const LANGS=MLANGS.map(l=>LANGS_ALL.find(x=>x[0]===l)).filter(Boolean);
 const FLAG={
@@ -3629,11 +3632,17 @@ $('#sRows').addEventListener('click',e=>{const b=e.target.closest('[data-offer]'
 })();
 
 /* ---------- DB ---------- */
+/* dev / preview addresses: the shared Notion data is read-only here (the live site saves) */
+const DESK_RO=!/^(www\.)?caradvance\.(hu|sk|cz|pl|ch|eu)$/.test(location.hostname)&&!/^(localhost|127\.)/.test(location.hostname);
+if(DESK_RO){const show=()=>{if(document.documentElement.classList.contains('public')||document.getElementById('roBar'))return;const b=document.createElement('div');b.id='roBar';b.setAttribute('role','status');
+  b.textContent=trStr('Test desk: you can look around, but saving is switched off here. Save on the live site (www.caradvance.…).');document.body.prepend(b)};
+  window.addEventListener('desk:me',show);setTimeout(show,1500)}
 async function save(path,data,merge){
   if(!S.db){status('Not connected — changes cannot be saved. Reload the page and sign in again.');return false}
   try{const r=S.db.doc(path);merge?await r.update(data):await r.set(data);status('');return true}
   catch(e){if(e&&e.code==='invalid_argument'&&!S.canWrite)status('You have view-only access — ask an admin for Contributor access to edit.');
     else if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*600));try{const r=S.db.doc(path);merge?await r.update(data):await r.set(data);return true}catch(_){status('Could not save — try again in a moment.')}}
+    else if(DESK_RO||/test \(dev\) desk/.test(e&&e.message||''))status(trStr('Test desk: saving is switched off here. Save on the live site (www.caradvance.…).'));
     else status('Could not save: '+(e&&e.message||'unknown error'));return false}
 }
 async function remove(path){
