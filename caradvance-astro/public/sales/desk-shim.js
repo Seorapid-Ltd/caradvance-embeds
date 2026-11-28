@@ -25,10 +25,12 @@
     const r = await fetch(API + path, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, ...opts });
     if (r.redirected || r.status === 401 || (r.headers.get('content-type') || '').includes('text/html')) {
       if (opts && opts.method === 'POST') { location.href = '/admin/?next=' + encodeURIComponent(location.pathname); }
-      throw fail('unauthenticated', 'Sign-in needed.');
+      // "no_session" / "expired" are definite answers (no retries needed); anything else may be a cold-start hiccup
+      let code = ''; if (r.status === 401) { try { code = (await r.json()).code || ''; } catch (e) {} }
+      const e = fail('unauthenticated', 'Sign-in needed.'); e.final = !!code; throw e;
     }
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { const e = fail(r.status === 409 ? 'conflict' : r.status === 403 ? 'invalid_argument' : r.status >= 500 ? 'unavailable' : 'error', j.error || ('HTTP ' + r.status)); e.current = j.current; throw e; }
+    if (!r.ok) { const e = fail(r.status === 409 ? 'conflict' : r.status === 403 ? 'invalid_argument' : r.status >= 500 ? 'unavailable' : 'error', j.error || ('HTTP ' + r.status)); e.current = j.current; e.final = r.status === 403; throw e; }
     return j;
   }
 
@@ -46,7 +48,7 @@
             try { j = await api('data' + (ver && !full ? '?v=' + encodeURIComponent(ver) : '')); break; }
             catch (e) {
               if (e.code === 'unauthenticated' || e.code === 'invalid_argument') {
-                if (attempt >= 3) { PUBLIC = true; markPublic(); break; }
+                if (e.final || attempt >= 3) { PUBLIC = true; markPublic(); break; }
                 await new Promise(r => setTimeout(r, 400 * attempt));
               } else throw e;
             }
