@@ -181,7 +181,7 @@
     const ls=document.getElementById('lang');if(ls)ls.addEventListener('change',re);
     /* a nyelvválasztó menü a <html lang> attribútumot állítja – erre is újrafordítunk */
     new MutationObserver(re).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}
-  fetch('desk-skcz-dict.json?v=1127c',{credentials:'same-origin'}).then(r=>r.ok?r.json():{}).then(j=>{D=j;L2={};for(const k in D)L2[k.toLowerCase()]=D[k];
+  fetch('desk-skcz-dict.json?v=1128c',{credentials:'same-origin'}).then(r=>r.ok?r.json():{}).then(j=>{D=j;L2={};for(const k in D)L2[k.toLowerCase()]=D[k];
     if(document.body)start();else addEventListener('DOMContentLoaded',start);}).catch(()=>{});
 
 })();
