@@ -852,14 +852,28 @@ async function stockChoosePrice(request, env, ctx, me) {
     return { ok: true, car: d, test: mode === 'test' };
   }
   let deskTo = null; // B2B/B2C to write to the desk (Vehicles in Notion)
-  if (b.clear) { // delete the chosen price: back to the price the car had before anyone chose
+  if (b.lock != null) { // admin price stronger than mobile.de (on) — or back to the mobile.de price (off)
+    if (b.lock) { d.lock = { by: who, at }; if (mode === 'live') await logManualPrice(env, d.id, d.net, d.gross, `${who} (locked over mobile.de)`); }
+    else {
+      delete d.lock;
+      const ad = d.mde && Number(d.mde.price) > 0 ? Number(d.mde.price) : null;
+      if (ad) {
+        const gross = Math.round(ad * 100) / 100, net = Math.round(gross / (1 + VAT));
+        if (Math.round(Number(d.net || 0)) !== net || Math.round(Number(d.gross || 0)) !== Math.round(gross)) {
+          d.net = net; d.gross = gross; d.net_from = `mobile.de (${at})`; delete d.chosen;
+          if (d.desk) deskTo = { net, gross };
+        }
+      }
+      if (mode === 'live') await logManualPrice(env, d.id, d.net, d.gross, `${who} (back to mobile.de)`);
+    }
+  } else if (b.clear) { // delete the chosen price: back to the price the car had before anyone chose
     if (!d.chosen) { // in test mode the "chosen" price was never stored, so there is nothing to delete server-side — just tell the client the price is cleared
       if (mode === 'test') { if (me.role !== 'admin') for (const k of STOCK_ADMIN_ONLY) delete d[k]; return { ok: true, car: d, test: true }; }
       throw bad('No chosen price to delete.');
     }
     const o = d.chosen.orig || { net: d.chosen.prev, from: '' };
     if (d.chosen.deskPrev) deskTo = d.chosen.deskPrev;
-    d.net = o.net; d.gross = o.net != null ? Math.round(o.net * (1 + VAT) * 100) / 100 : null; d.net_from = o.from || d.net_from; delete d.chosen; delete d.price_ok;
+    d.net = o.net; d.gross = o.net != null ? Math.round(o.net * (1 + VAT) * 100) / 100 : null; d.net_from = o.from || d.net_from; delete d.chosen; delete d.price_ok; delete d.lock;
     if (mode === 'live') await logManualPrice(env, d.id, d.net, d.gross, `${who} (reset)`);
   } else {
     const net = Math.round(Number(String(b.net).replace(/[^\d.]/g, '')) * 100) / 100;
@@ -867,6 +881,7 @@ async function stockChoosePrice(request, env, ctx, me) {
     const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
     d.chosen = { by: who, at, prev: d.net, how: b.how === 'typed' ? 'typed' : 'document', orig, deskPrev: d.chosen && d.chosen.deskPrev };
     d.net = net; d.gross = Math.round(net * (1 + VAT) * 100) / 100; d.net_from = `Chosen by ${who} (${at})`; d.price_ok = true;
+    if (b.lock !== false) d.lock = { by: who, at }; // an admin price wins over mobile.de by default (switchable)
     if (mode === 'live') await logManualPrice(env, d.id, net, d.gross, b.how === 'typed' ? who : `${who} (document)`);
     if (d.desk) deskTo = { net, gross: d.gross };
   }
@@ -877,7 +892,7 @@ async function stockChoosePrice(request, env, ctx, me) {
       const all = await loadAll(env, ctx);
       const car = all.vehicles.find(v => v.id === d.desk);
       if (car) {
-        if (!b.clear && d.chosen && !d.chosen.deskPrev) d.chosen.deskPrev = { net: car.dealer_net ?? null, gross: car.dealer_gross ?? null };
+        if (!b.clear && b.lock == null && d.chosen && !d.chosen.deskPrev) d.chosen.deskPrev = { net: car.dealer_net ?? null, gross: car.dealer_gross ?? null };
         await writePage(env, 'vehicles', 'PATCH', `/pages/${car._pid}`, { properties: { B2B: writeProp('number', deskTo.net), B2C: writeProp('number', deskTo.gross) } });
         desk = true;
       }
@@ -951,11 +966,10 @@ async function mdeSync(env, ctx, body) {
     if (ad && ad.ok && ad.gross) {
       const gross = r2(ad.gross), net = r2(ad.net) || Math.round(gross / (1 + VAT)), km = ad.km != null ? Number(ad.km) : null;
       const prevNet = d.net, prevKm = d.km;
-      const prevAd = d.mde && d.mde.price != null ? Number(d.mde.price) : null;
-      const adChanged = prevAd == null || Math.round(prevAd) !== Math.round(gross); // the ad's own price moved
       d.mde = { ...(d.mde || {}), id: String(ad.id || (d.mde && d.mde.id) || ''), url: (d.mde && d.mde.url) || `https://suchen.mobile.de/fahrzeuge/details.html?id=${ad.id}`, price: gross, km, at: day, checked: now };
       if (km != null) d.km = km;
-      const priceChanged = (adChanged || d.net == null) && (Math.round(Number(d.gross || 0)) !== Math.round(gross) || Math.round(Number(d.net || 0)) !== Math.round(net));
+      // mobile.de is the master price, unless an admin locked their own price on this car (d.lock)
+      const priceChanged = !d.lock && (Math.round(Number(d.gross || 0)) !== Math.round(gross) || Math.round(Number(d.net || 0)) !== Math.round(net));
       if (priceChanged) {
         const orig = d.chosen ? (d.chosen.orig || { net: d.chosen.prev, from: '' }) : { net: d.net, from: d.net_from || '' };
         d.chosen = { by: 'mobile.de', at: day, prev: d.net, how: 'mobile', orig, deskPrev: (d.chosen && d.chosen.deskPrev) || null };
@@ -975,8 +989,7 @@ async function mdeSync(env, ctx, body) {
       const car = all && d.desk ? all.vehicles.find(v => v.id === d.desk) : null;
       if (car) {
         const props = {};
-        const deskAdChanged = car.mde_price == null || Math.round(Number(car.mde_price)) !== Math.round(gross);
-        if ((deskAdChanged || car.dealer_net == null) && (Math.round(Number(car.dealer_net || 0)) !== Math.round(net) || Math.round(Number(car.dealer_gross || 0)) !== Math.round(gross))) { props.B2B = writeProp('number', net); props.B2C = writeProp('number', gross); }
+        if (!d.lock && (Math.round(Number(car.dealer_net || 0)) !== Math.round(net) || Math.round(Number(car.dealer_gross || 0)) !== Math.round(gross))) { props.B2B = writeProp('number', net); props.B2C = writeProp('number', gross); }
         if (km != null && Number(car.mileage) !== km) props['Mileage km'] = writeProp('number', km);
         if (Number(car.mde_price) !== gross) props['mobile.de price'] = writeProp('number', gross);
         if (km != null && Number(car.mde_km) !== km) props['mobile.de km'] = writeProp('number', km);
