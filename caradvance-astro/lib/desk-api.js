@@ -130,7 +130,7 @@ export function pageToDoc(col, page, idx) {
 }
 
 /* ---------------- Notion HTTP ---------------- */
-function bad(msg, status = 400) { const e = new Error(msg); e.status = status; return e; }
+function bad(msg, status = 400, code) { const e = new Error(msg); e.status = status; if (code) e.code = code; return e; }
 async function notion(env, method, path, body) {
   const token = env.DESK_NOTION_TOKEN || env.NOTION_TOKEN;
   if (!token) throw bad('The desk is not connected to Notion yet (DESK_NOTION_TOKEN is missing).', 503);
@@ -333,10 +333,10 @@ export function cleanMarkets(v) {
 export async function whoAmI(request, env) {
   if (env.DESK_DEV_NO_ACCESS === '1') return { email: request.headers.get('x-dev-email') || 'dev@localhost', name: 'Dev' };
   const token = cookie(request, 'ca_session');
-  if (!token || !env.DB) throw bad('Sign-in required.', 401);
+  if (!token || !env.DB) throw bad('Sign-in required.', 401, 'no_session'); // definite: the page shows the public list at once
   await ensureDeskColumn(env);
   const row = await env.DB.prepare('SELECT u.email, u.name, u.role, u.desk_access, u.desk_markets, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
-  if (!row || new Date(row.expires_at + 'Z').getTime() < Date.now()) throw bad('Sign-in required.', 401);
+  if (!row || new Date(row.expires_at + 'Z').getTime() < Date.now()) throw bad('Sign-in required.', 401, 'expired');
   // Only the people given Sales Desk access (Admin → Felhasználók → "Sales Desk"), and every "Csak Sales Desk" account.
   if (!(row.role === 'sales_desk' || Number(row.desk_access) === 1)) throw bad('This account has no access to the Sales Desk.', 403);
   // Country limit (Admin → Felhasználók → "Országok"): e.g. "sk,cz" = only on caradvance.sk and caradvance.cz.
@@ -998,6 +998,6 @@ export async function handle(request, env, ctx) {
     }
     return json({ error: 'Not found' }, 404);
   } catch (e) {
-    return json({ error: e.message || 'Error', current: e.current, fields: e.fields }, e.status || 500);
+    return json({ error: e.message || 'Error', code: e.code, current: e.current, fields: e.fields }, e.status || 500);
   }
 }
