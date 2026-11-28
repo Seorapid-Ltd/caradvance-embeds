@@ -907,7 +907,7 @@ export async function handle(request, env, ctx) {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: MDE_CORS });
     if (!(await syncKeyOk(env, url.searchParams.get('key')).catch(() => false))) return cjson({ error: 'key' }, 403);
     try {
-      if (route === 'mde-script') { const r = await env.ASSETS.fetch(new Request(new URL('/sales/mde-sync.js', url.origin).toString())); return new Response(await r.text(), { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', ...MDE_CORS } }); }
+      if (route === 'mde-script') { const r = await env.ASSETS.fetch(new Request(new URL('/sales/mde-sync.js', url.origin).toString())); return new Response((await r.text()).replace(/const BASE = '[^']*'/, `const BASE = '${url.origin}'`) /* results go back to the site that served the script (dev or live) */, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', ...MDE_CORS } }); }
       if (route === 'mde-plan' && request.method === 'GET') return cjson(await mdePlan(env, ctx));
       if (route === 'mde-sync' && request.method === 'POST') return cjson(await mdeSync(env, ctx, JSON.parse(await request.text())));
     } catch (e) { return cjson({ error: e.message || 'error' }, 500); }
