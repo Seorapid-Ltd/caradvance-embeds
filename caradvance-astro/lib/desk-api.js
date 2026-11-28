@@ -538,9 +538,11 @@ async function deskHealth(env, ctx, url) {
   try {
     // a sync now makes sure today's backup exists even when nobody opened the desk
     if (await tryLock(env).catch(() => false)) await refreshAll(env).catch(() => {});
+    if (memo && memo.data && !(await env.DB.prepare('SELECT 1 FROM desk_backup WHERE day = ? LIMIT 1').bind(budDay(Date.now())).first().catch(() => null))) { await ensureBackup(env); await dailyBackup(env, Date.now(), toB64(await gz(JSON.stringify(memo.data)))); }
     const list = await backupList(env); out.backups = list.length; out.backup_last = list[0] ? list[0].day : null;
     if (!list.length || list[0].day < budDay(Date.now() - 36 * 3600000)) out.problems.push('No backup of the Notion data in the last day and a half.');
   } catch (e) { out.problems.push('Could not check the backups.'); }
+  if (url.searchParams.get('test') === '1') out.problems.push('Teszt figyelmeztetés: ez csak próba, minden rendben (test alert, nothing is wrong).');
   out.ok = !out.problems.length;
   if (!out.ok && url.searchParams.get('alert') === '1' && env.DB) {
     await env.DB.prepare('CREATE TABLE IF NOT EXISTS desk_state (k TEXT PRIMARY KEY, v TEXT, t INTEGER)').run();
