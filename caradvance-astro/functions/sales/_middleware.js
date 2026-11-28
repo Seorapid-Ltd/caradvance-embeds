@@ -19,10 +19,10 @@ export async function onRequest({ request, next }) {
   // instead of downloading the whole page again; it is still re-checked on every visit, so changes show at once.
   if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && /text\/html/i.test(res.headers.get('content-type') || '')) {
     const body = await r.arrayBuffer();
-    const tag = 'W/"' + [...new Uint8Array(await crypto.subtle.digest('SHA-1', body))].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('') + '"';
+    const tag = '"' + [...new Uint8Array(await crypto.subtle.digest('SHA-1', body))].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('') + '"';
     const h = new Headers(r.headers); h.set('ETag', tag); h.delete('Content-Length');
     const inm = request.headers.get('If-None-Match') || '';
-    if (inm.split(',').some(t => t.trim() === tag)) { h.delete('Content-Type'); return new Response(null, { status: 304, headers: h }); }
+    if (inm.split(',').some(t => t.trim().replace(/^W\//, '') === tag)) { h.delete('Content-Type'); return new Response(null, { status: 304, headers: h }); }
     return new Response(request.method === 'HEAD' ? null : body, { status: 200, headers: h });
   }
   return r;
