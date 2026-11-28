@@ -470,6 +470,23 @@ async function makeOffer(request, env, ctx) {
   return json({ ok: true });
 }
 
+/** Desk e-mails via Resend. Like the CRM: from sales@caradvance.hu (or CRM_EMAIL_FROM); if that domain is not verified
+ *  in Resend, the same address on the already verified sending domain (LEAD_EMAIL_FROM's, e.g. send.caradvance.hu).
+ *  Returns { ok, status, error }. */
+export async function deskMail(env, mail) {
+  if (!env.RESEND_API_KEY) return { ok: false, error: 'RESEND_API_KEY' };
+  const post = from => fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...mail, from }) });
+  let r = await post(env.CRM_EMAIL_FROM || 'CarAdvance <sales@caradvance.hu>');
+  if (r.ok) return { ok: true };
+  let err = String(await r.text().catch(() => r.status));
+  const fb = ((env.CUSTOMER_EMAIL_FROM || env.LEAD_EMAIL_FROM || '').match(/@([^>\s]+)/) || [])[1];
+  if (!env.CRM_EMAIL_FROM && fb && fb !== 'caradvance.hu' && /verif|domain/i.test(err)) {
+    r = await post('CarAdvance <sales@' + fb + '>'); if (r.ok) return { ok: true };
+    err = String(await r.text().catch(() => r.status));
+  }
+  return { ok: false, status: r.status, error: err.slice(0, 300) };
+}
+
 /* ---------------- offers: accept / decline / send to Caradvance GmbH for a check (German email) ----------------
  * Env: DESK_CHECK_EMAIL  — who decides on offers (German email with one-click Annehmen / Ablehnen / Gegenangebot)
  *      RESEND_API_KEY    — email sending (already used by the CRM); CRM_EMAIL_FROM optional
@@ -569,9 +586,8 @@ async function offerAction(request, env, ctx, me) {
   if (b.action === 'preview') return { ok: true, to, toName: 'Alexander', subject: mail.subject, text: mail.text, html: mail.html, ready: !!(env.RESEND_API_KEY && to) };
   if (b.manual) { await setOutcome(env, offer, 'Sent for check', 'Waiting for the decision', `Sent for check by ${who} (own email)`); return { ok: true }; }
   if (!env.RESEND_API_KEY || !to) return { ok: false, manual: true, to, subject: mail.subject, text: mail.text, why: !env.RESEND_API_KEY ? 'RESEND_API_KEY' : 'DESK_CHECK_EMAIL' };
-  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: env.CRM_EMAIL_FROM || 'CarAdvance <sales@caradvance.hu>', to: to.split(',').map(s => s.trim()).filter(Boolean), reply_to: me.email || undefined, subject: mail.subject, html: mail.html, text: mail.text }) });
-  if (!r.ok) throw bad('The email could not be sent (' + r.status + ').', 502);
+  const r = await deskMail(env, { to: to.split(',').map(s => s.trim()).filter(Boolean), reply_to: me.email || undefined, subject: mail.subject, html: mail.html, text: mail.text });
+  if (!r.ok) throw bad('The email could not be sent (' + (r.status || r.error) + ').', 502);
   await setOutcome(env, offer, 'Sent for check', 'Waiting for the decision', `Sent for check to ${to} by ${who}`);
   return { ok: true, sent: true, to };
 }
@@ -668,19 +684,21 @@ async function msgRoute(route, request, env, me) {
     const car = String(b.car || '').toUpperCase().match(/^(?:P1|P2|S26|V)-\d{1,2}$/) ? String(b.car).toUpperCase() : '';
     const now = Math.floor(Date.now() / 1000);
     const contacts = (await env.DB.prepare('SELECT k, name, email FROM desk_contacts').all()).results || [];
+    const mailed = [];
     for (const k of to) {
       const c = contacts.find(x => x.k === k);
       const key = c && c.email ? lc(c.email) : k; // deliver by email when we know it
       await env.DB.prepare('INSERT INTO desk_msgs (created, from_email, from_name, to_key, body, car) VALUES (?, ?, ?, ?, ?, ?)').bind(now, me.email, me.name || nameOf(me.email), key, body, car || null).run();
       if (env.RESEND_API_KEY && c && c.email) {
         const link = new URL('/sales/#contact', request.url).toString();
-        await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: env.CRM_EMAIL_FROM || 'CarAdvance <sales@caradvance.hu>', to: [c.email], reply_to: me.email, subject: `Sales Desk – ${me.name || nameOf(me.email)}${car ? ' · ' + car : ''}`,
+        const r = await deskMail(env, {
+            to: [c.email], reply_to: me.email, subject: `Sales Desk – ${me.name || nameOf(me.email)}${car ? ' · ' + car : ''}`,
             text: `${body}\n\n${car ? 'Car: ' + car + '\n' : ''}Reply in the Sales Desk: ${link}`,
-            html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px;color:#141519"><p><b>${escH(me.name || nameOf(me.email))}</b>${car ? ' · ' + escH(car) : ''}</p><p style="white-space:pre-wrap">${escH(body)}</p><p><a href="${link}">Reply in the Sales Desk</a></p></div>` }) }).catch(() => {});
+            html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px;color:#141519"><p><b>${escH(me.name || nameOf(me.email))}</b>${car ? ' · ' + escH(car) : ''}</p><p style="white-space:pre-wrap">${escH(body)}</p><p><a href="${link}">Reply in the Sales Desk</a></p></div>` }).catch(e => ({ ok: false, error: String(e && e.message || e) }));
+        mailed.push({ to: c.name, ok: r.ok, error: r.ok ? undefined : r.error });
       }
     }
-    return { ok: true };
+    return { ok: true, mailed };
   }
   if (route === 'msg/read' && request.method === 'POST') {
     const b = await request.json().catch(() => ({}));
@@ -891,7 +909,8 @@ async function priceLogs(env) {
  *  Never public: plate, data gaps, price source, notes, minimum/asking price, reserved-for, edit history. Sold cars are shown without prices (26 Nov 2026). */
 export const PUBLIC_FIELDS = ['id', 'make', 'model', 'category', 'colour', 'interior', 'first_reg', 'mileage', 'km_text', 'power', 'fuel', 'transmission', 'drive',
   'highlights', 'msrp_gross', 'dealer_net', 'dealer_gross', 'pct_vs_list', 'status', 'available_until', 'vin',
-  'prev_owners', 'condition', 'paint', 'trim', 'climate', 'park_assist', 'seats', 'doors', 'engine_cc', 'equipment', 'rent_sale'];
+  'prev_owners', 'condition', 'paint', 'trim', 'climate', 'park_assist', 'seats', 'doors', 'engine_cc', 'equipment', 'rent_sale',
+  'mde_url']; // the link to our own mobile.de ad (public there anyway); its price/km and the damages stay team-only
 export function publicCar(v) {
   const o = {};
   for (const k of PUBLIC_FIELDS) if (v[k] != null && v[k] !== '') o[k] = v[k];
@@ -933,7 +952,7 @@ export async function handle(request, env, ctx) {
       const pub = v => {
         const o = publicCar(v); const withdrawn = offSet.has(v.id);
         if (withdrawn) o.withdrawn = true;
-        if (withdrawn || (v.status || 'Available') === 'Sold') for (const k of ['dealer_net', 'dealer_gross', 'msrp_gross', 'pct_vs_list']) delete o[k];
+        if (withdrawn || (v.status || 'Available') === 'Sold') for (const k of ['dealer_net', 'dealer_gross', 'msrp_gross', 'pct_vs_list', 'mde_url']) delete o[k];
         return o;
       };
       const body = JSON.stringify({ vehicles: vehicles.map(pub), public: true, at: new Date().toISOString() });
