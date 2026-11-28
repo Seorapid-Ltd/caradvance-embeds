@@ -191,7 +191,6 @@ const ROWS = (cat, specs) => {
   return r;
 };
 const FLEET_HTML = FLEET.map(([name, cat, price, we, wk, specs, id, imgs]) => `<article class="vp-car" data-cat="${cat}" data-brand="${BRAND(name)}">
-    <h3>${name}</h3>
     <div class="vp-media">
       <div class="vp-gal" tabindex="0" aria-label="${name} fotói">${NOPHOTO[id] ? `<div class="vp-nophoto"><span>${name.split(' ')[0]}</span>Fotó hamarosan</div>` : imgs.map((f, i) => `<img src="${IMG(id, f)}" data-big="${IMG(id, f, 1920)}" alt="${name}${i ? ' – ' + (i + 1) + '. fotó' : ''}" loading="lazy" decoding="async" width="1080" height="720">`).join('')}</div>
       ${NOPHOTO[id] ? '' : `<button type="button" class="vp-zoom" aria-label="${name} fotói teljes képernyőn">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', 17)}</button>`}
@@ -200,10 +199,12 @@ const FLEET_HTML = FLEET.map(([name, cat, price, we, wk, specs, id, imgs]) => `<
       <span class="vp-av${AVAIL[id] ? ' vp-av-later' : ''}">${AVAIL[id] ? 'Elérhető ' + AVAIL[id] : 'Azonnal elérhető'}</span>
     </div>
     <div class="vp-cb">
+      <div class="vp-cbtop"><span class="vp-cbbrand">${BRAND(name)} · ${cat}</span><span class="vp-cbav${AVAIL[id] ? ' later' : ''}"><i></i>${AVAIL[id] ? 'Elérhető ' + AVAIL[id] : 'Azonnal elérhető'}</span></div>
+      <h3>${name}</h3>
       <div class="vp-prrow"><span>Napidíj</span>${price ? `<b>${eur(price)}</b>` : `<b>Ár kérésre</b>`}</div>
       ${price ? `<div class="vp-prsub"><span class="vp-huf" data-eur="${price}" hidden></span><span>áfával</span></div>` : ''}
       <dl class="vp-rows">${ROWS(cat, specs).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}${price ? `<div><dt>Hétvége</dt><dd>${eur(we)}</dd></div><div><dt>Egy hét</dt><dd>${eur(wk)}</dd></div>` : ''}</dl>
-      <a class="vp-btn vp-gold vp-ask" href="#foglalas" data-car="${name}">Ajánlatot kérek</a>
+      <div class="vp-cbbtns"><a class="vp-btn vp-gold vp-ask" href="#foglalas" data-car="${name}">Ajánlatot kérek</a>${NOPHOTO[id] ? '' : `<button type="button" class="vp-btn vp-ghost vp-zoom2">Fotók (${imgs.length})</button>`}</div>
     </div>
   </article>`).join('\n  ');
 // galéria-pöttyök, teljes képernyős fotónézegető, szűrők, napi forint-árfolyam, foglalási űrlap (/api/lead), lebegő sáv
@@ -223,7 +224,7 @@ function lbGo(s){lbt.scrollTo({left:(lbIdx()+s)*lbt.clientWidth,behavior:'smooth
 lbt.addEventListener('scroll',lbUpd,{passive:true});
 lb.addEventListener('click',function(e){var t=e.target.closest('button');if(t&&t.classList.contains('vp-lb-x'))lbClose();else if(t&&t.classList.contains('vp-lb-p'))lbGo(-1);else if(t&&t.classList.contains('vp-lb-nx'))lbGo(1);else if(e.target===lb||e.target===lbt)lbClose()});
 document.addEventListener('keydown',function(e){if(lb.hidden)return;if(e.key==='Escape')lbClose();if(e.key==='ArrowLeft')lbGo(-1);if(e.key==='ArrowRight')lbGo(1)});
-$$('.vp-car').forEach(function(c){var g=c.querySelector('.vp-gal'),z=c.querySelector('.vp-zoom');if(!g||!z)return;var o=function(){lbOpen(c,Math.round(g.scrollLeft/g.clientWidth))};z.addEventListener('click',o);g.addEventListener('click',function(e){if(e.target.tagName==='IMG')o()});g.addEventListener('keydown',function(e){if(e.key==='Enter')o()})});
+$$('.vp-car').forEach(function(c){var g=c.querySelector('.vp-gal'),z=c.querySelector('.vp-zoom');if(!g||!z)return;var o=function(){lbOpen(c,Math.round(g.scrollLeft/g.clientWidth))};z.addEventListener('click',o);var z2=c.querySelector('.vp-zoom2');if(z2)z2.addEventListener('click',function(){lbOpen(c,0)});g.addEventListener('click',function(e){if(e.target.tagName==='IMG')o()});g.addEventListener('keydown',function(e){if(e.key==='Enter')o()})});
 /* szűrők: kategória és márka együtt */
 var F={cat:'',brand:'',rec:null},cnt=R.querySelector('.vp-fcount'),rn=R.querySelector('.vp-recnote');
 function filt(){var n=0;$$('.vp-car').forEach(function(c){var ok=(!F.cat||c.dataset.cat===F.cat)&&(!F.brand||c.dataset.brand===F.brand)&&(!F.rec||F.rec.indexOf(c.querySelector('h3').textContent)>-1);c.hidden=!ok;if(ok)n++});cnt.textContent=n+' autó';R.querySelector('.vp-empty').hidden=n>0}
@@ -332,23 +333,6 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
     <div class="vp-btns"><a class="vp-btn vp-gold" href="#foglalas">Személyes ajánlatot kérek</a><a class="vp-btn vp-ghost" href="#alkalmak">Alkalmak</a></div>
   </div>
 </section>
-<section class="vp-perks" id="szolgaltatas"><div class="vp-wrap vp-perks-in">
-  ${[['cal', 'Napi bérlés', 'Egy napra, egy hétvégére vagy egy hétre'], ['user', 'Személyes kapcsolattartó', 'Egy név, egy telefonszám — végig'], ['spark', 'Egyedi ajánlat', 'Az autót és az átvételt hozzád igazítjuk'], ['lock', 'Diszkréció', 'Csendes, gyors és megbízható ügyintézés']]
-    .map(([i, t, d]) => `<div class="vp-perk"><span class="vp-ic">${svg(IC[i], 24)}</span><b>${t}</b><span>${d}</span></div>`).join('')}
-</div></section>
-<section class="vp-sec" id="alkalmak"><div class="vp-wrap">
-  <div class="vp-ey">Alkalmak</div><h2>Minden különleges naphoz a megfelelő autó</h2>
-  <div class="vp-tiles">${OCC.map(([t, d, ic, rgb, cars]) => `<a class="vp-tile" href="#flotta" data-occ="${t}" data-cars="${cars.join('|')}" style="--oc:${rgb}"><span class="vp-oi">${svg(OI[ic], 26)}</span><b>${t}</b><i>${d}</i><small>Ajánlott: ${cars.join(' · ')}</small><em>Mutasd az autókat ${ARR}</em></a>`).join('')}</div>
-</div></section>
-<section class="vp-sec vp-how"><div class="vp-wrap">
-  <div class="vp-ey">Hogyan működik</div><h2>Három lépés a kulcsig</h2>
-  <ol class="vp-steps">
-    <li><span class="vp-num">01</span><b>Válaszd ki az autót és a napot</b><span>A flottából vagy az alkalom alapján — ha még nem döntöttél, segítünk.</span></li>
-    <li><span class="vp-num">02</span><b>Személyes ajánlatot kapsz</b><span>A kapcsolattartód felhív, egyeztetjük a részleteket és az átvételt.</span></li>
-    <li><span class="vp-num">03</span><b>Átveszed az autót</b><span>Tiszta, tankolt autó — indulhat a nap.</span></li>
-  </ol>
-  <p class="vp-howmore"><a href="/vip/hogyan-mukodik/">A bérlés menete részletesen →</a><a href="/vip/gyakori-kerdesek/">Gyakori kérdések →</a></p>
-</div></section>
 <section class="vp-sec" id="flotta"><div class="vp-wrap">
   <div class="vp-ey">VIP flotta</div><h2>Válaszd ki az autódat</h2>
   <p>Napi 200 km minden autónál, az árak áfával értendők. Néhány autó csak később lesz elérhető, a dátum a fotón látszik.</p>
@@ -363,6 +347,23 @@ const VIP = `<main id="ca-vipp" data-dm-skip="1">
   ${FLEET_HTML}
   </div>
   <p class="vp-empty" hidden>Ebben a párosításban most nincs autónk. <button type="button" class="vp-reset2" onclick="this.closest('.vp-wrap').querySelector('.vp-reset').click()">Szűrők törlése</button></p>
+</div></section>
+<section class="vp-sec" id="alkalmak"><div class="vp-wrap">
+  <div class="vp-ey">Alkalmak</div><h2>Minden különleges naphoz a megfelelő autó</h2>
+  <div class="vp-tiles">${OCC.map(([t, d, ic, rgb, cars]) => `<a class="vp-tile" href="#flotta" data-occ="${t}" data-cars="${cars.join('|')}" style="--oc:${rgb}"><span class="vp-oi">${svg(OI[ic], 26)}</span><b>${t}</b><i>${d}</i><small>Ajánlott: ${cars.join(' · ')}</small><em>Mutasd az autókat ${ARR}</em></a>`).join('')}</div>
+</div></section>
+<section class="vp-perks" id="szolgaltatas"><div class="vp-wrap vp-perks-in">
+  ${[['cal', 'Napi bérlés', 'Egy napra, egy hétvégére vagy egy hétre'], ['user', 'Személyes kapcsolattartó', 'Egy név, egy telefonszám — végig'], ['spark', 'Egyedi ajánlat', 'Az autót és az átvételt hozzád igazítjuk'], ['lock', 'Diszkréció', 'Csendes, gyors és megbízható ügyintézés']]
+    .map(([i, t, d]) => `<div class="vp-perk"><span class="vp-ic">${svg(IC[i], 24)}</span><b>${t}</b><span>${d}</span></div>`).join('')}
+</div></section>
+<section class="vp-sec vp-how"><div class="vp-wrap">
+  <div class="vp-ey">Hogyan működik</div><h2>Három lépés a kulcsig</h2>
+  <ol class="vp-steps">
+    <li><span class="vp-num">01</span><b>Válaszd ki az autót és a napot</b><span>A flottából vagy az alkalom alapján — ha még nem döntöttél, segítünk.</span></li>
+    <li><span class="vp-num">02</span><b>Személyes ajánlatot kapsz</b><span>A kapcsolattartód felhív, egyeztetjük a részleteket és az átvételt.</span></li>
+    <li><span class="vp-num">03</span><b>Átveszed az autót</b><span>Tiszta, tankolt autó — indulhat a nap.</span></li>
+  </ol>
+  <p class="vp-howmore"><a href="/vip/hogyan-mukodik/">A bérlés menete részletesen →</a><a href="/vip/gyakori-kerdesek/">Gyakori kérdések →</a></p>
 </div></section>
 <section class="vp-sec vp-booksec" id="foglalas"><div class="vp-wrap">
   <div class="vp-book-head" data-rv><div class="vp-ey">Foglalás</div><h2>Tervezzük meg együtt a napodat</h2><p>Három rövid lépés, és személyre szabott ajánlattal jelentkezünk. Az ajánlatkérés díjtalan és nem kötelez semmire.</p></div>
@@ -1045,6 +1046,45 @@ html[data-vip] #ca-vipp .vp-subdirect svg{color:var(--vp-red)}
 @media(max-width:600px){html[data-vip] #ca-vipp.vp-sub .vp-subhead{padding:120px 0 10px}html[data-vip] #ca-vipp .vp-timeline li{grid-template-columns:1fr;gap:8px;padding:22px 20px}html[data-vip] #ca-vipp .vp-incs{grid-template-columns:1fr}html[data-vip] #ca-vipp .vp-subcta{padding:24px}html[data-vip] #ca-vipp .vp-faq summary{padding:18px 18px;font-size:15.5px}html[data-vip] #ca-vipp .vp-faq details p{padding:0 18px 18px}}
 </style>`;
 
+
+// VIP flotta bemutató: kártyák helyett autónként egy nagy sor (balra fotó, jobbra adatok); fejléckép alacsonyabb
+const VIP_SHOW = `<style id="ca-dark-hu-vip-show">
+html[data-vip] #ca-vipp .vp-hero{min-height:max(min(72vh,760px),540px)!important}
+html[data-vip] #ca-vipp #flotta{padding-top:56px}
+html[data-vip] #ca-vipp .vp-cars{display:flex!important;flex-direction:column;gap:28px!important;margin-top:34px}
+html[data-vip] #ca-vipp .vp-car{display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(340px,1fr);align-items:stretch;padding:0!important;border-radius:28px!important;min-height:min(74vh,640px)}
+html[data-vip] #ca-vipp .vp-car>.vp-media{position:relative;min-height:100%;background:#0B0B0E}
+html[data-vip] #ca-vipp .vp-car .vp-gal{position:absolute;inset:0;aspect-ratio:auto!important;height:100%}
+html[data-vip] #ca-vipp .vp-car .vp-gal img{height:100%;object-fit:cover}
+html[data-vip] #ca-vipp .vp-car .vp-nophoto{height:100%}
+html[data-vip] #ca-vipp .vp-car .vp-dots{position:absolute;left:0;right:0;bottom:18px;margin:0!important}
+html[data-vip] #ca-vipp .vp-car .vp-av{display:none}
+html[data-vip] #ca-vipp .vp-car>.vp-cb{padding:34px 36px!important;display:flex!important;flex-direction:column;justify-content:center}
+html[data-vip] #ca-vipp .vp-cbtop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;font-size:13px;font-weight:700}
+html[data-vip] #ca-vipp .vp-cbbrand{color:var(--vp-red);text-transform:uppercase;letter-spacing:.12em;font-size:12px}
+html[data-vip] #ca-vipp .vp-cbav{display:inline-flex;align-items:center;gap:7px;color:var(--vp-mut);font-size:13px;font-weight:600}
+html[data-vip] #ca-vipp .vp-cbav i{width:8px;height:8px;border-radius:50%;background:#22C55E}
+html[data-vip] #ca-vipp .vp-cbav.later i{background:#F59E0B}
+html[data-vip] #ca-vipp .vp-car>.vp-cb>h3{font-size:clamp(28px,2.6vw,40px)!important;line-height:1.05;margin:0 0 18px!important;padding:0!important;min-height:0!important;display:block!important}
+html[data-vip] #ca-vipp .vp-car .vp-prrow{padding:16px 0 2px!important;border-top:1px solid var(--vp-line)}
+html[data-vip] #ca-vipp .vp-car .vp-prrow b{font-size:34px!important}
+html[data-vip] #ca-vipp .vp-car .vp-rows{flex:0 0 auto!important;margin-bottom:24px}
+html[data-vip] #ca-vipp .vp-cbbtns{display:flex;gap:10px;flex-wrap:wrap}
+html[data-vip] #ca-vipp .vp-cbbtns .vp-btn{flex:1;justify-content:center;margin:0!important;width:auto!important;cursor:pointer}
+html[data-vip] #ca-vipp .vp-cbbtns .vp-ghost{background:transparent!important;border:1.5px solid var(--vp-line)!important;color:var(--vp-ink)!important}
+html[data-vip] #ca-vipp .vp-cbbtns .vp-ghost:hover{border-color:var(--vp-ink)!important}
+/* görgetésre: a fotó felúszik és ráközelít, az adatok utána jönnek */
+html.vp-anim[data-vip] #ca-vipp .vp-car[data-rv]{opacity:1!important;transform:none!important}
+html.vp-anim[data-vip] #ca-vipp .vp-car[data-rv]>.vp-media{opacity:0;transform:translateY(40px) scale(.97);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1)}
+html.vp-anim[data-vip] #ca-vipp .vp-car[data-rv]>.vp-cb{opacity:0;transform:translateX(30px);transition:opacity .8s cubic-bezier(.2,.7,.2,1) .2s,transform .9s cubic-bezier(.2,.7,.2,1) .2s}
+html.vp-anim[data-vip] #ca-vipp .vp-car[data-rv].vp-in>.vp-media,html.vp-anim[data-vip] #ca-vipp .vp-car[data-rv].vp-in>.vp-cb{opacity:1;transform:none}
+html.vp-anim[data-vip] #ca-vipp .vp-car .vp-gal img{transform:scale(1.08);transition:transform 1.6s cubic-bezier(.2,.7,.2,1)}
+html.vp-anim[data-vip] #ca-vipp .vp-car.vp-in .vp-gal img{transform:none}
+@media(max-width:1000px){html[data-vip] #ca-vipp .vp-car{grid-template-columns:1fr;min-height:0}html[data-vip] #ca-vipp .vp-car>.vp-media{aspect-ratio:3/2;min-height:0}html[data-vip] #ca-vipp .vp-car>.vp-cb{padding:24px 22px 26px!important}html[data-vip] #ca-vipp .vp-car .vp-av{display:inline-flex}}
+html[data-vip] #ca-vipp .vp-car .vp-prsub{flex-wrap:wrap;text-align:right}html[data-vip] #ca-vipp .vp-car{min-width:0;max-width:100%}
+@media(max-width:600px){html[data-vip] #ca-vipp .vp-car>.vp-cb>h3{font-size:26px!important}html[data-vip] #ca-vipp .vp-cbbtns{flex-direction:column}html[data-vip] #ca-vipp .vp-cbbtns .vp-btn{width:100%!important;flex:none}html[data-vip] #ca-vipp .vp-car .vp-prrow b{font-size:28px!important}html[data-vip] #ca-vipp .vp-cbtop .vp-cbav{display:none}html.vp-anim[data-vip] #ca-vipp .vp-car[data-rv]>.vp-cb{transform:translateY(20px)}}
+</style>`;
+
 function make(tpl, slug, title, desc, main, css, extraHtmlAttr) {
   let t = tpl
     .replace(/<link rel="canonical"[^>]*>\s*/g, '')
@@ -1073,7 +1113,7 @@ function run() {
   make(tpl, 'cegeknek', 'Cégeknek — Benchmark, rendezvények, céges bérlet | CarAdvance',
     'Benchmark: bármely autó beszerzése tesztre, összehasonlításra és rendezvényekre, bérelve vagy megvásárolva. Autós céges rendezvények, céges tartós bérlet.', CORP, CORP_CSS);
   make(tpl, 'vip', 'VIP luxusautó-bérlés — CarAdvance',
-    'Privát luxusautó-bérlés: sport- és luxusautók napi bérlésre, személyes kapcsolattartóval és egyedi ajánlattal.', VIP, VIP_CSS + VIP_MONO + VIP_MAIN, 'data-vip="1"');
+    'Privát luxusautó-bérlés: sport- és luxusautók napi bérlésre, személyes kapcsolattartóval és egyedi ajánlattal.', VIP, VIP_CSS + VIP_MONO + VIP_MAIN + VIP_SHOW, 'data-vip="1"');
   make(tpl, 'vip/hogyan-mukodik', 'Hogyan működik a VIP luxusautó-bérlés? — CarAdvance',
     'A VIP luxusautó-bérlés menete öt lépésben: autóválasztás, ajánlatkérés, személyes egyeztetés, írásos ajánlat és átvétel.', VIP_HOW, VIP_CSS + VIP_MONO + VIP_MAIN + VIP_SUB_CSS, 'data-vip="1"');
   make(tpl, 'vip/gyakori-kerdesek', 'VIP luxusautó-bérlés – gyakori kérdések — CarAdvance',
