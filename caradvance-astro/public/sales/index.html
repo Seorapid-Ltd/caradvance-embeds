@@ -2025,6 +2025,7 @@ const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ymd=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}; // local calendar day (toISOString would give the UTC day: wrong after midnight in Hungary)
 const EURF={};const eur=n=>{if(n==null||n===''||isNaN(n))return'—';const l=window.__loc||'en-GB';return(EURF[l]||(EURF[l]=new Intl.NumberFormat(l,{style:'currency',currency:'EUR',maximumFractionDigits:0}))).format(Math.round(Number(n)))}; // one formatter per language (creating one is slow)
+const b2c=c=>window.__skczB2C?window.__skczB2C(c):c.dealer_gross,b2cTag=c=>window.__skczTag?window.__skczTag(c):'',b2bTag=c=>window.__skczB2B?window.__skczB2B(c):''; // same helpers as hu/sk/cz; without the SK/CZ add-on they return the plain prices
 const S={raw:[],ext:{},cars:[],dealers:[],logs:[],open:null,db:null,canWrite:true};
 const todayMs=Date.now();
 const daysLeft=d=>d?Math.round((new Date(d+'T12:00:00')-todayMs)/864e5):null;
