@@ -15,14 +15,17 @@ export async function onRequest({ request, next }) {
     : versioned && /\.(js|json|css)$/i.test(p) ? 'public, max-age=86400, stale-while-revalidate=604800'
     : /\.json$/i.test(p) ? 'private, max-age=60, stale-while-revalidate=600' : 'private, no-cache');
   r.headers.set('X-Robots-Tag', 'noindex, nofollow');
-  // The page itself: an ETag from its content, so a repeat visit gets "304 Not Modified" (a few hundred bytes)
-  // instead of downloading the whole page again; it is still re-checked on every visit, so changes show at once.
+  // The page itself: a content hash, so a repeat visit gets "304 Not Modified" (a few hundred bytes) instead of the
+  // whole page again; it is still re-checked on every visit, so changes show at once. Cloudflare drops the ETag of
+  // HTML it modifies (analytics snippet), so the hash is also sent as a Last-Modified date — a fixed date per content
+  // version, compared for equality, so it need not be the real date.
   if (res.status === 200 && (request.method === 'GET' || request.method === 'HEAD') && /text\/html/i.test(res.headers.get('content-type') || '')) {
     const body = await r.arrayBuffer();
-    const tag = '"' + [...new Uint8Array(await crypto.subtle.digest('SHA-1', body))].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('') + '"';
-    const h = new Headers(r.headers); h.set('ETag', tag); h.set('X-Desk-Version', tag.replace(/"/g, '')); // same value, kept even where a proxy drops ETag h.delete('Content-Length');
-    const inm = request.headers.get('If-None-Match') || '';
-    if (inm.split(',').some(t => t.trim().replace(/^W\//, '') === tag)) { h.delete('Content-Type'); return new Response(null, { status: 304, headers: h }); }
+    const hex = [...new Uint8Array(await crypto.subtle.digest('SHA-1', body))].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('');
+    const tag = '"' + hex + '"', lm = new Date(Date.UTC(2001, 0, 1) + (parseInt(hex.slice(0, 8), 16) % (20 * 365 * 86400)) * 1000).toUTCString();
+    const h = new Headers(r.headers); h.set('ETag', tag); h.set('Last-Modified', lm); h.set('X-Desk-Version', hex); h.delete('Content-Length');
+    const inm = request.headers.get('If-None-Match') || '', ims = request.headers.get('If-Modified-Since') || '';
+    if (inm.split(',').some(t => t.trim().replace(/^W\//, '') === tag) || (!inm && ims === lm)) { h.delete('Content-Type'); return new Response(null, { status: 304, headers: h }); }
     return new Response(request.method === 'HEAD' ? null : body, { status: 200, headers: h });
   }
   return r;
