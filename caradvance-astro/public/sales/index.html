@@ -1060,6 +1060,7 @@ tr.det .offerrow{margin:0}
 .subnav a[data-s=outreach]:hover{background:var(--red-dark,#B80015)}
 .subnav a[data-s=outreach].on{background:var(--red-dark,#B80015);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
 .subnav a[data-s=outreach] span{background:rgba(255,255,255,.22);color:#fff}
+.subnav a[data-s=dealers] span,.subnav a[data-s=dealers].on span{background:rgba(255,255,255,.18);color:#fff} /* count stays readable on the dark bar, also when the Activity tab is open */
 /* subnav: empty flex spacer keeps the two buttons at the edges; clock icon on Activity */
 .subnav .subarrow{flex:1 1 auto;min-width:0;pointer-events:none}
 .subnav a[data-s=outreach]{margin-left:0;gap:8px}
@@ -1975,7 +1976,7 @@ Ready when you are.</h1>
         <select id="oOutcome" aria-label="Outcome"><option value="">Any outcome</option><option>No answer</option><option>Sent offer</option><option>Interested</option><option>Asked for price</option><option>Not interested</option><option>Reserved a car</option><option>Do not contact</option><option>Offer received</option><option>Sent for check</option><option>Offer accepted</option><option>Offer declined</option><option>Sold</option></select>
         <select id="oMember" aria-label="Team member"><option value="">All team members</option></select>
       </div>
-      <div class="olact"><button class="pri" id="addLog">Log a call or email</button><button type="button" class="olbtn" id="olOffer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></svg><span data-tr="Record offer">Record offer</span></button><button type="button" class="olbtn" id="olSend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg><span data-tr="Send an offer">Send an offer</span></button><a class="olbtn ollink" href="#leads"><span data-tr="Deals">Deals</span> →</a><span class="count" id="oCount"></span></div>
+      <div class="olact"><button class="pri" id="addLog">Log a call or email</button><button type="button" class="olbtn" id="olOffer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></svg><span data-tr="Record offer">Record offer</span></button><button type="button" class="olbtn" id="olSend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg><span data-tr="Send an offer">Send an offer</span></button><span class="count" id="oCount"></span></div>
     </div>
     <div class="tbl"><table>
       <thead><tr><th>Date</th><th>Dealer</th><th>Cars</th><th>Channel</th><th class="hide-s">Team member</th><th>Outcome</th></tr></thead>
